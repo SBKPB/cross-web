@@ -35,6 +35,21 @@ export const adminClinicsApi = {
 
   delete: (id: string) => api.delete<void>(`${BASE_PATH}/${id}`),
 
+  // ========== 單位設定 ==========
+
+  settings: {
+    get: (facilityId: string) =>
+      api.get<{ business_hours: Record<string, unknown> | null; slot_duration: number }>(
+        `${BASE_PATH}/${facilityId}/settings`
+      ),
+
+    update: (facilityId: string, data: { business_hours?: unknown; slot_duration?: number }) =>
+      api.patch<{ business_hours: Record<string, unknown> | null; slot_duration: number }>(
+        `${BASE_PATH}/${facilityId}/settings`,
+        data
+      ),
+  },
+
   // ========== 職員（包含醫師、美容師、治療師等） ==========
 
   staff: {

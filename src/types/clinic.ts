@@ -104,12 +104,19 @@ export interface Service {
   category: string;
 }
 
+// 休息時段
+export interface BreakTime {
+  start: string; // HH:MM
+  end: string;   // HH:MM
+}
+
 // 營業時間
 export interface BusinessHours {
   day: string;
   open: string;
   close: string;
   is_closed: boolean;
+  breaks?: BreakTime[];
 }
 
 // 醫療院所
@@ -178,7 +185,7 @@ export interface MedicalFacility {
   address: string | null;
   medical_department: ApiMedicalDepartment;
   payment_type: PaymentType;
-  business_hours: Record<string, { open: string; close: string }> | null;
+  business_hours: Record<string, { open: string; close: string; breaks?: BreakTime[] }> | null;
   slot_duration: number; // 預約時段間隔（分鐘）
   is_active: boolean;
   created_at: string;
@@ -192,7 +199,7 @@ export interface MedicalFacilityCreate {
   address?: string;
   medical_department: ApiMedicalDepartment;
   payment_type: PaymentType;
-  business_hours?: Record<string, { open: string; close: string }>;
+  business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
   slot_duration?: number; // 預約時段間隔（分鐘）
 }
 
@@ -203,7 +210,7 @@ export interface MedicalFacilityUpdate {
   address?: string;
   medical_department?: ApiMedicalDepartment;
   payment_type?: PaymentType;
-  business_hours?: Record<string, { open: string; close: string }>;
+  business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
   slot_duration?: number; // 預約時段間隔（分鐘）
   is_active?: boolean;
 }

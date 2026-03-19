@@ -27,6 +27,7 @@ import type {
   MedicalFacilityUpdate,
   ApiMedicalDepartment,
   PaymentType,
+  BreakTime,
 } from "@/types/clinic";
 import {
   API_DEPARTMENT_OPTIONS,
@@ -45,6 +46,7 @@ interface BusinessHourEntry {
   open: string;
   close: string;
   is_closed: boolean;
+  breaks: BreakTime[];
 }
 
 type BusinessHours = Record<string, BusinessHourEntry>;
@@ -77,17 +79,17 @@ const WEEKDAYS = [
 ] as const;
 
 const DEFAULT_BUSINESS_HOURS: BusinessHours = {
-  monday: { open: "09:00", close: "18:00", is_closed: false },
-  tuesday: { open: "09:00", close: "18:00", is_closed: false },
-  wednesday: { open: "09:00", close: "18:00", is_closed: false },
-  thursday: { open: "09:00", close: "18:00", is_closed: false },
-  friday: { open: "09:00", close: "18:00", is_closed: false },
-  saturday: { open: "09:00", close: "12:00", is_closed: false },
-  sunday: { open: "09:00", close: "12:00", is_closed: true },
+  monday: { open: "09:00", close: "18:00", is_closed: false, breaks: [] },
+  tuesday: { open: "09:00", close: "18:00", is_closed: false, breaks: [] },
+  wednesday: { open: "09:00", close: "18:00", is_closed: false, breaks: [] },
+  thursday: { open: "09:00", close: "18:00", is_closed: false, breaks: [] },
+  friday: { open: "09:00", close: "18:00", is_closed: false, breaks: [] },
+  saturday: { open: "09:00", close: "12:00", is_closed: false, breaks: [] },
+  sunday: { open: "09:00", close: "12:00", is_closed: true, breaks: [] },
 };
 
 function parseBusinessHours(
-  hours: Record<string, { open: string; close: string }> | null | undefined
+  hours: Record<string, { open: string; close: string; breaks?: BreakTime[] }> | null | undefined
 ): BusinessHours {
   if (!hours) return { ...DEFAULT_BUSINESS_HOURS };
 
@@ -99,9 +101,10 @@ function parseBusinessHours(
         open: dayHours.open || "09:00",
         close: dayHours.close || "18:00",
         is_closed: false,
+        breaks: dayHours.breaks ?? [],
       };
     } else {
-      result[day.key] = { ...DEFAULT_BUSINESS_HOURS[day.key] };
+      result[day.key] = { ...DEFAULT_BUSINESS_HOURS[day.key], breaks: [] };
     }
   }
   return result;
@@ -147,10 +150,14 @@ function ClinicFormContent({
     e.preventDefault();
 
     // 轉換營業時間格式（移除 is_closed 的日子）
-    const business_hours: Record<string, { open: string; close: string }> = {};
+    const business_hours: Record<string, { open: string; close: string; breaks?: BreakTime[] }> = {};
     for (const [day, hours] of Object.entries(formData.business_hours)) {
       if (!hours.is_closed) {
-        business_hours[day] = { open: hours.open, close: hours.close };
+        business_hours[day] = {
+          open: hours.open,
+          close: hours.close,
+          ...(hours.breaks.length > 0 ? { breaks: hours.breaks } : {}),
+        };
       }
     }
 
@@ -183,6 +190,51 @@ function ClinicFormContent({
         [day]: {
           ...prev.business_hours[day],
           [field]: value,
+        },
+      },
+    }));
+  };
+
+  const addBreak = (day: string) => {
+    setFormData((prev) => {
+      const dayHours = prev.business_hours[day];
+      if (dayHours.breaks.length >= 2) return prev;
+      return {
+        ...prev,
+        business_hours: {
+          ...prev.business_hours,
+          [day]: {
+            ...dayHours,
+            breaks: [...dayHours.breaks, { start: "12:00", end: "13:00" }],
+          },
+        },
+      };
+    });
+  };
+
+  const removeBreak = (day: string, index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      business_hours: {
+        ...prev.business_hours,
+        [day]: {
+          ...prev.business_hours[day],
+          breaks: prev.business_hours[day].breaks.filter((_, i) => i !== index),
+        },
+      },
+    }));
+  };
+
+  const updateBreak = (day: string, index: number, field: "start" | "end", value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      business_hours: {
+        ...prev.business_hours,
+        [day]: {
+          ...prev.business_hours[day],
+          breaks: prev.business_hours[day].breaks.map((b, i) =>
+            i === index ? { ...b, [field]: value } : b
+          ),
         },
       },
     }));
@@ -378,6 +430,45 @@ function ClinicFormContent({
                       )}
                     </div>
                   </div>
+                  {/* 休息時段 */}
+                  {!hours.is_closed && (
+                    <div className="mt-1.5 ml-10 space-y-1">
+                      {hours.breaks.map((b, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5">
+                          <span className="text-muted-foreground shrink-0 text-xs">休息</span>
+                          <input
+                            type="time"
+                            value={b.start}
+                            onChange={(e) => updateBreak(day.key, idx, "start", e.target.value)}
+                            className="border-input h-7 w-28 rounded border bg-transparent px-1.5 text-xs"
+                          />
+                          <span className="text-muted-foreground text-xs">~</span>
+                          <input
+                            type="time"
+                            value={b.end}
+                            onChange={(e) => updateBreak(day.key, idx, "end", e.target.value)}
+                            className="border-input h-7 w-28 rounded border bg-transparent px-1.5 text-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeBreak(day.key, idx)}
+                            className="text-muted-foreground hover:text-destructive ml-1 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      {hours.breaks.length < 2 && (
+                        <button
+                          type="button"
+                          onClick={() => addBreak(day.key)}
+                          className="text-muted-foreground hover:text-foreground text-xs"
+                        >
+                          + 新增休息時段
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

@@ -58,18 +58,25 @@ export function BusinessHoursSection({
                     {isToday && " (今日)"}
                   </span>
                 </div>
-                <span
-                  className={cn(
-                    "text-sm tabular-nums",
-                    hours.is_closed
-                      ? "text-n-muted"
-                      : isToday
-                        ? "font-semibold text-n-brand"
-                        : "text-n-body"
+                <div className="text-right">
+                  <span
+                    className={cn(
+                      "text-sm tabular-nums",
+                      hours.is_closed
+                        ? "text-n-muted"
+                        : isToday
+                          ? "font-semibold text-n-brand"
+                          : "text-n-body"
+                    )}
+                  >
+                    {hours.is_closed ? "休息" : `${hours.open} - ${hours.close}`}
+                  </span>
+                  {!hours.is_closed && hours.breaks && hours.breaks.length > 0 && (
+                    <div className="text-xs text-n-muted">
+                      休息 {hours.breaks.map((b) => `${b.start}-${b.end}`).join("、")}
+                    </div>
                   )}
-                >
-                  {hours.is_closed ? "休息" : `${hours.open} - ${hours.close}`}
-                </span>
+                </div>
               </div>
             );
           })}

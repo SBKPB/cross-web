@@ -103,7 +103,7 @@ export default function ClinicDetailPage() {
   }
 
   const formatBusinessHours = (
-    hours: Record<string, { open: string; close: string }> | null
+    hours: Record<string, { open: string; close: string; breaks?: { start: string; end: string }[] }> | null
   ) => {
     if (!hours) return "未設定";
     const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
@@ -118,7 +118,14 @@ export default function ClinicDetailPage() {
     };
     return days
       .filter((d) => hours[d])
-      .map((d) => `${dayNames[d]} ${hours[d].open}-${hours[d].close}`)
+      .map((d) => {
+        const h = hours[d];
+        let text = `${dayNames[d]} ${h.open}-${h.close}`;
+        if (h.breaks?.length) {
+          text += `（休息 ${h.breaks.map((b) => `${b.start}-${b.end}`).join("、")}）`;
+        }
+        return text;
+      })
       .join("、") || "未設定";
   };
 

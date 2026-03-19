@@ -63,6 +63,8 @@ interface FormData {
 }
 
 const SLOT_DURATION_OPTIONS = [
+  { value: 3, label: "3 分鐘" },
+  { value: 5, label: "5 分鐘" },
   { value: 15, label: "15 分鐘" },
   { value: 30, label: "30 分鐘" },
   { value: 60, label: "60 分鐘" },

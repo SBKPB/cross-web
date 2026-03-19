@@ -82,9 +82,11 @@ export const adminClinicsApi = {
   // ========== 預約 ==========
 
   appointments: {
-    list: (facilityId: string, params?: { date?: string; status?: string }) => {
+    list: (facilityId: string, params?: { date?: string; start_date?: string; end_date?: string; status?: string }) => {
       const searchParams = new URLSearchParams();
       if (params?.date) searchParams.append("date", params.date);
+      if (params?.start_date) searchParams.append("start_date", params.start_date);
+      if (params?.end_date) searchParams.append("end_date", params.end_date);
       if (params?.status) searchParams.append("status", params.status);
       const query = searchParams.toString();
       return api.get<ApiAppointment[]>(

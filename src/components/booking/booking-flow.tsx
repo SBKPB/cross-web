@@ -82,6 +82,7 @@ export function BookingFlow({
           selection.timeSlot !== null &&
           formData.name.trim() !== "" &&
           formData.gender !== null &&
+          formData.birthDate !== "" &&
           formData.phone.trim() !== "" &&
           formData.privacyAccepted
         );
@@ -125,6 +126,7 @@ export function BookingFlow({
           appointment_time: selection.timeSlot.time,
           patient_name: formData.name,
           patient_gender: formData.gender,
+          patient_birth_date: formData.birthDate,
           patient_phone: formData.phone,
           notes: formData.notes || undefined,
         });

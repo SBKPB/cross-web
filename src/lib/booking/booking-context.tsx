@@ -43,6 +43,7 @@ const initialState: BookingState = {
   formData: {
     name: "",
     gender: null,
+    birthDate: "",
     phone: "",
     notes: "",
     privacyAccepted: false,

@@ -58,6 +58,7 @@ export interface BookingSelection {
 export interface BookingFormData {
   name: string;
   gender: Gender | null;
+  birthDate: string;
   phone: string;
   notes: string;
   privacyAccepted: boolean;
@@ -71,6 +72,7 @@ export interface BookingRequest {
   appointment_time: string;
   patient_name: string;
   patient_gender: Gender;
+  patient_birth_date: string;
   patient_phone: string;
   notes?: string;
 }

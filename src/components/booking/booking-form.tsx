@@ -75,6 +75,20 @@ export function BookingForm({ primaryColor = "#3b82f6" }: BookingFormProps) {
         </RadioGroup>
       </div>
 
+      {/* Birth Date */}
+      <div className="space-y-2">
+        <Label htmlFor="birthDate">
+          生日 <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="birthDate"
+          type="date"
+          value={formData.birthDate}
+          onChange={(e) => updateFormData({ birthDate: e.target.value })}
+          className="h-11"
+        />
+      </div>
+
       {/* Phone */}
       <div className="space-y-2">
         <Label htmlFor="phone">

@@ -96,4 +96,6 @@ export interface BookingResponse {
   } | null;
   appointment_datetime: string;
   patient_name: string;
+  patient_phone?: string;
+  bind_token?: string;
 }

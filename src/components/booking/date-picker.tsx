@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import type { BookableDate } from "@/types/booking";
 
@@ -13,8 +14,8 @@ interface DatePickerProps {
 }
 
 interface DateGroup {
-  yearMonth: string; // "2026-02"
-  label: string; // "2026年2月"
+  yearMonth: string;
+  label: string;
   dates: BookableDate[];
 }
 
@@ -24,7 +25,6 @@ export function DatePicker({
   onSelectDate,
   primaryColor = "#3b82f6",
 }: DatePickerProps) {
-  // 檢查是否有可預約的日期
   const hasAvailableDates = dates.some((d) => d.isAvailable);
 
   // 按月份分組
@@ -48,7 +48,6 @@ export function DatePicker({
     return groups;
   }, [dates]);
 
-  // 當前顯示的月份索引
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
 
   const currentGroup = dateGroups[currentMonthIndex];
@@ -57,14 +56,16 @@ export function DatePicker({
 
   return (
     <div className="px-4">
-      <h2 className="mb-3 text-sm font-medium text-slate-500">選擇日期</h2>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        選擇日期
+      </h2>
 
       {dates.length === 0 || !hasAvailableDates ? (
-        <div className="rounded-xl bg-slate-100 py-8 text-center">
-          <p className="text-sm text-slate-500">暫無可預約日期</p>
+        <div className="rounded-4xl bg-muted py-10 text-center">
+          <p className="text-sm text-muted-foreground">暫無可預約日期</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4 rounded-4xl bg-card p-4 shadow-sm ring-1 ring-foreground/5">
           {/* 月份切換 */}
           <div className="flex items-center justify-between">
             <button
@@ -72,27 +73,33 @@ export function DatePicker({
               onClick={() => setCurrentMonthIndex((i) => i - 1)}
               disabled={!hasPrev}
               className={cn(
-                "flex size-8 items-center justify-center rounded-full transition-colors",
-                hasPrev ? "hover:bg-slate-100" : "opacity-30"
+                "flex size-9 items-center justify-center rounded-full transition-colors",
+                hasPrev
+                  ? "text-foreground hover:bg-muted"
+                  : "cursor-not-allowed text-muted-foreground opacity-30",
               )}
             >
               <ChevronLeft className="size-5" />
             </button>
-            <span className="text-base font-semibold">{currentGroup?.label}</span>
+            <span className="text-base font-semibold text-foreground">
+              {currentGroup?.label}
+            </span>
             <button
               type="button"
               onClick={() => setCurrentMonthIndex((i) => i + 1)}
               disabled={!hasNext}
               className={cn(
-                "flex size-8 items-center justify-center rounded-full transition-colors",
-                hasNext ? "hover:bg-slate-100" : "opacity-30"
+                "flex size-9 items-center justify-center rounded-full transition-colors",
+                hasNext
+                  ? "text-foreground hover:bg-muted"
+                  : "cursor-not-allowed text-muted-foreground opacity-30",
               )}
             >
               <ChevronRight className="size-5" />
             </button>
           </div>
 
-          {/* 日期網格 */}
+          {/* 日期網格 — 橫向 7 欄，每格顯示 週X / DD */}
           <div className="grid grid-cols-7 gap-1.5">
             {currentGroup?.dates.map((dateInfo) => {
               const isSelected = selectedDate === dateInfo.date;
@@ -105,10 +112,10 @@ export function DatePicker({
                   onClick={() => !isDisabled && onSelectDate(dateInfo.date)}
                   disabled={isDisabled}
                   className={cn(
-                    "flex flex-col items-center rounded-xl py-2 transition-all",
-                    isSelected && "text-white shadow-md",
-                    !isSelected && !isDisabled && "bg-white hover:bg-slate-50",
-                    isDisabled && "cursor-not-allowed opacity-40"
+                    "flex flex-col items-center rounded-2xl py-2.5 transition-all",
+                    isSelected && "text-white shadow-md scale-[1.03]",
+                    !isSelected && !isDisabled && "text-foreground hover:bg-muted",
+                    isDisabled && "cursor-not-allowed opacity-30",
                   )}
                   style={{
                     backgroundColor: isSelected ? primaryColor : undefined,

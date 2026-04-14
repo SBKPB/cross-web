@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+
 import type { ServiceOption } from "@/types/booking";
+
 import { ServiceCard } from "./service-card";
 
 interface ServiceListProps {
@@ -17,14 +19,11 @@ export function ServiceList({
   onSelectService,
   primaryColor,
 }: ServiceListProps) {
-  // 依據 category 分組
   const groupedServices = useMemo(() => {
     const groups: Record<string, ServiceOption[]> = {};
     for (const service of services) {
       const category = service.category || "其他";
-      if (!groups[category]) {
-        groups[category] = [];
-      }
+      if (!groups[category]) groups[category] = [];
       groups[category].push(service);
     }
     return groups;
@@ -33,10 +32,10 @@ export function ServiceList({
   const categories = Object.keys(groupedServices);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {categories.map((category) => (
         <div key={category}>
-          <h2 className="mb-3 px-4 text-sm font-medium text-slate-500">
+          <h2 className="mb-3 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {category}
           </h2>
           <div className="space-y-3 px-4">

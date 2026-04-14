@@ -1,5 +1,14 @@
 import { api } from "./client";
-import type { BusinessHours, Clinic, Member } from "@/types/clinic";
+import {
+  deriveFacilityType,
+  parseCityFromAddress,
+} from "@/lib/constants/clinic-constants";
+import type {
+  BusinessHours,
+  Clinic,
+  FacilityType,
+  Member,
+} from "@/types/clinic";
 
 // 後端人員資料格式
 interface BackendStaff {
@@ -14,6 +23,7 @@ interface BackendClinic {
   id: string;
   name: string;  // 後端返回 name，前端使用 clinic_name
   hospital_level?: string;
+  facility_type?: FacilityType;
   medical_department?: string;
   departments?: string[];
   phone: string | null;
@@ -85,6 +95,9 @@ function transformClinic(backendClinic: BackendClinic): Clinic {
     departments: departments as Clinic["departments"],
     phone: backendClinic.phone,
     address: backendClinic.address,
+    city: parseCityFromAddress(backendClinic.address),
+    // 優先用後端回傳的 facility_type；舊資料 fallback 用成員推導
+    facility_type: backendClinic.facility_type ?? deriveFacilityType(members),
     rating: backendClinic.rating ?? undefined,
     review_count: backendClinic.review_count ?? undefined,
     business_hours: transformBusinessHours(backendClinic.business_hours),
@@ -99,5 +112,24 @@ export const clinicsApi = {
   getClinics: async (): Promise<Clinic[]> => {
     const backendClinics = await api.get<BackendClinic[]>("/api/v1/booking/clinics");
     return backendClinics.map(transformClinic);
+  },
+
+  /**
+   * 取得熱門診所（首頁用）
+   * 目前排序規則：評分高 → 評論數多 → 名稱
+   * 後端若之後提供 /clinics/popular 可直接換
+   */
+  getPopularClinics: async (limit = 6): Promise<Clinic[]> => {
+    const all = await clinicsApi.getClinics();
+    return [...all]
+      .sort((a, b) => {
+        const ra = a.rating ?? 0;
+        const rb = b.rating ?? 0;
+        if (rb !== ra) return rb - ra;
+        const ca = a.review_count ?? 0;
+        const cb = b.review_count ?? 0;
+        return cb - ca;
+      })
+      .slice(0, limit);
   },
 };

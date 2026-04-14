@@ -155,12 +155,12 @@ export function BookingFlow({
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 pb-24">
+    <div className="flex min-h-screen flex-col bg-background pb-28">
       {/* Clinic Header */}
       <ClinicHeader clinic={clinicConfig} />
 
-      {/* Stepper */}
-      <div className="sticky top-0 z-10 border-b bg-white">
+      {/* Stepper — sticky 在 header 下方 */}
+      <div className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-lg">
         <BookingStepper
           currentStep={currentStep}
           onStepClick={handleStepClick}
@@ -169,7 +169,7 @@ export function BookingFlow({
       </div>
 
       {/* Content */}
-      <div className="flex-1 py-4">
+      <div className="flex-1 py-6">
         {/* Step 1: Select Service */}
         {currentStep === 1 && (
           <ServiceList
@@ -196,17 +196,22 @@ export function BookingFlow({
 
         {/* Step 3: Select Date/Time & Form */}
         {currentStep === 3 && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {isLoadingSlots ? (
               <div className="flex items-center justify-center py-12">
-                <div className="size-8 animate-spin rounded-full border-4 border-slate-200 border-t-current" style={{ borderTopColor: primaryColor }} />
+                <div
+                  className="size-8 animate-spin rounded-full border-4 border-muted border-t-current"
+                  style={{ borderTopColor: primaryColor }}
+                />
               </div>
             ) : slotsError ? (
               <div className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-slate-500">無法載入可預約時段，請稍後再試</p>
+                <p className="text-sm text-muted-foreground">
+                  無法載入可預約時段，請稍後再試
+                </p>
                 <button
                   type="button"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-white"
+                  className="rounded-full px-5 py-2 text-sm font-medium text-white shadow-sm"
                   style={{ backgroundColor: primaryColor }}
                   onClick={() => {
                     setSlotsError(false);
@@ -247,12 +252,12 @@ export function BookingFlow({
               </>
             )}
 
-            <div className="border-t pt-6">
+            <div className="border-t border-border/60 pt-6">
               <BookingForm primaryColor={primaryColor} />
             </div>
 
             {submitError && (
-              <div className="mx-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <div className="mx-4 rounded-3xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                 {submitError}
               </div>
             )}

@@ -1,14 +1,28 @@
-import { MapPin, Phone, Star } from "lucide-react";
+import { ArrowUpRight, MapPin, Phone, Sparkles, Star, Stethoscope, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  API_MEDICAL_DEPARTMENTS,
+  FACILITY_TYPE_COLORS,
+  FACILITY_TYPE_LABELS,
   HOSPITAL_LEVELS,
   MEDICAL_DEPARTMENTS,
-  API_MEDICAL_DEPARTMENTS,
 } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
-import type { Clinic } from "@/types/clinic";
+import type { Clinic, FacilityType } from "@/types/clinic";
+
+const FACILITY_TYPE_ICONS: Record<FacilityType, typeof Stethoscope> = {
+  healthcare: Stethoscope,
+  self_pay: Wallet,
+  aesthetic: Sparkles,
+};
 
 interface ClinicCardProps {
   clinic: Clinic;
@@ -21,83 +35,103 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
   const displayDepartments = clinic.departments.slice(0, maxDisplayDepartments);
   const remainingCount = clinic.departments.length - maxDisplayDepartments;
 
+  const TypeIcon = clinic.facility_type
+    ? FACILITY_TYPE_ICONS[clinic.facility_type]
+    : null;
+
   return (
     <Card
       onClick={onClick}
       className={cn(
-        "group relative overflow-hidden cursor-pointer",
-        "bg-n-card border border-n-border",
-        "shadow-sm",
-        "transition-all duration-200 ease-out",
-        "hover:shadow-md hover:border-n-border-focus hover:-translate-y-0.5",
-        className
+        "relative cursor-pointer transition-all duration-200 ease-out",
+        "hover:-translate-y-1 hover:shadow-xl hover:ring-primary/20",
+        className,
       )}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="space-y-1.5">
-            <h3 className="font-semibold text-lg leading-tight text-n-heading">
-              {clinic.clinic_name}
-            </h3>
-            <Badge
-              variant="secondary"
-              className="text-xs font-medium bg-n-brand-soft text-n-brand"
-            >
-              {HOSPITAL_LEVELS[clinic.hospital_level]}
-            </Badge>
-          </div>
-          {clinic.rating && (
-            <div className="flex items-center gap-1 text-amber-500">
-              <Star className="h-4 w-4 fill-current" />
-              <span className="text-sm font-medium text-n-heading">{clinic.rating}</span>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
+            {/* 服務類型 / 醫療分級 badges */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {clinic.facility_type && TypeIcon && (
+                <Badge
+                  className={cn(
+                    "gap-1 border-0",
+                    FACILITY_TYPE_COLORS[clinic.facility_type],
+                  )}
+                >
+                  <TypeIcon />
+                  {FACILITY_TYPE_LABELS[clinic.facility_type]}
+                </Badge>
+              )}
+              <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                {HOSPITAL_LEVELS[clinic.hospital_level]}
+              </Badge>
             </div>
-          )}
+
+            {/* 診所名稱 */}
+            <CardTitle className="text-lg leading-tight">
+              {clinic.clinic_name}
+            </CardTitle>
+
+            {/* 評分（改放描述位置，而不是右上角） */}
+            {clinic.rating !== undefined && clinic.rating !== null && (
+              <CardDescription className="flex items-center gap-1.5 text-amber-500">
+                <Star className="h-4 w-4 fill-current" />
+                <span className="text-sm font-medium text-foreground">
+                  {clinic.rating.toFixed(1)}
+                </span>
+                {clinic.review_count && (
+                  <span className="text-xs text-muted-foreground">
+                    · {clinic.review_count} 則評論
+                  </span>
+                )}
+              </CardDescription>
+            )}
+          </div>
+
+          {/* Hover 時出現的箭頭（Luma 風格微互動） */}
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground opacity-0 transition-opacity group-hover/card:opacity-100">
+            <ArrowUpRight className="h-4 w-4" />
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
         {/* 科別標籤 */}
-        <div className="flex flex-wrap gap-1.5">
-          {displayDepartments.map((dept) => (
-            <Badge
-              key={dept}
-              variant="outline"
-              className="text-xs px-2 py-0.5 bg-n-accent-soft text-n-accent border-0"
-            >
-              {MEDICAL_DEPARTMENTS[dept as keyof typeof MEDICAL_DEPARTMENTS] ??
-                API_MEDICAL_DEPARTMENTS[dept as keyof typeof API_MEDICAL_DEPARTMENTS] ??
-                dept}
-            </Badge>
-          ))}
-          {remainingCount > 0 && (
-            <Badge
-              variant="outline"
-              className="text-xs px-2 py-0.5 bg-n-section text-n-secondary border-0"
-            >
-              +{remainingCount}
-            </Badge>
-          )}
-        </div>
+        {displayDepartments.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {displayDepartments.map((dept) => (
+              <Badge key={dept} variant="outline" className="text-muted-foreground">
+                {MEDICAL_DEPARTMENTS[dept as keyof typeof MEDICAL_DEPARTMENTS] ??
+                  API_MEDICAL_DEPARTMENTS[dept as keyof typeof API_MEDICAL_DEPARTMENTS] ??
+                  dept}
+              </Badge>
+            ))}
+            {remainingCount > 0 && (
+              <Badge variant="outline" className="text-muted-foreground">
+                +{remainingCount}
+              </Badge>
+            )}
+          </div>
+        )}
 
         {/* 聯絡資訊 */}
-        <div className="space-y-2 text-sm text-n-body">
+        <div className="space-y-2 text-sm text-muted-foreground">
           {clinic.address && (
             <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-n-muted" />
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
               <span className="line-clamp-2">{clinic.address}</span>
             </div>
           )}
           {clinic.phone && (
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 shrink-0 text-n-muted" />
+              <Phone className="h-4 w-4 shrink-0" />
               <span>{clinic.phone}</span>
             </div>
           )}
         </div>
       </CardContent>
-
-      {/* Accent bottom line */}
-      <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-n-brand to-n-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
     </Card>
   );
 }

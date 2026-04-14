@@ -1,13 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), var(--font-noto-sans-tc), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -37,57 +38,37 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  /* Luma radius scale — exponential, 圓到具有「macOS Tahoe 感」 */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
-
-  /* Brand Color System — Medical SaaS Blue-Gray */
-  --color-n-main: #f8fafc;
-  --color-n-section: #f1f5f9;
-  --color-n-subtle: #e2e8f0;
-  --color-n-card: #ffffff;
-  --color-n-dialog: #ffffff;
-
-  --color-n-brand: #1d4ed8;
-  --color-n-brand-hover: #1e40af;
-  --color-n-accent: #0891b2;
-  --color-n-brand-soft: #dbeafe;
-  --color-n-accent-soft: #cffafe;
-
-  --color-n-heading: #0f172a;
-  --color-n-body: #334155;
-  --color-n-secondary: #64748b;
-  --color-n-muted: #94a3b8;
-
-  --color-n-border: #e2e8f0;
-  --color-n-border-focus: #bfdbfe;
-  --color-n-divider: #cbd5e1;
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* shadcn/Luma tokens 指向 Cross 的 n-* 品牌色，讓 Luma 元件繼承 Cross 配色 */
+  --background: #f8fafc;           /* n-main */
+  --foreground: #0f172a;           /* n-heading */
+  --card: #ffffff;                 /* n-card */
+  --card-foreground: #0f172a;      /* n-heading */
+  --popover: #ffffff;              /* n-dialog */
+  --popover-foreground: #0f172a;   /* n-heading */
+  --primary: #1d4ed8;              /* n-brand */
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;            /* n-section */
+  --secondary-foreground: #334155; /* n-body */
+  --muted: #f1f5f9;                /* n-section */
+  --muted-foreground: #64748b;     /* n-secondary */
+  --accent: #dbeafe;               /* n-brand-soft */
+  --accent-foreground: #1d4ed8;    /* n-brand */
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #e2e8f0;               /* n-border */
+  --input: #e2e8f0;                /* n-border（Luma input 用 bg-input/50，會變成 #e2e8f0 半透明） */
+  --ring: #1d4ed8;                 /* n-brand */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -161,3 +142,15 @@
     transform: translateY(0);
   }
 }
+
+/* Radix Accordion 動畫（tailwind v4 無預設） */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+.animate-accordion-down { animation: accordion-down 0.2s ease-out; }
+.animate-accordion-up { animation: accordion-up 0.2s ease-out; }

@@ -1,7 +1,8 @@
 "use client";
 
-import type { DoctorOption } from "@/types/booking";
 import { NO_PREFERENCE_DOCTOR } from "@/lib/constants/booking-constants";
+import type { DoctorOption } from "@/types/booking";
+
 import { DoctorCard } from "./doctor-card";
 
 interface DoctorSelectorProps {
@@ -17,12 +18,13 @@ export function DoctorSelector({
   onSelectDoctor,
   primaryColor,
 }: DoctorSelectorProps) {
-  // 將「不指定」放在最前面
   const allOptions = [NO_PREFERENCE_DOCTOR, ...doctors];
 
   return (
     <div className="px-4">
-      <h2 className="mb-3 text-sm font-medium text-slate-500">選擇人員</h2>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        選擇人員
+      </h2>
 
       <div className="-mx-4 overflow-x-auto px-4">
         <div className="flex snap-x snap-mandatory gap-2 pb-2">

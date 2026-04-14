@@ -1,8 +1,9 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import { BOOKING_STEPS } from "@/lib/constants/booking-constants";
+import { cn } from "@/lib/utils";
 
 interface BookingStepperProps {
   currentStep: 1 | 2 | 3;
@@ -16,7 +17,7 @@ export function BookingStepper({
   primaryColor = "#3b82f6",
 }: BookingStepperProps) {
   return (
-    <div className="flex items-center justify-center gap-2 px-4 py-3">
+    <div className="flex items-center justify-center gap-1 px-4 py-4">
       {BOOKING_STEPS.map(({ step, label }, index) => {
         const isCompleted = currentStep > step;
         const isCurrent = currentStep === step;
@@ -30,11 +31,12 @@ export function BookingStepper({
               onClick={() => isClickable && onStepClick(step as 1 | 2 | 3)}
               disabled={!isClickable}
               className={cn(
-                "flex size-8 items-center justify-center rounded-full text-sm font-medium transition-all",
-                isCompleted && "text-white",
-                isCurrent && "text-white shadow-md",
-                !isCompleted && !isCurrent && "bg-slate-100 text-slate-400",
-                isClickable && "cursor-pointer hover:opacity-80"
+                "flex size-9 items-center justify-center rounded-full text-sm font-semibold transition-all",
+                "ring-1 ring-foreground/5",
+                isCompleted && "text-white shadow-sm",
+                isCurrent && "text-white shadow-md scale-110",
+                !isCompleted && !isCurrent && "bg-muted text-muted-foreground",
+                isClickable && "cursor-pointer hover:opacity-90",
               )}
               style={{
                 backgroundColor: isCompleted || isCurrent ? primaryColor : undefined,
@@ -46,8 +48,10 @@ export function BookingStepper({
             {/* Step Label */}
             <span
               className={cn(
-                "ml-1.5 text-sm",
-                isCurrent ? "font-medium text-slate-900" : "text-slate-500"
+                "ml-2 text-sm transition-colors",
+                isCurrent
+                  ? "font-semibold text-foreground"
+                  : "text-muted-foreground",
               )}
             >
               {label}
@@ -57,8 +61,8 @@ export function BookingStepper({
             {index < BOOKING_STEPS.length - 1 && (
               <div
                 className={cn(
-                  "mx-2 h-0.5 w-8",
-                  currentStep > step ? "bg-current" : "bg-slate-200"
+                  "mx-3 h-0.5 w-6 rounded-full transition-colors",
+                  currentStep > step ? "bg-current" : "bg-muted",
                 )}
                 style={{
                   backgroundColor: currentStep > step ? primaryColor : undefined,

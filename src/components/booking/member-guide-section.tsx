@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, CalendarClock, RotateCcw } from "lucide-react";
+import { CalendarClock, RotateCcw, ShieldCheck } from "lucide-react";
 
 const BIND_BENEFITS = [
   { icon: CalendarClock, title: "快速預約", description: "自動帶入個人資料" },
@@ -40,7 +40,11 @@ interface MemberGuideSectionProps {
   bindToken?: string;
 }
 
-export function MemberGuideSection({ patientPhone, clinicId, bindToken }: MemberGuideSectionProps) {
+export function MemberGuideSection({
+  patientPhone,
+  clinicId,
+  bindToken,
+}: MemberGuideSectionProps) {
   const params = new URLSearchParams();
   if (patientPhone) params.set("phone", patientPhone);
   if (clinicId) params.set("clinic", clinicId);
@@ -49,28 +53,31 @@ export function MemberGuideSection({ patientPhone, clinicId, bindToken }: Member
   const bindUrl = `/member/bind-google${qs ? `?${qs}` : ""}`;
 
   return (
-    <div className="space-y-4 px-4 py-4">
-      <div className="rounded-xl border bg-white p-5">
-        <h3 className="text-center text-base font-semibold text-slate-800">
+    <div className="px-4 py-4">
+      <div className="rounded-4xl bg-card p-6 shadow-sm ring-1 ring-foreground/5">
+        <h3 className="text-center text-base font-semibold text-foreground">
           綁定 Google 帳號
         </h3>
-        <p className="mt-1 text-center text-sm text-slate-500">
+        <p className="mt-1 text-center text-sm text-muted-foreground">
           綁定後可快速登入、查看預約紀錄
         </p>
 
         {/* 綁定好處 */}
-        <div className="mt-5 flex items-start justify-between gap-2">
+        <div className="mt-6 flex items-start justify-between gap-2">
           {BIND_BENEFITS.map((benefit) => {
             const Icon = benefit.icon;
             return (
-              <div key={benefit.title} className="flex flex-1 flex-col items-center text-center">
-                <div className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+              <div
+                key={benefit.title}
+                className="flex flex-1 flex-col items-center text-center"
+              >
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-accent text-primary">
                   <Icon className="size-5" />
                 </div>
-                <p className="mt-2 text-sm font-medium text-slate-700">
+                <p className="mt-2 text-sm font-medium text-foreground">
                   {benefit.title}
                 </p>
-                <p className="mt-0.5 text-xs text-slate-400">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {benefit.description}
                 </p>
               </div>
@@ -79,10 +86,10 @@ export function MemberGuideSection({ patientPhone, clinicId, bindToken }: Member
         </div>
 
         {/* Google 綁定按鈕 */}
-        <div className="mt-5">
+        <div className="mt-6">
           <a
             href={bindUrl}
-            className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white text-base font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+            className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-4xl border border-border bg-background text-base font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
           >
             <GoogleIcon className="size-5" />
             <span>綁定 Google 帳號</span>

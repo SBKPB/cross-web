@@ -31,13 +31,13 @@ export function ClinicList({ clinics, className }: ClinicListProps) {
           className
         )}
       >
-        <div className="rounded-full bg-n-section border border-n-border p-4 mb-4">
-          <Building2 className="h-8 w-8 text-n-muted" />
+        <div className="rounded-full bg-muted border border-border p-4 mb-4">
+          <Building2 className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-medium text-n-heading mb-1">
+        <h3 className="text-lg font-medium text-foreground mb-1">
           找不到符合條件的院所
         </h3>
-        <p className="text-sm text-n-secondary">
+        <p className="text-sm text-muted-foreground">
           請嘗試調整搜尋條件或篩選器
         </p>
       </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Calendar } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,16 +18,15 @@ export function StickyBookingButton({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t border-n-border bg-n-card/95 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-lg sm:px-6",
-        className
+        "fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:px-6",
+        "bg-background/80 backdrop-blur-lg",
+        "border-t border-border/60",
+        className,
       )}
     >
-      <Button
-        asChild
-        className="h-12 w-full rounded-xl bg-n-brand text-base font-semibold text-white shadow-lg transition-colors hover:bg-n-brand-hover"
-      >
+      <Button asChild size="lg" className="w-full shadow-lg">
         <Link href={`/booking/${clinicId}`}>
-          <Calendar className="mr-2 size-5" />
+          <Calendar className="size-5" />
           馬上預約
         </Link>
       </Button>

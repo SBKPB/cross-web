@@ -2,11 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star, ArrowLeft, Building2 } from "lucide-react";
-import type { Clinic } from "@/types/clinic";
+import { ArrowLeft, Building2, Sparkles, Star, Stethoscope, Wallet } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
+import {
+  FACILITY_TYPE_COLORS,
+  FACILITY_TYPE_LABELS,
+  HOSPITAL_LEVELS,
+} from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
-import { HOSPITAL_LEVELS } from "@/lib/constants/clinic-constants";
+import type { Clinic, FacilityType } from "@/types/clinic";
+
+const FACILITY_TYPE_ICONS: Record<FacilityType, typeof Stethoscope> = {
+  healthcare: Stethoscope,
+  self_pay: Wallet,
+  aesthetic: Sparkles,
+};
 
 interface ClinicDetailHeaderProps {
   clinic: Clinic;
@@ -18,11 +29,14 @@ export function ClinicDetailHeader({
   className,
 }: ClinicDetailHeaderProps) {
   const hasImages = clinic.images && clinic.images.length > 0;
+  const TypeIcon = clinic.facility_type
+    ? FACILITY_TYPE_ICONS[clinic.facility_type]
+    : null;
 
   return (
     <div className={cn("relative", className)}>
-      {/* Hero gradient banner */}
-      <div className="relative h-44 w-full overflow-hidden sm:h-56">
+      {/* Hero banner */}
+      <div className="relative h-48 w-full overflow-hidden sm:h-60">
         {hasImages && clinic.images ? (
           <Image
             src={clinic.images[0]}
@@ -32,62 +46,72 @@ export function ClinicDetailHeader({
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-n-brand via-n-brand-hover to-n-accent" />
+          <div className="absolute inset-0 bg-linear-to-br from-primary via-primary to-accent" />
         )}
-        {/* Overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        {/* 可讀性漸層 */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
 
         {/* Back button */}
-        <div className="absolute left-3 top-3 z-10 sm:left-4 sm:top-4">
+        <div className="absolute left-4 top-4 z-10">
           <Link
             href="/"
-            className="flex size-9 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-white/30"
+            aria-label="返回首頁"
+            className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-white/30"
           >
             <ArrowLeft className="size-5" />
           </Link>
         </div>
       </div>
 
-      {/* Clinic info card overlapping hero */}
-      <div className="relative -mt-14 px-4 sm:px-6">
-        <div className="rounded-2xl border border-n-border bg-n-card p-4 shadow-lg sm:p-5">
-          <div className="flex items-start gap-3.5">
-            {/* Logo */}
-            <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-n-brand text-xl font-bold text-white shadow-md sm:size-16 sm:text-2xl">
+      {/* Floating info card */}
+      <div className="relative -mt-16 px-4 sm:px-6">
+        <div className="rounded-4xl bg-card p-5 shadow-xl ring-1 ring-foreground/5 sm:p-6">
+          <div className="flex items-start gap-4">
+            {/* Logo 方塊 */}
+            <div className="flex size-16 shrink-0 items-center justify-center rounded-3xl bg-primary text-2xl font-bold text-primary-foreground shadow-md sm:size-18">
               {clinic.clinic_name.charAt(0)}
             </div>
 
-            {/* Name, level, rating */}
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-lg font-bold text-n-heading sm:text-xl">
-                  {clinic.clinic_name}
-                </h1>
-                <Badge
-                  variant="secondary"
-                  className="border-none bg-n-brand-soft text-n-brand"
-                >
-                  <Building2 className="size-3" />
+            {/* Name / badges / rating */}
+            <div className="min-w-0 flex-1 space-y-2">
+              <h1 className="text-xl font-semibold leading-tight text-foreground sm:text-2xl">
+                {clinic.clinic_name}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {clinic.facility_type && TypeIcon && (
+                  <Badge
+                    className={cn(
+                      "gap-1 border-0",
+                      FACILITY_TYPE_COLORS[clinic.facility_type],
+                    )}
+                  >
+                    <TypeIcon />
+                    {FACILITY_TYPE_LABELS[clinic.facility_type]}
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                  <Building2 />
                   {HOSPITAL_LEVELS[clinic.hospital_level]}
                 </Badge>
               </div>
 
-              {clinic.rating && (
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <Star className="size-4 fill-amber-400 text-amber-400" />
-                  <span className="font-semibold text-n-heading">
+              {clinic.rating !== undefined && clinic.rating !== null && (
+                <div className="flex items-center gap-1.5 text-amber-500">
+                  <Star className="size-4 fill-current" />
+                  <span className="text-sm font-semibold text-foreground">
                     {clinic.rating.toFixed(1)}
                   </span>
                   {clinic.review_count && (
-                    <span className="text-sm text-n-secondary">
-                      ({clinic.review_count.toLocaleString()} 則評論)
+                    <span className="text-xs text-muted-foreground">
+                      · {clinic.review_count.toLocaleString()} 則評論
                     </span>
                   )}
                 </div>
               )}
 
               {clinic.description && (
-                <p className="mt-2 text-sm leading-relaxed text-n-body line-clamp-2">
+                <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                   {clinic.description}
                 </p>
               )}

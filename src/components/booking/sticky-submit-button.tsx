@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import { cn } from "@/lib/utils";
 
 interface StickySubmitButtonProps {
@@ -24,26 +24,34 @@ export function StickySubmitButton({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 border-t bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]",
-        className
+        "fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3",
+        "bg-background/80 backdrop-blur-lg",
+        "border-t border-border/60",
+        className,
       )}
     >
-      <Button
+      <button
         type="button"
         onClick={onClick}
         disabled={disabled || isLoading}
-        className="h-12 w-full text-base font-medium text-white"
+        className={cn(
+          "group/button inline-flex h-12 w-full items-center justify-center gap-2",
+          "rounded-4xl bg-clip-padding text-base font-semibold text-white",
+          "shadow-lg transition-all",
+          "active:translate-y-px",
+          "disabled:opacity-50 disabled:pointer-events-none",
+        )}
         style={{ backgroundColor: primaryColor }}
       >
         {isLoading ? (
           <>
-            <Loader2 className="mr-2 size-5 animate-spin" />
-            處理中...
+            <Loader2 className="size-5 animate-spin" />
+            處理中…
           </>
         ) : (
           label
         )}
-      </Button>
+      </button>
     </div>
   );
 }

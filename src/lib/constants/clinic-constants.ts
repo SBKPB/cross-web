@@ -1,9 +1,11 @@
 import type {
+  ApiMedicalDepartment,
+  FacilityType,
   HospitalLevel,
   MedicalDepartment,
-  ApiMedicalDepartment,
-  PaymentType,
+  Member,
   MemberRole,
+  PaymentType,
 } from "@/types/clinic";
 
 // 醫療分級對照
@@ -201,3 +203,133 @@ export const STAFF_ROLES = MEMBER_ROLES;
 
 /** @deprecated 改用 MEMBER_ROLE_OPTIONS */
 export const STAFF_ROLE_OPTIONS = MEMBER_ROLE_OPTIONS;
+
+// ========== 縣市 ==========
+
+// 台灣 22 縣市（順序依北到南、離島最後）
+export const TAIWAN_CITIES = [
+  "臺北市",
+  "新北市",
+  "基隆市",
+  "桃園市",
+  "新竹市",
+  "新竹縣",
+  "苗栗縣",
+  "臺中市",
+  "彰化縣",
+  "南投縣",
+  "雲林縣",
+  "嘉義市",
+  "嘉義縣",
+  "臺南市",
+  "高雄市",
+  "屏東縣",
+  "宜蘭縣",
+  "花蓮縣",
+  "臺東縣",
+  "澎湖縣",
+  "金門縣",
+  "連江縣",
+] as const;
+
+// 城市選項（含「全部」）
+export const CITY_OPTIONS = [
+  { value: "all", label: "全部縣市" },
+  ...TAIWAN_CITIES.map((city) => ({ value: city, label: city })),
+];
+
+/**
+ * 從地址字串解析出縣市名稱
+ * 支援「台」「臺」兩種寫法，一律正規化為「臺」
+ * 範例：「807高雄市三民區長明街175號」 → 「高雄市」
+ */
+export function parseCityFromAddress(address: string | null | undefined): string | undefined {
+  if (!address) return undefined;
+  const normalized = address.replace(/台/g, "臺");
+  for (const city of TAIWAN_CITIES) {
+    if (normalized.includes(city)) return city;
+  }
+  return undefined;
+}
+
+// ========== 服務類型（FacilityType） ==========
+
+export const FACILITY_TYPE_LABELS: Record<FacilityType, string> = {
+  healthcare: "健保看診",
+  self_pay: "自費門診",
+  aesthetic: "醫美諮詢",
+};
+
+// Hero tabs 短標籤
+export const FACILITY_TYPE_SHORT_LABELS: Record<FacilityType, string> = {
+  healthcare: "看診",
+  self_pay: "自費",
+  aesthetic: "醫美",
+};
+
+// 服務類型顏色（用於 badge）
+export const FACILITY_TYPE_COLORS: Record<FacilityType, string> = {
+  healthcare: "bg-sky-100 text-sky-700",
+  self_pay: "bg-amber-100 text-amber-700",
+  aesthetic: "bg-pink-100 text-pink-700",
+};
+
+// 服務類型選項（含「全部」）
+export const FACILITY_TYPE_OPTIONS = [
+  { value: "all", label: "全部類型" },
+  { value: "healthcare", label: "健保看診" },
+  { value: "self_pay", label: "自費門診" },
+  { value: "aesthetic", label: "醫美諮詢" },
+] as const;
+
+/**
+ * 依成員組成推導服務類型
+ * - 有美容師 / 治療師 → aesthetic
+ * - 否則 → healthcare（自費暫無法從現有欄位判斷，等後端支援）
+ */
+export function deriveFacilityType(members: Member[] | undefined): FacilityType {
+  if (!members || members.length === 0) return "healthcare";
+  const hasAestheticMember = members.some(
+    (m) => m.role === "beautician" || m.role === "therapist",
+  );
+  return hasAestheticMember ? "aesthetic" : "healthcare";
+}
+
+// ========== 熱門搜尋（Hero chips） ==========
+
+// 依 tab 切換的熱門搜尋項目
+// kind:
+//   "dept" → 點擊後帶 dept 參數進搜尋頁
+//   "query" → 點擊後帶 q 參數做關鍵字搜尋
+export type PopularChip = {
+  label: string;
+  kind: "dept" | "query";
+  value: string;
+};
+
+export const POPULAR_CHIPS_BY_TYPE: Record<FacilityType, PopularChip[]> = {
+  healthcare: [
+    { label: "家醫科", kind: "dept", value: "family_medicine" },
+    { label: "牙科", kind: "dept", value: "dentistry" },
+    { label: "皮膚科", kind: "dept", value: "dermatology" },
+    { label: "耳鼻喉", kind: "dept", value: "otolaryngology" },
+    { label: "小兒科", kind: "dept", value: "pediatrics" },
+    { label: "復健科", kind: "dept", value: "rehabilitation" },
+    { label: "眼科", kind: "dept", value: "ophthalmology" },
+  ],
+  aesthetic: [
+    { label: "微整形", kind: "query", value: "微整" },
+    { label: "雷射", kind: "query", value: "雷射" },
+    { label: "電波", kind: "query", value: "電波" },
+    { label: "肉毒", kind: "query", value: "肉毒" },
+    { label: "玻尿酸", kind: "query", value: "玻尿酸" },
+    { label: "痘痘肌", kind: "query", value: "痘痘" },
+  ],
+  self_pay: [
+    { label: "健康檢查", kind: "query", value: "健檢" },
+    { label: "疫苗接種", kind: "query", value: "疫苗" },
+    { label: "自費門診", kind: "query", value: "自費" },
+    { label: "中醫調理", kind: "dept", value: "chinese_medicine" },
+    { label: "牙齒美白", kind: "query", value: "美白" },
+  ],
+};

@@ -1,8 +1,9 @@
 "use client";
 
-import { MapPin, Phone, Clock, Navigation } from "lucide-react";
-import type { Clinic } from "@/types/clinic";
+import { Clock, MapPin, Navigation, Phone } from "lucide-react";
+
 import { cn } from "@/lib/utils";
+import type { Clinic } from "@/types/clinic";
 
 interface ClinicContactInfoProps {
   clinic: Clinic;
@@ -10,7 +11,6 @@ interface ClinicContactInfoProps {
 }
 
 export function ClinicContactInfo({ clinic, className }: ClinicContactInfoProps) {
-  // 取得今天的營業時間
   const getTodayHours = () => {
     if (!clinic.business_hours || clinic.business_hours.length === 0) return null;
     const today = new Date().getDay();
@@ -21,45 +21,47 @@ export function ClinicContactInfo({ clinic, className }: ClinicContactInfoProps)
 
   const todayHours = getTodayHours();
 
+  const actionTileClass = cn(
+    "group/tile flex flex-1 flex-col items-center gap-1.5 rounded-3xl bg-card px-3 py-4",
+    "shadow-sm ring-1 ring-foreground/5",
+    "transition-all hover:-translate-y-0.5 hover:shadow-md",
+  );
+
+  const iconCircleClass = "flex size-11 items-center justify-center rounded-full transition-colors";
+
   return (
     <div className={cn("px-4 sm:px-6", className)}>
       {/* Quick action row */}
       <div className="flex items-stretch justify-center gap-3 sm:gap-4">
-        {/* 導航 */}
         {clinic.address && (
           <a
             href={`https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-1 flex-col items-center gap-1.5 rounded-xl border border-n-border bg-n-card px-3 py-3 transition-all hover:border-n-border-focus hover:shadow-sm"
+            className={actionTileClass}
           >
-            <div className="flex size-10 items-center justify-center rounded-full bg-n-brand-soft">
-              <Navigation className="size-4.5 text-n-brand" />
+            <div className={cn(iconCircleClass, "bg-accent text-accent-foreground")}>
+              <Navigation className="size-4.5" />
             </div>
-            <span className="text-xs font-medium text-n-body">導航</span>
+            <span className="text-xs font-medium text-foreground">導航</span>
           </a>
         )}
 
-        {/* 撥打電話 */}
         {clinic.phone && (
-          <a
-            href={`tel:${clinic.phone}`}
-            className="flex flex-1 flex-col items-center gap-1.5 rounded-xl border border-n-border bg-n-card px-3 py-3 transition-all hover:border-n-border-focus hover:shadow-sm"
-          >
-            <div className="flex size-10 items-center justify-center rounded-full bg-n-accent-soft">
-              <Phone className="size-4.5 text-n-accent" />
+          <a href={`tel:${clinic.phone}`} className={actionTileClass}>
+            <div className={cn(iconCircleClass, "bg-sky-100 text-sky-600")}>
+              <Phone className="size-4.5" />
             </div>
-            <span className="text-xs font-medium text-n-body">電話</span>
+            <span className="text-xs font-medium text-foreground">電話</span>
           </a>
         )}
 
-        {/* 今日營業時間 */}
         {todayHours && (
-          <div className="flex flex-1 flex-col items-center gap-1.5 rounded-xl border border-n-border bg-n-card px-3 py-3">
-            <div className="flex size-10 items-center justify-center rounded-full bg-amber-50">
-              <Clock className="size-4.5 text-amber-600" />
+          <div className={cn(actionTileClass, "hover:translate-y-0 hover:shadow-sm")}>
+            <div className={cn(iconCircleClass, "bg-amber-100 text-amber-600")}>
+              <Clock className="size-4.5" />
             </div>
-            <span className="text-xs font-medium text-n-body">
+            <span className="text-xs font-medium text-foreground">
               {todayHours.is_closed
                 ? "今日休息"
                 : `${todayHours.open}-${todayHours.close}`}
@@ -74,21 +76,21 @@ export function ClinicContactInfo({ clinic, className }: ClinicContactInfoProps)
           href={`https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 flex items-center gap-2.5 rounded-xl border border-n-border bg-n-card px-3.5 py-3 transition-all hover:border-n-border-focus hover:shadow-sm"
+          className="mt-3 flex items-center gap-2.5 rounded-3xl bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5 transition-all hover:shadow-md"
         >
-          <MapPin className="size-4 shrink-0 text-n-muted" />
-          <span className="truncate text-sm text-n-body">{clinic.address}</span>
+          <MapPin className="size-4 shrink-0 text-muted-foreground" />
+          <span className="truncate text-sm text-foreground">{clinic.address}</span>
         </a>
       )}
 
-      {/* 電話號碼列 */}
+      {/* 電話列 */}
       {clinic.phone && (
         <a
           href={`tel:${clinic.phone}`}
-          className="mt-2 flex items-center gap-2.5 rounded-xl border border-n-border bg-n-card px-3.5 py-3 transition-all hover:border-n-border-focus hover:shadow-sm"
+          className="mt-2 flex items-center gap-2.5 rounded-3xl bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5 transition-all hover:shadow-md"
         >
-          <Phone className="size-4 shrink-0 text-n-muted" />
-          <span className="text-sm text-n-body">{clinic.phone}</span>
+          <Phone className="size-4 shrink-0 text-muted-foreground" />
+          <span className="text-sm text-foreground">{clinic.phone}</span>
         </a>
       )}
     </div>

@@ -8,7 +8,17 @@ import {
   BusinessHoursSection,
   StickyBookingButton,
 } from "@/components/clinic-detail";
-import type { Clinic, BusinessHours, Member, Service } from "@/types/clinic";
+import {
+  deriveFacilityType,
+  parseCityFromAddress,
+} from "@/lib/constants/clinic-constants";
+import type {
+  BusinessHours,
+  Clinic,
+  FacilityType,
+  Member,
+  Service,
+} from "@/types/clinic";
 
 const API_BASE_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -72,6 +82,10 @@ function transformClinicData(found: any): Clinic {
     departments,
     phone: found.phone,
     address: found.address,
+    city: parseCityFromAddress(found.address),
+    facility_type:
+      (found.facility_type as FacilityType | undefined) ??
+      deriveFacilityType(members),
     rating: found.rating ?? undefined,
     review_count: found.review_count ?? undefined,
     business_hours: businessHours,
@@ -149,7 +163,7 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
   }
 
   return (
-    <div className="min-h-screen bg-n-main pb-24">
+    <div className="min-h-screen bg-background pb-28">
       {/* Hero header with gradient + clinic info card */}
       <ClinicDetailHeader clinic={clinic} />
 

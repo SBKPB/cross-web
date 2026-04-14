@@ -5,6 +5,12 @@ export type HospitalLevel =
   | "district_hospital" // 地區醫院
   | "clinic"; // 診所
 
+// 服務類型（民眾分流用）
+// healthcare: 健保診所（一般看診）
+// self_pay:   自費診所（體檢、預防醫療、不收健保的專科）
+// aesthetic:  醫美診所（微整、雷射、美容療程）
+export type FacilityType = "healthcare" | "self_pay" | "aesthetic";
+
 // 人員角色
 export type MemberRole =
   | "doctor" // 醫師
@@ -127,6 +133,8 @@ export interface Clinic {
   departments: MedicalDepartment[];
   phone: string | null;
   address: string | null;
+  city?: string; // 由 address 解析出的縣市，用於篩選
+  facility_type?: FacilityType; // 服務類型（看診 / 自費 / 醫美）
   email?: string;
   website?: string;
   description?: string;
@@ -149,6 +157,8 @@ export interface ClinicFilters {
   search: string;
   hospitalLevel: HospitalLevel | "all";
   department: MedicalDepartment | "all";
+  city: string | "all";
+  facilityType: FacilityType | "all";
 }
 
 // ========== 後端 API 型別 (MedicalFacility) ==========

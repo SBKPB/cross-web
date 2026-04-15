@@ -45,20 +45,14 @@ export function FaqSection() {
           </p>
         </div>
 
-        <div className="rounded-2xl bg-white border border-border px-6">
-          <Accordion type="single" collapsible className="w-full">
-            {FAQS.map((faq, i) => (
-              <AccordionItem
-                key={faq.q}
-                value={`item-${i}`}
-                className={i === FAQS.length - 1 ? "border-b-0" : ""}
-              >
-                <AccordionTrigger>{faq.q}</AccordionTrigger>
-                <AccordionContent>{faq.a}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
+        <Accordion type="single" collapsible className="bg-card">
+          {FAQS.map((faq, i) => (
+            <AccordionItem key={faq.q} value={`item-${i}`}>
+              <AccordionTrigger className="px-6">{faq.q}</AccordionTrigger>
+              <AccordionContent className="px-6">{faq.a}</AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
     </section>
   );

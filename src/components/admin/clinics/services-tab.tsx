@@ -256,6 +256,9 @@ function ServiceFormContent({
     <form onSubmit={handleSubmit}>
       <DialogHeader>
         <DialogTitle>{isEditing ? "編輯服務" : "新增服務"}</DialogTitle>
+        <DialogDescription>
+          {isEditing ? "修改服務項目資訊" : "填寫服務項目基本資料"}
+        </DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">

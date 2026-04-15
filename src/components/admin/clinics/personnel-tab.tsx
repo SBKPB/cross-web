@@ -596,6 +596,11 @@ function PersonnelFormContent({
     <form onSubmit={handleSubmit}>
       <DialogHeader>
         <DialogTitle>{isEditing ? "編輯人員" : "新增人員"}</DialogTitle>
+        <DialogDescription>
+          {isEditing
+            ? "修改人員資料、照片與民眾端可見性"
+            : "填寫人員基本資料與角色"}
+        </DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 py-4">
         {/* 基本欄位 */}

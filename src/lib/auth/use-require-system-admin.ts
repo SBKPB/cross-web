@@ -3,21 +3,17 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
-import { getAdminHomePath } from "@/lib/auth/roles";
+import { getAdminHomePath, isSystemAdmin } from "@/lib/auth/roles";
 
-export default function AdminIndexPage() {
+export function useRequireSystemAdmin() {
   const router = useRouter();
   const { user, isLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) return;
-    router.replace(getAdminHomePath(user));
+    if (!isSystemAdmin(user)) {
+      router.replace(getAdminHomePath(user));
+    }
   }, [user, isLoading, isAuthenticated, router]);
-
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center">
-      <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-    </div>
-  );
 }

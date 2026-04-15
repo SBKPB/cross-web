@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { User, Users } from "lucide-react";
 
@@ -102,11 +101,12 @@ export function DoctorTeamSection({
                   {/* Avatar */}
                   <div className="relative mx-auto size-18 overflow-hidden rounded-full ring-1 ring-foreground/5 shadow-sm sm:size-20">
                     {member.avatar ? (
-                      <Image
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
                         src={member.avatar}
                         alt={member.name}
-                        fill
-                        className="object-cover"
+                        loading="lazy"
+                        className="size-full object-cover"
                       />
                     ) : (
                       <div className="flex size-full items-center justify-center bg-accent">

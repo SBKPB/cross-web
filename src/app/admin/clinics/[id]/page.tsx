@@ -19,10 +19,19 @@ import { PersonnelTab } from "@/components/admin/clinics/personnel-tab";
 import { ServicesTab } from "@/components/admin/clinics/services-tab";
 import { AppointmentsTab } from "@/components/admin/clinics/appointments-tab";
 import { ScheduleTab } from "@/components/admin/clinics/schedule-tab";
+import { SubscriptionSection } from "@/components/admin/clinics/subscription-section";
 import {
   API_MEDICAL_DEPARTMENTS,
   PAYMENT_TYPES,
 } from "@/lib/constants/clinic-constants";
+import { cn } from "@/lib/utils";
+import {
+  lumaPageContainer,
+  lumaSectionDesc,
+  lumaSectionTitle,
+  lumaTabsList,
+  lumaTabsTrigger,
+} from "@/lib/admin/luma-styles";
 import type { MedicalFacility, MedicalFacilityUpdate } from "@/types/clinic";
 
 export default function ClinicDetailPage() {
@@ -84,16 +93,16 @@ export default function ClinicDetailPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="border-primary size-8 animate-spin rounded-full border-4 border-t-transparent" />
+        <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
       </div>
     );
   }
 
   if (error || !clinic) {
     return (
-      <div className="container mx-auto py-6">
+      <div className={lumaPageContainer}>
         <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-destructive mb-4">{error || "找不到院所"}</p>
+          <p className="mb-4 text-destructive">{error || "找不到院所"}</p>
           <Button variant="outline" onClick={() => router.push("/admin/clinics")}>
             返回列表
           </Button>
@@ -130,52 +139,50 @@ export default function ClinicDetailPage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <div className={lumaPageContainer}>
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{clinic.name}</h1>
-            <p className="text-muted-foreground text-sm">
-              {API_MEDICAL_DEPARTMENTS[clinic.medical_department]} ·{" "}
-              {PAYMENT_TYPES[clinic.payment_type]}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
-              編輯資訊
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setDeleteDialogOpen(true)}
-            >
-              <TrashIcon className="size-4" />
-            </Button>
-          </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <h1 className={lumaSectionTitle}>{clinic.name}</h1>
+          <p className={lumaSectionDesc}>
+            {API_MEDICAL_DEPARTMENTS[clinic.medical_department]} ·{" "}
+            {PAYMENT_TYPES[clinic.payment_type]}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+            編輯資訊
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <TrashIcon className="size-4" />
+          </Button>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="info" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="info" className="gap-2">
+        <TabsList className={cn(lumaTabsList, "h-auto w-full flex-wrap justify-start")}>
+          <TabsTrigger value="info" className={cn(lumaTabsTrigger, "gap-2")}>
             <BuildingIcon className="size-4" />
             基本資訊
           </TabsTrigger>
-          <TabsTrigger value="appointments" className="gap-2">
+          <TabsTrigger value="appointments" className={cn(lumaTabsTrigger, "gap-2")}>
             <CalendarIcon className="size-4" />
             預約
           </TabsTrigger>
-          <TabsTrigger value="personnel" className="gap-2">
+          <TabsTrigger value="personnel" className={cn(lumaTabsTrigger, "gap-2")}>
             <UsersIcon className="size-4" />
             人員
           </TabsTrigger>
-          <TabsTrigger value="services" className="gap-2">
+          <TabsTrigger value="services" className={cn(lumaTabsTrigger, "gap-2")}>
             <BriefcaseIcon className="size-4" />
             服務項目
           </TabsTrigger>
-          <TabsTrigger value="schedule" className="gap-2">
+          <TabsTrigger value="schedule" className={cn(lumaTabsTrigger, "gap-2")}>
             <CalendarDaysIcon className="size-4" />
             排班/休假
           </TabsTrigger>
@@ -185,41 +192,54 @@ export default function ClinicDetailPage() {
           <Card className="p-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div>
-                <h3 className="text-muted-foreground mb-1 text-sm">院所名稱</h3>
-                <p className="font-medium">{clinic.name}</p>
+                <h3 className="mb-1 text-sm text-muted-foreground">院所名稱</h3>
+                <p className="font-medium text-foreground">{clinic.name}</p>
               </div>
               <div>
-                <h3 className="text-muted-foreground mb-1 text-sm">科別</h3>
-                <p className="font-medium">
+                <h3 className="mb-1 text-sm text-muted-foreground">科別</h3>
+                <p className="font-medium text-foreground">
                   {API_MEDICAL_DEPARTMENTS[clinic.medical_department]}
                 </p>
               </div>
               <div>
-                <h3 className="text-muted-foreground mb-1 text-sm">付費類型</h3>
-                <p className="font-medium">{PAYMENT_TYPES[clinic.payment_type]}</p>
+                <h3 className="mb-1 text-sm text-muted-foreground">付費類型</h3>
+                <p className="font-medium text-foreground">
+                  {PAYMENT_TYPES[clinic.payment_type]}
+                </p>
               </div>
               <div>
-                <h3 className="text-muted-foreground mb-1 text-sm">狀態</h3>
-                <p className="font-medium">
+                <h3 className="mb-1 text-sm text-muted-foreground">狀態</h3>
+                <p className="font-medium text-foreground">
                   {clinic.is_active ? "啟用" : "停用"}
                 </p>
               </div>
               <div>
-                <h3 className="text-muted-foreground mb-1 text-sm">電話</h3>
-                <p className="font-medium">{clinic.phone || "未設定"}</p>
+                <h3 className="mb-1 text-sm text-muted-foreground">電話</h3>
+                <p className="font-medium text-foreground">
+                  {clinic.phone || "未設定"}
+                </p>
               </div>
               <div>
-                <h3 className="text-muted-foreground mb-1 text-sm">地址</h3>
-                <p className="font-medium">{clinic.address || "未設定"}</p>
+                <h3 className="mb-1 text-sm text-muted-foreground">地址</h3>
+                <p className="font-medium text-foreground">
+                  {clinic.address || "未設定"}
+                </p>
               </div>
               <div className="md:col-span-2">
-                <h3 className="text-muted-foreground mb-1 text-sm">營業時間</h3>
-                <p className="font-medium">
+                <h3 className="mb-1 text-sm text-muted-foreground">營業時間</h3>
+                <p className="font-medium text-foreground">
                   {formatBusinessHours(clinic.business_hours)}
                 </p>
               </div>
             </div>
           </Card>
+
+          <div className="mt-4">
+            <SubscriptionSection
+              facility={clinic}
+              onUpdated={(updated) => setClinic(updated)}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="appointments">

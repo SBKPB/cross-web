@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { PlusIcon, PencilIcon, TrashIcon, BriefcaseIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
+import { lumaDialogFooter } from "@/lib/admin/luma-styles";
 import {
   Dialog,
   DialogContent,
@@ -103,7 +105,7 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="border-primary size-6 animate-spin rounded-full border-2 border-t-transparent" />
+        <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
       </div>
     );
   }
@@ -111,7 +113,7 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">服務項目列表</h2>
+        <h2 className="text-lg font-semibold text-foreground">服務項目列表</h2>
         <Button size="sm" onClick={handleCreate}>
           <PlusIcon className="mr-2 size-4" />
           新增服務
@@ -119,28 +121,34 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
       </div>
 
       {services.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-8">
-          <p className="text-muted-foreground mb-2">尚無服務項目</p>
-          <Button size="sm" onClick={handleCreate}>
-            <PlusIcon className="mr-2 size-4" />
-            新增服務
-          </Button>
-        </Card>
+        <AdminEmptyState
+          icon={BriefcaseIcon}
+          title="尚無服務項目"
+          description="新增服務項目開始管理"
+          action={
+            <Button size="sm" onClick={handleCreate}>
+              <PlusIcon className="mr-2 size-4" />
+              新增服務
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
-            <Card key={s.id} className="p-4">
+            <Card key={s.id} className="p-5">
               <div className="flex items-start justify-between">
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-semibold">{s.service_name}</h3>
-                  <p className="text-primary mt-1 font-medium">
+                  <h3 className="truncate font-semibold text-foreground">
+                    {s.service_name}
+                  </h3>
+                  <p className="mt-1 font-medium text-primary">
                     {formatPrice(s.price)}
                   </p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm text-muted-foreground">
                     {s.duration_minutes} 分鐘
                   </p>
                   {s.description && (
-                    <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                       {s.description}
                     </p>
                   )}
@@ -183,7 +191,7 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
               確定要刪除「{selectedService?.service_name}」嗎？
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className={lumaDialogFooter}>
             <Button variant="outline" onClick={() => setDeleteOpen(false)}>
               取消
             </Button>
@@ -304,7 +312,7 @@ function ServiceFormContent({
           />
         </div>
       </div>
-      <DialogFooter>
+      <DialogFooter className={lumaDialogFooter}>
         <Button
           type="button"
           variant="outline"
@@ -315,9 +323,7 @@ function ServiceFormContent({
         <Button
           type="submit"
           disabled={
-            isLoading ||
-            !formData.service_name.trim() ||
-            !formData.price
+            isLoading || !formData.service_name.trim() || !formData.price
           }
         >
           {isLoading ? "處理中..." : isEditing ? "儲存" : "新增"}

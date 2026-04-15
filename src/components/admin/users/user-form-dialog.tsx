@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +19,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { AdminUser, AdminUserCreate, AdminUserUpdate, Role } from "@/types/user";
+import {
+  isStaffRole,
+  requiresFacility,
+  STAFF_ROLE_NAMES,
+} from "@/lib/auth/roles";
+import { lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { cn } from "@/lib/utils";
+import type {
+  AdminUser,
+  AdminUserCreate,
+  AdminUserUpdate,
+  Role,
+} from "@/types/user";
 import type { MedicalFacility } from "@/types/clinic";
 
 interface UserFormDialogProps {
@@ -39,7 +52,8 @@ interface FormData {
   phone_number: string;
   facility_id: string;
   is_active: boolean;
-  role_ids: string[];
+  role_id: string;
+  role_name: string;
 }
 
 function getInitialFormData(user: AdminUser | null | undefined): FormData {
@@ -50,7 +64,8 @@ function getInitialFormData(user: AdminUser | null | undefined): FormData {
       phone_number: user.phone_number || "",
       facility_id: user.facility_id || "",
       is_active: user.is_active,
-      role_ids: [],
+      role_id: "",
+      role_name: "",
     };
   }
   return {
@@ -59,7 +74,8 @@ function getInitialFormData(user: AdminUser | null | undefined): FormData {
     phone_number: "",
     facility_id: "",
     is_active: true,
-    role_ids: [],
+    role_id: "",
+    role_name: "",
   };
 }
 
@@ -73,11 +89,37 @@ function UserFormContent({
 }: Omit<UserFormDialogProps, "open">) {
   const isEditing = !!user;
   const [formData, setFormData] = useState<FormData>(() =>
-    getInitialFormData(user)
+    getInitialFormData(user),
   );
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // 只列出 4 種員工角色，依固定順序（superadmin 先、facility_staff 後）
+  const staffRoles = useMemo(() => {
+    const order = STAFF_ROLE_NAMES;
+    return roles
+      .filter((r) => isStaffRole(r.name))
+      .sort((a, b) => order.indexOf(a.name as (typeof STAFF_ROLE_NAMES)[number]) - order.indexOf(b.name as (typeof STAFF_ROLE_NAMES)[number]));
+  }, [roles]);
+
+  const facilityRequired = requiresFacility(formData.role_name);
+  const facilityForbidden = !!formData.role_name && !facilityRequired;
+
+  const handleRoleChange = (roleId: string) => {
+    const role = staffRoles.find((r) => r.id === roleId);
+    if (!role) return;
+    setFormData((prev) => ({
+      ...prev,
+      role_id: role.id,
+      role_name: role.name,
+      // 切到 system admin 角色時清空 facility
+      facility_id: requiresFacility(role.name) ? prev.facility_id : "",
+    }));
+    setValidationError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
 
     if (isEditing) {
       const data: AdminUserUpdate = {
@@ -87,26 +129,28 @@ function UserFormContent({
         facility_id: formData.facility_id || null,
       };
       await onSubmit(data);
-    } else {
-      const data: AdminUserCreate = {
-        email: formData.email,
-        password: formData.password,
-        phone_number: formData.phone_number || undefined,
-        facility_id: formData.facility_id || undefined,
-        role_ids:
-          formData.role_ids.length > 0 ? formData.role_ids : undefined,
-      };
-      await onSubmit(data);
+      return;
     }
-  };
 
-  const toggleRole = (roleId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      role_ids: prev.role_ids.includes(roleId)
-        ? prev.role_ids.filter((id) => id !== roleId)
-        : [...prev.role_ids, roleId],
-    }));
+    // 新增模式必須選 role
+    if (!formData.role_id) {
+      setValidationError("請選擇角色");
+      return;
+    }
+    // facility 角色必須選院所
+    if (facilityRequired && !formData.facility_id) {
+      setValidationError("此角色必須指派所屬院所");
+      return;
+    }
+
+    const data: AdminUserCreate = {
+      email: formData.email,
+      password: formData.password,
+      phone_number: formData.phone_number || undefined,
+      facility_id: facilityRequired ? formData.facility_id : undefined,
+      role_ids: [formData.role_id],
+    };
+    await onSubmit(data);
   };
 
   return (
@@ -169,55 +213,86 @@ function UserFormContent({
           />
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="facility_id">所屬院所</Label>
-          <Select
-            value={formData.facility_id || "_none"}
-            onValueChange={(value) =>
-              setFormData((prev) => ({
-                ...prev,
-                facility_id: value === "_none" ? "" : value,
-              }))
-            }
-          >
-            <SelectTrigger id="facility_id" className="w-full">
-              <SelectValue placeholder="選擇院所" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_none">無（系統管理員）</SelectItem>
-              {facilities.map((f) => (
-                <SelectItem key={f.id} value={f.id}>
-                  {f.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {!isEditing && roles.length > 0 && (
+        {/* 角色：新增時必選，編輯時不變更 */}
+        {!isEditing && staffRoles.length > 0 && (
           <div className="grid gap-2">
-            <Label>角色</Label>
-            <div className="space-y-2 rounded-md border p-3">
-              {roles.map((role) => (
-                <div key={role.id} className="flex items-center gap-2">
-                  <Checkbox
+            <Label>
+              角色 <span className="text-destructive">*</span>
+            </Label>
+            <RadioGroup
+              value={formData.role_id}
+              onValueChange={handleRoleChange}
+              className="rounded-2xl p-3 ring-1 ring-foreground/5"
+            >
+              {staffRoles.map((role) => (
+                <label
+                  key={role.id}
+                  htmlFor={`role-${role.id}`}
+                  className="flex cursor-pointer items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-muted/40"
+                >
+                  <RadioGroupItem
+                    value={role.id}
                     id={`role-${role.id}`}
-                    checked={formData.role_ids.includes(role.id)}
-                    onCheckedChange={() => toggleRole(role.id)}
+                    className="mt-0.5"
                   />
-                  <Label htmlFor={`role-${role.id}`} className="font-normal">
-                    {role.display_name}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-foreground">
+                      {role.display_name}
+                    </div>
                     {role.description && (
-                      <span className="text-muted-foreground ml-2 text-xs">
+                      <div className="text-xs text-muted-foreground">
                         {role.description}
-                      </span>
+                      </div>
                     )}
-                  </Label>
-                </div>
+                  </div>
+                </label>
               ))}
-            </div>
+            </RadioGroup>
           </div>
         )}
+
+        {/* 所屬院所：根據角色決定是否必填或不可選 */}
+        <div className="grid gap-2">
+          <Label htmlFor="facility_id">
+            所屬院所
+            {!isEditing && facilityRequired && (
+              <span className="text-destructive"> *</span>
+            )}
+          </Label>
+          {facilityForbidden && !isEditing ? (
+            <div className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground ring-1 ring-foreground/5">
+              此角色為系統範圍，不需指派院所
+            </div>
+          ) : (
+            <Select
+              value={formData.facility_id || (facilityRequired ? "" : "_none")}
+              onValueChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  facility_id: value === "_none" ? "" : value,
+                }))
+              }
+            >
+              <SelectTrigger id="facility_id" className="w-full">
+                <SelectValue
+                  placeholder={
+                    facilityRequired ? "請選擇院所" : "選擇院所"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {!facilityRequired && (
+                  <SelectItem value="_none">無（系統管理員）</SelectItem>
+                )}
+                {facilities.map((f) => (
+                  <SelectItem key={f.id} value={f.id}>
+                    {f.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
 
         {isEditing && (
           <div className="flex items-center gap-2">
@@ -236,9 +311,13 @@ function UserFormContent({
             </Label>
           </div>
         )}
+
+        {validationError && (
+          <p className="text-sm text-destructive">{validationError}</p>
+        )}
       </div>
 
-      <DialogFooter className="mt-6">
+      <DialogFooter className={cn("mt-6", lumaDialogFooter)}>
         <Button
           type="button"
           variant="outline"

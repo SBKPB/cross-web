@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { lumaDialogFooter } from "@/lib/admin/luma-styles";
 import type { MedicalFacility } from "@/types/clinic";
 
 interface ClinicDeleteDialogProps {
@@ -40,7 +41,7 @@ export function ClinicDeleteDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter>
+        <DialogFooter className={lumaDialogFooter}>
           <Button
             type="button"
             variant="outline"

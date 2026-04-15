@@ -171,7 +171,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="border-primary size-6 animate-spin rounded-full border-2 border-t-transparent" />
+        <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
       </div>
     );
   }
@@ -179,16 +179,18 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">排班/休假總覽</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          排班/休假總覽
+        </h2>
       </div>
 
-      <Card className="p-4">
+      <Card className="p-6">
         {/* 月份導覽 */}
         <div className="mb-4 flex items-center justify-between">
           <Button variant="outline" size="icon" onClick={handlePrevMonth}>
             <ChevronLeftIcon className="size-4" />
           </Button>
-          <h3 className="text-base font-medium">
+          <h3 className="text-base font-medium text-foreground">
             {format(currentMonth, "yyyy 年 M 月", { locale: zhTW })}
           </h3>
           <Button variant="outline" size="icon" onClick={handleNextMonth}>
@@ -202,7 +204,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
           {["日", "一", "二", "三", "四", "五", "六"].map((day) => (
             <div
               key={day}
-              className="text-muted-foreground py-2 text-center text-sm font-medium"
+              className="py-2 text-center text-sm font-medium text-muted-foreground"
             >
               {day}
             </div>
@@ -218,16 +220,16 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
               <div
                 key={date.toISOString()}
                 className={cn(
-                  "min-h-[80px] cursor-pointer rounded-md border p-1 transition-colors hover:bg-muted/50",
-                  !isCurrentMonth && "bg-muted/30 opacity-50",
-                  isToday && "ring-primary ring-2"
+                  "min-h-[80px] cursor-pointer rounded-xl p-1.5 ring-1 ring-foreground/5 transition hover:bg-muted/40 hover:ring-primary/20",
+                  !isCurrentMonth && "bg-muted/20 opacity-50",
+                  isToday && "ring-2 ring-primary",
                 )}
                 onClick={() => handleDayClick(date)}
               >
                 <div
                   className={cn(
-                    "mb-1 text-right text-sm",
-                    isToday && "font-bold"
+                    "mb-1 text-right text-sm text-foreground",
+                    isToday && "font-bold text-primary",
                   )}
                 >
                   {format(date, "d")}
@@ -236,14 +238,14 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                   {dayLeaves.slice(0, 3).map(({ staff: s, leave }) => (
                     <div
                       key={leave.id}
-                      className="truncate rounded bg-red-100 px-1 py-0.5 text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                      className="truncate rounded bg-destructive/10 px-1 py-0.5 text-xs text-destructive"
                       title={`${s.name}${leave.note ? ` - ${leave.note}` : ""}`}
                     >
                       {s.name}
                     </div>
                   ))}
                   {dayLeaves.length > 3 && (
-                    <div className="text-muted-foreground text-xs">
+                    <div className="text-xs text-muted-foreground">
                       +{dayLeaves.length - 3} 人
                     </div>
                   )}
@@ -254,12 +256,12 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
         </div>
 
         {/* 圖例 */}
-        <div className="mt-4 flex items-center gap-4 border-t pt-4">
+        <div className="mt-4 flex items-center gap-4 border-t border-border/60 pt-4">
           <div className="flex items-center gap-2">
-            <div className="size-3 rounded bg-red-100 dark:bg-red-900/30" />
-            <span className="text-muted-foreground text-sm">休假</span>
+            <div className="size-3 rounded bg-destructive/10" />
+            <span className="text-sm text-muted-foreground">休假</span>
           </div>
-          <div className="text-muted-foreground text-sm">
+          <div className="text-sm text-muted-foreground">
             點擊日期可新增或移除休假
           </div>
         </div>
@@ -286,15 +288,17 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                   {selectedDateLeaves.map(({ staff: s, leave }) => (
                     <div
                       key={leave.id}
-                      className="flex items-center justify-between rounded-lg border p-2"
+                      className="flex items-center justify-between rounded-xl p-3 ring-1 ring-foreground/5"
                     >
                       <div>
-                        <span className="font-medium">{s.name}</span>
-                        <span className="text-muted-foreground ml-2 text-sm">
+                        <span className="font-medium text-foreground">
+                          {s.name}
+                        </span>
+                        <span className="ml-2 text-sm text-muted-foreground">
                           {STAFF_ROLES[s.role]}
                         </span>
                         {leave.note && (
-                          <span className="text-muted-foreground ml-2 text-sm">
+                          <span className="ml-2 text-sm text-muted-foreground">
                             ({leave.note})
                           </span>
                         )}
@@ -315,7 +319,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
 
             {/* 新增休假 */}
             {availableStaffForLeave.length > 0 && (
-              <div className="space-y-3 border-t pt-4">
+              <div className="space-y-3 border-t border-border/60 pt-4">
                 <Label>新增休假</Label>
                 <div className="grid gap-3">
                   <div className="grid gap-2">

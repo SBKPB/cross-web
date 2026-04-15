@@ -1,31 +1,43 @@
 "use client";
 
 import { Settings } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  lumaIconBadge,
+  lumaPageContainer,
+  lumaSectionDesc,
+  lumaSectionTitle,
+} from "@/lib/admin/luma-styles";
+import { useRequireSystemAdmin } from "@/lib/auth/use-require-system-admin";
 
 export default function AdminSettingsPage() {
+  useRequireSystemAdmin();
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">系統設定</h1>
-        <p className="text-muted-foreground text-sm">
-          調整系統參數與偏好設定
-        </p>
+    <div className={lumaPageContainer}>
+      <div className="space-y-1">
+        <h1 className={lumaSectionTitle}>系統設定</h1>
+        <p className={lumaSectionDesc}>調整系統參數與偏好設定</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <div className={lumaIconBadge}>
             <Settings className="size-5" />
-            系統設定
-          </CardTitle>
+          </div>
+          <CardTitle>開發中</CardTitle>
           <CardDescription>
-            此功能正在開發中，敬請期待。
+            未來將提供系統參數調整、通知設定、資料備份等功能
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-sm">
-            未來將提供系統參數調整、通知設定、資料備份等功能。
+          <p className="text-sm text-muted-foreground">
+            此功能正在開發中，敬請期待。
           </p>
         </CardContent>
       </Card>

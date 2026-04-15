@@ -187,6 +187,12 @@ export type ApiMedicalDepartment =
 // 付費類型
 export type PaymentType = "nhi" | "self_pay" | "both";
 
+// 訂閱方案
+export type SubscriptionPlan = "trial" | "basic" | "standard" | "premium";
+
+// 訂閱狀態
+export type SubscriptionStatus = "trial" | "active" | "suspended" | "cancelled";
+
 // 醫療單位（後端回傳格式）
 export interface MedicalFacility {
   id: string;
@@ -198,8 +204,23 @@ export interface MedicalFacility {
   business_hours: Record<string, { open: string; close: string; breaks?: BreakTime[] }> | null;
   slot_duration: number; // 預約時段間隔（分鐘）
   is_active: boolean;
+  // 訂閱資訊
+  subscription_plan: SubscriptionPlan;
+  subscription_status: SubscriptionStatus;
+  subscription_started_at: string | null;
+  subscription_expires_at: string | null;
+  subscription_notes: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+// 更新訂閱資訊（superadmin only）
+export interface FacilitySubscriptionUpdate {
+  subscription_plan?: SubscriptionPlan;
+  subscription_status?: SubscriptionStatus;
+  subscription_started_at?: string | null;
+  subscription_expires_at?: string | null;
+  subscription_notes?: string | null;
 }
 
 // 新增醫療單位
@@ -238,6 +259,8 @@ export interface ApiStaff {
   email: string | null;
   role: ApiStaffRole;
   is_active: boolean;
+  is_public_visible: boolean;
+  avatar_url: string | null;
   last_login: string | null;
   created_at: string;
   updated_at: string | null;
@@ -261,6 +284,7 @@ export interface ApiStaffCreate {
   phone?: string;
   email?: string;
   role: ApiStaffRole;
+  is_public_visible?: boolean;
 
   // 醫師專屬欄位
   department?: string;
@@ -282,6 +306,7 @@ export interface ApiStaffUpdate {
   email?: string;
   role?: ApiStaffRole;
   is_active?: boolean;
+  is_public_visible?: boolean;
 
   // 醫師專屬欄位
   department?: string;

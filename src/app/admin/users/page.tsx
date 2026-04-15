@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   PlusIcon,
   SearchIcon,
@@ -8,6 +8,7 @@ import {
   PencilIcon,
   ShieldIcon,
   Trash2Icon,
+  CalendarPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,20 @@ import {
   UserRoleDialog,
   UserDeleteDialog,
 } from "@/components/admin/users";
+import { RenewSubscriptionDialog } from "@/components/admin/clinics/renew-subscription-dialog";
+import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
+import { useRequireSystemAdmin } from "@/lib/auth/use-require-system-admin";
+import { isStaffRole } from "@/lib/auth/roles";
+import { cn } from "@/lib/utils";
+import {
+  lumaCardInner,
+  lumaPageContainer,
+  lumaSectionDesc,
+  lumaSectionTitle,
+  lumaTableHeader,
+  lumaTableRowHover,
+  lumaTableShell,
+} from "@/lib/admin/luma-styles";
 import { adminUsersApi } from "@/lib/api/admin/users";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import type {
@@ -37,6 +52,7 @@ import type {
 import type { MedicalFacility } from "@/types/clinic";
 
 export default function AdminUsersPage() {
+  useRequireSystemAdmin();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,21 +73,45 @@ export default function AdminUsersPage() {
   const [roleDialogUser, setRoleDialogUser] = useState<AdminUser | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [renewDialogOpen, setRenewDialogOpen] = useState(false);
+  const [renewFacility, setRenewFacility] = useState<MedicalFacility | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchUserRolesMap = useCallback(
+    async (userList: AdminUser[]): Promise<Record<string, Role[]>> => {
+      const map: Record<string, Role[]> = {};
+      await Promise.all(
+        userList.map(async (user) => {
+          try {
+            const perms: UserPermissions =
+              await adminUsersApi.getUserPermissions(user.id);
+            map[user.id] = perms.roles;
+          } catch {
+            map[user.id] = [];
+          }
+        }),
+      );
+      return map;
+    },
+    [],
+  );
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const data = await adminUsersApi.list();
+      // 串接 roles 一起載完才解除 loading，避免 empty state 閃現
+      const map = await fetchUserRolesMap(data);
       setUsers(data);
+      setUserRolesMap(map);
     } catch (err) {
       setError("無法載入使用者資料");
       console.error("Failed to fetch users:", err);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchUserRolesMap]);
 
   const fetchRolesAndFacilities = useCallback(async () => {
     try {
@@ -86,51 +126,38 @@ export default function AdminUsersPage() {
     }
   }, []);
 
-  const fetchUserRoles = useCallback(
-    async (userList: AdminUser[]) => {
-      const map: Record<string, Role[]> = {};
-      await Promise.all(
-        userList.map(async (user) => {
-          try {
-            const perms: UserPermissions =
-              await adminUsersApi.getUserPermissions(user.id);
-            map[user.id] = perms.roles;
-          } catch {
-            map[user.id] = [];
-          }
-        })
-      );
-      setUserRolesMap(map);
-    },
-    []
-  );
-
   useEffect(() => {
     fetchUsers();
     fetchRolesAndFacilities();
   }, [fetchUsers, fetchRolesAndFacilities]);
 
   useEffect(() => {
-    if (users.length > 0) {
-      fetchUserRoles(users);
-    }
-  }, [users, fetchUserRoles]);
+    // 只顯示「員工」帳號（含 superadmin / admin / facility_admin / facility_staff）
+    // 過濾掉 patient 與無角色帳號
+    const staffUsers = users.filter((user) => {
+      const userRoles = userRolesMap[user.id];
+      if (!userRoles) return false;
+      return userRoles.some((r) => isStaffRole(r.name));
+    });
 
-  useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredUsers(users);
+      setFilteredUsers(staffUsers);
     } else {
       const term = searchTerm.toLowerCase();
       setFilteredUsers(
-        users.filter((user) => user.email.toLowerCase().includes(term))
+        staffUsers.filter((user) => user.email.toLowerCase().includes(term)),
       );
     }
-  }, [users, searchTerm]);
+  }, [users, userRolesMap, searchTerm]);
+
+  const facilityMap = useMemo(
+    () => new Map(facilities.map((f) => [f.id, f])),
+    [facilities],
+  );
 
   const getFacilityName = (facilityId: string | null) => {
     if (!facilityId) return "—";
-    const facility = facilities.find((f) => f.id === facilityId);
-    return facility?.name || "未知";
+    return facilityMap.get(facilityId)?.name || "未知";
   };
 
   const formatDate = (dateStr: string) => {
@@ -139,6 +166,58 @@ export default function AdminUsersPage() {
       month: "2-digit",
       day: "2-digit",
     });
+  };
+
+  const renderSubscriptionCell = (facilityId: string | null) => {
+    if (!facilityId) {
+      return <span className="text-sm text-muted-foreground">—</span>;
+    }
+    const facility = facilityMap.get(facilityId);
+    if (!facility) {
+      return <span className="text-sm text-muted-foreground">—</span>;
+    }
+    const expiresIso = facility.subscription_expires_at;
+    const status = facility.subscription_status;
+
+    if (!expiresIso) {
+      return (
+        <Badge variant="outline">
+          {status === "trial" ? "試用中" : "未設定"}
+        </Badge>
+      );
+    }
+
+    const expiresDate = new Date(expiresIso);
+    const dateStr = formatDate(expiresIso);
+    const days = Math.ceil(
+      (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+
+    let hint: { label: string; variant: "secondary" | "outline" | "destructive" } | null =
+      null;
+    if (status === "suspended" || status === "cancelled") {
+      hint = {
+        label: status === "suspended" ? "已暫停" : "已取消",
+        variant: "destructive",
+      };
+    } else if (days < 0) {
+      hint = { label: `已過期 ${-days} 天`, variant: "destructive" };
+    } else if (days <= 7) {
+      hint = { label: `${days} 天後到期`, variant: "destructive" };
+    } else if (days <= 30) {
+      hint = { label: `${days} 天後到期`, variant: "outline" };
+    }
+
+    return (
+      <div className="space-y-1">
+        <div className="text-sm text-foreground">{dateStr}</div>
+        {hint && (
+          <Badge variant={hint.variant} className="text-xs">
+            {hint.label}
+          </Badge>
+        )}
+      </div>
+    );
   };
 
   // ========== 新增使用者 ==========
@@ -217,14 +296,31 @@ export default function AdminUsersPage() {
       await adminUsersApi.setUserRoles(roleDialogUser.id, roleIds);
       setRoleDialogOpen(false);
       setRoleDialogUser(null);
-      // 重新載入角色
-      await fetchUserRoles(users);
+      // 重新載入 user list（會一併刷新 userRolesMap）
+      await fetchUsers();
     } catch (err) {
       console.error("Failed to set roles:", err);
       throw err;
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // ========== 訂閱續約 ==========
+  const handleOpenRenew = (user: AdminUser) => {
+    if (!user.facility_id) return;
+    const facility = facilityMap.get(user.facility_id);
+    if (!facility) return;
+    setRenewFacility(facility);
+    setRenewDialogOpen(true);
+  };
+
+  const handleRenewed = (updated: MedicalFacility) => {
+    // 更新本地 facilities，這樣 renderSubscriptionCell 立即反映新到期日
+    setFacilities((prev) =>
+      prev.map((f) => (f.id === updated.id ? updated : f)),
+    );
+    setRenewFacility(null);
   };
 
   // ========== 刪除使用者 ==========
@@ -250,13 +346,11 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">使用者管理</h1>
-          <p className="text-muted-foreground text-sm">
-            管理系統使用者帳號、角色與權限
-          </p>
+    <div className={lumaPageContainer}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <h1 className={lumaSectionTitle}>使用者管理</h1>
+          <p className={lumaSectionDesc}>管理系統使用者帳號、角色與權限</p>
         </div>
         <Button onClick={handleOpenCreate}>
           <PlusIcon className="mr-2 size-4" />
@@ -265,61 +359,67 @@ export default function AdminUsersPage() {
       </div>
 
       {/* 搜尋 */}
-      <div className="relative mb-6">
-        <SearchIcon className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-        <Input
-          placeholder="搜尋電子信箱..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-9"
-        />
+      <div className={cn(lumaCardInner, "p-3")}>
+        <div className="relative">
+          <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="搜尋電子信箱..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-0 bg-transparent pl-9 shadow-none focus-visible:ring-0"
+          />
+        </div>
       </div>
 
       {/* 使用者列表 */}
       {error ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-destructive mb-2">{error}</p>
-          <Button variant="outline" onClick={fetchUsers}>
-            重試
-          </Button>
-        </div>
+        <AdminEmptyState
+          icon={UsersIcon}
+          title={error}
+          action={
+            <Button variant="outline" onClick={fetchUsers}>
+              重試
+            </Button>
+          }
+        />
       ) : isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="border-primary size-8 animate-spin rounded-full border-4 border-t-transparent" />
+          <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <UsersIcon className="text-muted-foreground mb-4 size-12" />
-          <p className="text-muted-foreground">尚無使用者資料</p>
-          <p className="text-muted-foreground mb-4 text-sm">
-            點擊「新增使用者」開始建立
-          </p>
-          <Button onClick={handleOpenCreate}>
-            <PlusIcon className="mr-2 size-4" />
-            新增使用者
-          </Button>
-        </div>
+        <AdminEmptyState
+          icon={UsersIcon}
+          title="尚無使用者資料"
+          description="點擊「新增使用者」開始建立"
+          action={
+            <Button onClick={handleOpenCreate}>
+              <PlusIcon className="mr-2 size-4" />
+              新增使用者
+            </Button>
+          }
+        />
       ) : (
-        <div className="rounded-md border">
+        <div className={lumaTableShell}>
           <Table>
-            <TableHeader>
+            <TableHeader className={lumaTableHeader}>
               <TableRow>
                 <TableHead>電子信箱</TableHead>
                 <TableHead>狀態</TableHead>
                 <TableHead>角色</TableHead>
                 <TableHead>所屬院所</TableHead>
+                <TableHead>訂閱到期</TableHead>
                 <TableHead>建立時間</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.email}</TableCell>
+                <TableRow key={user.id} className={lumaTableRowHover}>
+                  <TableCell className="font-medium text-foreground">
+                    {user.email}
+                  </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={user.is_active ? "default" : "secondary"}
-                    >
+                    <Badge variant={user.is_active ? "secondary" : "outline"}>
                       {user.is_active ? "啟用" : "停用"}
                     </Badge>
                   </TableCell>
@@ -332,19 +432,30 @@ export default function AdminUsersPage() {
                           </Badge>
                         ))
                       ) : (
-                        <span className="text-muted-foreground text-sm">
+                        <span className="text-sm text-muted-foreground">
                           無角色
                         </span>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>{getFacilityName(user.facility_id)}</TableCell>
+                  <TableCell>{renderSubscriptionCell(user.facility_id)}</TableCell>
                   <TableCell>{formatDate(user.created_at)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
+                      {user.facility_id && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleOpenRenew(user)}
+                          title="續約訂閱"
+                        >
+                          <CalendarPlus className="size-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-sm"
                         onClick={() => handleOpenEdit(user)}
                         title="編輯"
                       >
@@ -352,7 +463,7 @@ export default function AdminUsersPage() {
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-sm"
                         onClick={() => handleOpenRoles(user)}
                         title="角色管理"
                       >
@@ -360,7 +471,7 @@ export default function AdminUsersPage() {
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-sm"
                         onClick={() => handleOpenDelete(user)}
                         title="刪除"
                       >
@@ -402,6 +513,16 @@ export default function AdminUsersPage() {
         )}
         onConfirm={handleSetRoles}
         isLoading={isSubmitting}
+      />
+
+      <RenewSubscriptionDialog
+        open={renewDialogOpen}
+        onOpenChange={(open) => {
+          setRenewDialogOpen(open);
+          if (!open) setRenewFacility(null);
+        }}
+        facility={renewFacility}
+        onRenewed={handleRenewed}
       />
 
       <UserDeleteDialog

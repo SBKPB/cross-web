@@ -7,8 +7,6 @@ import {
   XIcon,
   ClockIcon,
   PencilIcon,
-  ChevronLeft,
-  ChevronRight,
   Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +14,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
+import { lumaCardHover, lumaDialogFooter } from "@/lib/admin/luma-styles";
 import {
   Dialog,
   DialogContent,
@@ -292,11 +292,14 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
             </SelectContent>
           </Select>
 
-          <div className="text-muted-foreground ml-auto text-sm">
+          <div className="ml-auto text-sm text-muted-foreground">
             共 {totalCount} 筆
             {statusCounts.confirmed > 0 && (
               <span className="ml-2 text-xs">
-                待處理 <span className="font-medium text-blue-600">{statusCounts.confirmed}</span>
+                待處理{" "}
+                <span className="font-medium text-primary">
+                  {statusCounts.confirmed}
+                </span>
               </span>
             )}
           </div>
@@ -304,7 +307,7 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
 
         {/* 自訂日期範圍 */}
         {showFilter && (
-          <div className="flex items-end gap-3 rounded-lg border bg-slate-50/50 p-3">
+          <div className="flex items-end gap-3 rounded-2xl bg-muted/40 p-3 ring-1 ring-foreground/5">
             <div className="grid gap-1.5">
               <Label className="text-xs">起始日期</Label>
               <Input
@@ -341,10 +344,10 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
               type="button"
               onClick={() => setSelectedDay(null)}
               className={cn(
-                "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                 selectedDay === null
                   ? "bg-primary text-primary-foreground"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  : "bg-muted text-muted-foreground hover:bg-muted/70",
               )}
             >
               全部 ({totalCount})
@@ -353,12 +356,14 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
               <button
                 key={group.date}
                 type="button"
-                onClick={() => setSelectedDay(group.date === selectedDay ? null : group.date)}
+                onClick={() =>
+                  setSelectedDay(group.date === selectedDay ? null : group.date)
+                }
                 className={cn(
-                  "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   selectedDay === group.date
                     ? "bg-primary text-primary-foreground"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    : "bg-muted text-muted-foreground hover:bg-muted/70",
                 )}
               >
                 {formatDateStr(group.date)} ({group.appointments.length})
@@ -371,15 +376,14 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
       {/* 載入中 */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
-          <div className="border-primary size-6 animate-spin rounded-full border-2 border-t-transparent" />
+          <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
         </div>
       ) : displayGroups.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-12">
-          <CalendarIcon className="text-muted-foreground mb-2 size-10" />
-          <p className="text-muted-foreground">
-            {formatDateStr(startDate)} ~ {formatDateStr(endDate)} 期間無預約
-          </p>
-        </Card>
+        <AdminEmptyState
+          icon={CalendarIcon}
+          title="期間無預約"
+          description={`${formatDateStr(startDate)} ~ ${formatDateStr(endDate)} 期間沒有任何預約`}
+        />
       ) : (
         <div className="space-y-6">
           {displayGroups.map((group) => (
@@ -400,26 +404,30 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
                 {group.appointments.map((apt) => (
                   <Card
                     key={apt.id}
-                    className="cursor-pointer p-4 transition-shadow hover:shadow-md"
+                    className={cn("cursor-pointer p-4", lumaCardHover)}
                     onClick={() => handleViewDetail(apt)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="text-primary shrink-0 text-center">
-                        <div className="text-lg font-bold">{formatTime(apt.appointment_time)}</div>
+                      <div className="shrink-0 text-center text-primary">
+                        <div className="text-lg font-bold">
+                          {formatTime(apt.appointment_time)}
+                        </div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{apt.patient_name}</span>
-                          <Badge variant={STATUS_COLORS[apt.status]} className="text-xs">
+                          <span className="font-medium text-foreground">
+                            {apt.patient_name}
+                          </span>
+                          <Badge variant={STATUS_COLORS[apt.status]}>
                             {STATUS_LABELS[apt.status]}
                           </Badge>
                         </div>
-                        <div className="text-muted-foreground mt-1 text-sm">
+                        <div className="mt-1 text-sm text-muted-foreground">
                           {apt.service_name || "未指定服務"}
                           {apt.staff_name && ` · ${apt.staff_name}`}
                         </div>
                       </div>
-                      <div className="text-muted-foreground shrink-0 text-sm">
+                      <div className="shrink-0 text-sm text-muted-foreground">
                         {apt.patient_phone}
                       </div>
                     </div>
@@ -469,54 +477,62 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-muted-foreground text-sm">患者姓名</div>
-                    <div className="font-medium">{selectedAppointment.patient_name}</div>
+                    <div className="text-sm text-muted-foreground">患者姓名</div>
+                    <div className="font-medium text-foreground">
+                      {selectedAppointment.patient_name}
+                    </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-sm">聯絡電話</div>
-                    <div className="font-medium">{selectedAppointment.patient_phone}</div>
+                    <div className="text-sm text-muted-foreground">聯絡電話</div>
+                    <div className="font-medium text-foreground">
+                      {selectedAppointment.patient_phone}
+                    </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-sm">預約日期</div>
-                    <div className="font-medium">
+                    <div className="text-sm text-muted-foreground">預約日期</div>
+                    <div className="font-medium text-foreground">
                       {formatDate(selectedAppointment.appointment_date)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-sm">預約時間</div>
-                    <div className="font-medium">
+                    <div className="text-sm text-muted-foreground">預約時間</div>
+                    <div className="font-medium text-foreground">
                       {formatTime(selectedAppointment.appointment_time)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-sm">狀態</div>
+                    <div className="text-sm text-muted-foreground">狀態</div>
                     <Badge variant={STATUS_COLORS[selectedAppointment.status]}>
                       {STATUS_LABELS[selectedAppointment.status]}
                     </Badge>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-sm">服務項目</div>
-                    <div className="font-medium">
+                    <div className="text-sm text-muted-foreground">服務項目</div>
+                    <div className="font-medium text-foreground">
                       {selectedAppointment.service_name || "未指定"}
                     </div>
                   </div>
                   {selectedAppointment.staff_name && (
                     <div className="col-span-2">
-                      <div className="text-muted-foreground text-sm">指定人員</div>
-                      <div className="font-medium">{selectedAppointment.staff_name}</div>
+                      <div className="text-sm text-muted-foreground">指定人員</div>
+                      <div className="font-medium text-foreground">
+                        {selectedAppointment.staff_name}
+                      </div>
                     </div>
                   )}
                   {selectedAppointment.notes && (
                     <div className="col-span-2">
-                      <div className="text-muted-foreground text-sm">備註</div>
-                      <div className="text-sm">{selectedAppointment.notes}</div>
+                      <div className="text-sm text-muted-foreground">備註</div>
+                      <div className="text-sm text-foreground">
+                        {selectedAppointment.notes}
+                      </div>
                     </div>
                   )}
                 </div>
               )}
             </div>
           )}
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
+          <DialogFooter className={cn("flex-col sm:flex-row", lumaDialogFooter)}>
             {isEditing ? (
               <>
                 <Button variant="outline" onClick={handleCancelEdit} disabled={isSubmitting}>

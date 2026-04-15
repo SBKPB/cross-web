@@ -13,11 +13,21 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ClinicFormDialog } from "@/components/admin/clinics";
+import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
+import { useRequireSystemAdmin } from "@/lib/auth/use-require-system-admin";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import {
   API_MEDICAL_DEPARTMENTS,
   PAYMENT_TYPES,
 } from "@/lib/constants/clinic-constants";
+import { cn } from "@/lib/utils";
+import {
+  lumaCardHover,
+  lumaCardInner,
+  lumaPageContainer,
+  lumaSectionDesc,
+  lumaSectionTitle,
+} from "@/lib/admin/luma-styles";
 import type {
   MedicalFacility,
   MedicalFacilityCreate,
@@ -25,6 +35,7 @@ import type {
 } from "@/types/clinic";
 
 export default function AdminClinicsPage() {
+  useRequireSystemAdmin();
   const router = useRouter();
   const [clinics, setClinics] = useState<MedicalFacility[]>([]);
   const [filteredClinics, setFilteredClinics] = useState<MedicalFacility[]>([]);
@@ -61,8 +72,8 @@ export default function AdminClinicsPage() {
         clinics.filter(
           (clinic) =>
             clinic.name.toLowerCase().includes(term) ||
-            clinic.address?.toLowerCase().includes(term)
-        )
+            clinic.address?.toLowerCase().includes(term),
+        ),
       );
     }
   }, [clinics, searchTerm]);
@@ -71,7 +82,9 @@ export default function AdminClinicsPage() {
     router.push(`/admin/clinics/${clinic.id}`);
   };
 
-  const handleCreate = async (data: MedicalFacilityCreate | MedicalFacilityUpdate) => {
+  const handleCreate = async (
+    data: MedicalFacilityCreate | MedicalFacilityUpdate,
+  ) => {
     setIsSubmitting(true);
     try {
       await adminClinicsApi.create(data as MedicalFacilityCreate);
@@ -86,13 +99,11 @@ export default function AdminClinicsPage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">院所管理</h1>
-          <p className="text-muted-foreground text-sm">
-            選擇院所進行設定，或新增院所
-          </p>
+    <div className={lumaPageContainer}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <h1 className={lumaSectionTitle}>院所管理</h1>
+          <p className={lumaSectionDesc}>選擇院所進行設定，或新增院所</p>
         </div>
         <Button onClick={() => setFormDialogOpen(true)}>
           <PlusIcon className="mr-2 size-4" />
@@ -100,73 +111,77 @@ export default function AdminClinicsPage() {
         </Button>
       </div>
 
-      {/* 搜尋 */}
-      <div className="relative mb-6">
-        <SearchIcon className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-        <Input
-          placeholder="搜尋院所名稱或地址..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-9"
-        />
+      <div className={cn(lumaCardInner, "p-3")}>
+        <div className="relative">
+          <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="搜尋院所名稱或地址..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-0 bg-transparent pl-9 shadow-none focus-visible:ring-0"
+          />
+        </div>
       </div>
 
-      {/* 院所列表 */}
       {error ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-destructive mb-2">{error}</p>
-          <Button variant="outline" onClick={fetchClinics}>
-            重試
-          </Button>
-        </div>
+        <AdminEmptyState
+          icon={BuildingIcon}
+          title={error}
+          action={
+            <Button variant="outline" onClick={fetchClinics}>
+              重試
+            </Button>
+          }
+        />
       ) : isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="border-primary size-8 animate-spin rounded-full border-4 border-t-transparent" />
+        <div className="flex items-center justify-center py-16">
+          <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
         </div>
       ) : filteredClinics.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <BuildingIcon className="text-muted-foreground mb-4 size-12" />
-          <p className="text-muted-foreground">尚無院所資料</p>
-          <p className="text-muted-foreground mb-4 text-sm">
-            點擊「新增院所」開始建立
-          </p>
-          <Button onClick={() => setFormDialogOpen(true)}>
-            <PlusIcon className="mr-2 size-4" />
-            新增院所
-          </Button>
-        </div>
+        <AdminEmptyState
+          icon={BuildingIcon}
+          title="尚無院所資料"
+          description="點擊「新增院所」開始建立"
+          action={
+            <Button onClick={() => setFormDialogOpen(true)}>
+              <PlusIcon className="mr-2 size-4" />
+              新增院所
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredClinics.map((clinic) => (
             <Card
               key={clinic.id}
-              className="cursor-pointer p-4 transition-shadow hover:shadow-md"
+              className={cn("cursor-pointer p-6", lumaCardHover)}
               onClick={() => handleClinicClick(clinic)}
             >
-              <div className="flex items-start justify-between">
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-semibold">{clinic.name}</h3>
-                  <p className="text-muted-foreground mt-1 text-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <h3 className="truncate text-base font-semibold text-foreground">
+                    {clinic.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
                     {API_MEDICAL_DEPARTMENTS[clinic.medical_department]}
                   </p>
                   {clinic.address && (
-                    <p className="text-muted-foreground mt-1 truncate text-sm">
+                    <p className="truncate text-sm text-muted-foreground">
                       {clinic.address}
                     </p>
                   )}
-                  <div className="mt-2 flex gap-2">
-                    <Badge variant="outline" className="text-xs">
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Badge variant="outline">
                       {PAYMENT_TYPES[clinic.payment_type]}
                     </Badge>
                     <Badge
-                      variant={clinic.is_active ? "default" : "secondary"}
-                      className="text-xs"
+                      variant={clinic.is_active ? "secondary" : "outline"}
                     >
                       {clinic.is_active ? "啟用" : "停用"}
                     </Badge>
                   </div>
                 </div>
-                <ChevronRightIcon className="text-muted-foreground size-5 shrink-0" />
+                <ChevronRightIcon className="size-5 shrink-0 text-muted-foreground" />
               </div>
             </Card>
           ))}

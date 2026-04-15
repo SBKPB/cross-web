@@ -8,8 +8,17 @@ import { Building2, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useAuth } from "@/lib/auth/auth-context";
+import { getAdminHomePath } from "@/lib/auth/roles";
+import { lumaIconBadge } from "@/lib/admin/luma-styles";
+import { cn } from "@/lib/utils";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -19,7 +28,6 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // 清除過期訊息（當使用者離開頁面或開始輸入時）
   useEffect(() => {
     return () => {
       clearSessionExpiredMessage();
@@ -32,8 +40,8 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      router.push("/admin");
+      const userData = await login(email, password);
+      router.push(getAdminHomePath(userData));
     } catch {
       setError("帳號或密碼錯誤");
     } finally {
@@ -42,26 +50,30 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <Link href="/" className="inline-flex items-center justify-center gap-2 mb-2">
-            <Building2 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+        <CardHeader className="items-center text-center">
+          <Link
+            href="/"
+            aria-label="返回首頁"
+            className={cn(lumaIconBadge, "size-14 self-center")}
+          >
+            <Building2 className="size-6" />
           </Link>
-          <CardTitle className="text-2xl">Console 登入</CardTitle>
+          <CardTitle className="mt-3 text-2xl">Console 登入</CardTitle>
           <CardDescription>請輸入管理員帳號密碼</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {sessionExpiredMessage && (
-              <div className="flex items-center gap-2 rounded-md bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                <AlertCircle className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 rounded-xl bg-muted p-3 text-sm text-muted-foreground ring-1 ring-border">
+                <AlertCircle className="size-4 shrink-0" />
                 <span>{sessionExpiredMessage}</span>
               </div>
             )}
 
             {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-600 dark:text-red-400">
+              <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
                 {error}
               </div>
             )}
@@ -95,7 +107,7 @@ export default function AdminLoginPage() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   登入中...
                 </>
               ) : (
@@ -107,7 +119,7 @@ export default function AdminLoginPage() {
           <div className="mt-4 text-center">
             <Link
               href="/"
-              className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              className="text-sm text-muted-foreground transition hover:text-foreground"
             >
               返回首頁
             </Link>

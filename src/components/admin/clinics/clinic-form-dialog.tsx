@@ -33,6 +33,8 @@ import {
   API_DEPARTMENT_OPTIONS,
   PAYMENT_TYPE_OPTIONS,
 } from "@/lib/constants/clinic-constants";
+import { lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { cn } from "@/lib/utils";
 
 interface ClinicFormDialogProps {
   open: boolean;
@@ -393,9 +395,14 @@ function ClinicFormContent({
             {WEEKDAYS.map((day) => {
               const hours = formData.business_hours[day.key];
               return (
-                <div key={day.key} className="rounded-lg border p-2">
+                <div
+                  key={day.key}
+                  className="rounded-xl p-3 ring-1 ring-foreground/5"
+                >
                   <div className="flex items-center gap-2">
-                    <span className="w-8 shrink-0 font-medium text-sm">{day.label}</span>
+                    <span className="w-8 shrink-0 text-sm font-medium text-foreground">
+                      {day.label}
+                    </span>
                     <Checkbox
                       id={`${day.key}-closed`}
                       checked={!hours.is_closed}
@@ -478,7 +485,7 @@ function ClinicFormContent({
         </TabsContent>
       </Tabs>
 
-      <DialogFooter className="mt-6">
+      <DialogFooter className={cn("mt-6", lumaDialogFooter)}>
         <Button
           type="button"
           variant="outline"

@@ -13,6 +13,7 @@ async function proxyRequest(req: NextRequest) {
     if (
       key === "host" ||
       key === "connection" ||
+      key === "content-length" ||
       key.startsWith("x-vercel") ||
       key.startsWith("x-forwarded")
     ) {
@@ -21,13 +22,19 @@ async function proxyRequest(req: NextRequest) {
     headers.set(key, value);
   }
 
+  // 對有 body 的請求先 buffer 成 ArrayBuffer，避免 ReadableStream
+  // 失去 content-length 導致 FastAPI multipart parser 拿不到資料
+  let body: ArrayBuffer | undefined;
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    body = await req.arrayBuffer();
+    headers.set("content-length", body.byteLength.toString());
+  }
+
   const response = await fetch(targetUrl, {
     method: req.method,
     headers,
-    body: req.method !== "GET" && req.method !== "HEAD" ? req.body : undefined,
+    body,
     redirect: "follow",
-    // @ts-expect-error -- Next.js extends fetch with duplex option
-    duplex: "half",
   });
 
   const responseHeaders = new Headers();

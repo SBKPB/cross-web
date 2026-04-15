@@ -1,10 +1,26 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { PlusIcon, PencilIcon, TrashIcon, BriefcaseIcon, CalendarOffIcon } from "lucide-react";
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  BriefcaseIcon,
+  CalendarOffIcon,
+  UsersIcon,
+  EyeIcon,
+  EyeOffIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
+import { StaffDetailDialog } from "@/components/admin/clinics/staff-detail-dialog";
+import { lumaCardHover, lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { cn } from "@/lib/utils";
+
+/** 哪些角色支援「點卡片看詳細」與學歷欄位 */
+const HAS_DETAIL_VIEW: ReadonlySet<string> = new Set(["doctor", "therapist"]);
 import {
   Dialog,
   DialogContent,
@@ -13,6 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,6 +62,8 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [servicesDialogOpen, setServicesDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [detailPerson, setDetailPerson] = useState<PersonnelData | null>(null);
 
   const fetchPersonnel = useCallback(async () => {
     setIsLoading(true);
@@ -91,21 +110,35 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
     setLeaveDialogOpen(true);
   };
 
-  const handleFormSubmit = async (data: ApiStaffCreate | ApiStaffUpdate) => {
+  const handleOpenDetail = (person: PersonnelData) => {
+    setDetailPerson(person);
+    setDetailDialogOpen(true);
+  };
+
+  const handleFormSubmit = async (
+    data: ApiStaffCreate | ApiStaffUpdate,
+  ): Promise<ApiStaff | null> => {
     setIsSubmitting(true);
     try {
-      if (selectedPerson) {
-        await adminClinicsApi.staff.update(facilityId, selectedPerson.id, data);
-      } else {
-        await adminClinicsApi.staff.create(facilityId, data as ApiStaffCreate);
-      }
-      setFormOpen(false);
-      await fetchPersonnel();
+      const saved = selectedPerson
+        ? await adminClinicsApi.staff.update(
+            facilityId,
+            selectedPerson.id,
+            data,
+          )
+        : await adminClinicsApi.staff.create(facilityId, data as ApiStaffCreate);
+      return saved;
     } catch (err) {
       console.error("Failed to save personnel:", err);
+      return null;
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleFormDone = async () => {
+    setFormOpen(false);
+    await fetchPersonnel();
   };
 
   const handleDeleteConfirm = async () => {
@@ -125,7 +158,7 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="border-primary size-6 animate-spin rounded-full border-2 border-t-transparent" />
+        <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
       </div>
     );
   }
@@ -134,7 +167,7 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold">人員列表</h2>
+          <h2 className="text-lg font-semibold text-foreground">人員列表</h2>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
             <SelectTrigger className="h-8 w-28">
               <SelectValue />
@@ -156,13 +189,17 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
       </div>
 
       {filteredPersonnel.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-8">
-          <p className="text-muted-foreground mb-2">尚無人員資料</p>
-          <Button size="sm" onClick={handleCreate}>
-            <PlusIcon className="mr-2 size-4" />
-            新增人員
-          </Button>
-        </Card>
+        <AdminEmptyState
+          icon={UsersIcon}
+          title="尚無人員資料"
+          description="新增人員開始管理"
+          action={
+            <Button size="sm" onClick={handleCreate}>
+              <PlusIcon className="mr-2 size-4" />
+              新增人員
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredPersonnel.map((person) => (
@@ -173,6 +210,7 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
               onDelete={handleDelete}
               onManageServices={handleManageServices}
               onManageLeave={handleManageLeave}
+              onOpenDetail={handleOpenDetail}
             />
           ))}
         </div>
@@ -181,8 +219,10 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
       <PersonnelFormDialog
         open={formOpen}
         onOpenChange={setFormOpen}
+        facilityId={facilityId}
         person={selectedPerson}
         onSubmit={handleFormSubmit}
+        onDone={handleFormDone}
         isLoading={isSubmitting}
       />
 
@@ -194,7 +234,7 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
               確定要刪除「{selectedPerson?.name}」嗎？
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className={lumaDialogFooter}>
             <Button variant="outline" onClick={() => setDeleteOpen(false)}>
               取消
             </Button>
@@ -222,6 +262,15 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
         facilityId={facilityId}
         staff={selectedPerson}
       />
+
+      <StaffDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={(open) => {
+          setDetailDialogOpen(open);
+          if (!open) setDetailPerson(null);
+        }}
+        staff={detailPerson}
+      />
     </div>
   );
 }
@@ -233,36 +282,91 @@ function PersonnelCard({
   onDelete,
   onManageServices,
   onManageLeave,
+  onOpenDetail,
 }: {
   person: PersonnelData;
   onEdit: (person: PersonnelData) => void;
   onDelete: (person: PersonnelData) => void;
   onManageServices: (person: PersonnelData) => void;
   onManageLeave: (person: PersonnelData) => void;
+  onOpenDetail: (person: PersonnelData) => void;
 }) {
   const isProfessional = ["doctor", "beautician", "therapist"].includes(person.role);
+  const hasDetailView = HAS_DETAIL_VIEW.has(person.role);
+
+  // 阻止 nested button 觸發 card click
+  const stop = (handler: () => void) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handler();
+  };
 
   return (
-    <Card key={person.id} className="p-4">
-      <div className="flex items-start justify-between">
+    <Card
+      key={person.id}
+      className={cn(
+        "p-5",
+        hasDetailView && cn("cursor-pointer", lumaCardHover),
+      )}
+      onClick={hasDetailView ? () => onOpenDetail(person) : undefined}
+    >
+      <div className="flex items-start gap-3">
+        {/* 頭像 */}
+        <div className="size-14 shrink-0 overflow-hidden rounded-2xl bg-muted ring-1 ring-foreground/5">
+          {person.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={person.avatar_url}
+              alt={person.name}
+              className="size-full object-cover"
+            />
+          ) : (
+            <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
+              {person.name.slice(0, 1)}
+            </div>
+          )}
+        </div>
+
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold">{person.name}</h3>
-            <Badge variant="outline" className="shrink-0 text-xs">
+            <h3 className="truncate font-semibold text-foreground">
+              {person.name}
+            </h3>
+            <Badge variant="outline" className="shrink-0">
               {STAFF_ROLES[person.role] || person.role}
             </Badge>
+            {/* 民眾端可見性圖示 */}
+            <span
+              className={cn(
+                "inline-flex shrink-0 items-center",
+                person.is_public_visible
+                  ? "text-primary"
+                  : "text-muted-foreground/60",
+              )}
+              title={
+                person.is_public_visible
+                  ? "民眾端顯示中"
+                  : "民眾端隱藏"
+              }
+            >
+              {person.is_public_visible ? (
+                <EyeIcon className="size-3.5" />
+              ) : (
+                <EyeOffIcon className="size-3.5" />
+              )}
+            </span>
           </div>
 
           {/* 專業人員資訊（醫師/美容師/治療師） */}
           {isProfessional && (
             <div className="mt-1 space-y-0.5">
-              {person.main_specialties && person.main_specialties.length > 0 && (
-                <p className="text-muted-foreground text-sm">
-                  專長: {person.main_specialties.join(", ")}
-                </p>
-              )}
+              {person.main_specialties &&
+                person.main_specialties.length > 0 && (
+                  <p className="line-clamp-1 text-sm text-muted-foreground">
+                    專長: {person.main_specialties.join(", ")}
+                  </p>
+                )}
               {person.experience && person.experience.length > 0 && (
-                <p className="text-muted-foreground text-xs">
+                <p className="line-clamp-1 text-xs text-muted-foreground">
                   經歷: {person.experience.join(", ")}
                 </p>
               )}
@@ -271,10 +375,10 @@ function PersonnelCard({
 
           {/* 聯絡資訊 */}
           {person.phone && (
-            <p className="text-muted-foreground mt-1 text-sm">{person.phone}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{person.phone}</p>
           )}
           {person.email && (
-            <p className="text-muted-foreground text-sm">{person.email}</p>
+            <p className="text-sm text-muted-foreground">{person.email}</p>
           )}
 
           {/* 服務/休假按鈕 */}
@@ -283,7 +387,7 @@ function PersonnelCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onManageServices(person)}
+                onClick={stop(() => onManageServices(person))}
               >
                 <BriefcaseIcon className="mr-1.5 size-3.5" />
                 服務
@@ -291,7 +395,7 @@ function PersonnelCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onManageLeave(person)}
+                onClick={stop(() => onManageLeave(person))}
               >
                 <CalendarOffIcon className="mr-1.5 size-3.5" />
                 休假
@@ -303,14 +407,14 @@ function PersonnelCard({
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => onEdit(person)}
+            onClick={stop(() => onEdit(person))}
           >
             <PencilIcon className="size-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => onDelete(person)}
+            onClick={stop(() => onDelete(person))}
           >
             <TrashIcon className="size-4" />
           </Button>
@@ -326,9 +430,19 @@ interface FormData {
   role: ApiStaffRole;
   phone: string;
   email: string;
+  // 民眾端可見性 + 頭像
+  is_public_visible: boolean;
+  avatar_url: string | null;
   // 專業人員欄位（醫師/美容師/治療師）
   main_specialties: string;
   experience: string;
+  // 醫師/治療師額外欄位
+  education: string;
+}
+
+/** 該角色預設是否在民眾端可見：只有 doctor 預設 true */
+function defaultVisibilityForRole(role: ApiStaffRole): boolean {
+  return role === "doctor";
 }
 
 function getInitialFormData(person: PersonnelData | null): FormData {
@@ -338,8 +452,11 @@ function getInitialFormData(person: PersonnelData | null): FormData {
       role: person.role,
       phone: person.phone || "",
       email: person.email || "",
+      is_public_visible: person.is_public_visible,
+      avatar_url: person.avatar_url,
       main_specialties: person.main_specialties?.join(", ") || "",
       experience: person.experience?.join("\n") || "",
+      education: person.education?.join("\n") || "",
     };
   }
   return {
@@ -347,25 +464,85 @@ function getInitialFormData(person: PersonnelData | null): FormData {
     role: "receptionist" as ApiStaffRole,
     phone: "",
     email: "",
+    is_public_visible: false,
+    avatar_url: null,
     main_specialties: "",
     experience: "",
+    education: "",
   };
 }
 
 // 表單內容（簡化版）
 function PersonnelFormContent({
+  facilityId,
   person,
   onOpenChange,
   onSubmit,
+  onDone,
   isLoading,
 }: {
+  facilityId: string;
   person: PersonnelData | null;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: ApiStaffCreate | ApiStaffUpdate) => Promise<void>;
+  onSubmit: (
+    data: ApiStaffCreate | ApiStaffUpdate,
+  ) => Promise<ApiStaff | null>;
+  onDone: () => void | Promise<void>;
   isLoading: boolean;
 }) {
   const isEditing = !!person;
   const [formData, setFormData] = useState(() => getInitialFormData(person));
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    person?.avatar_url || null,
+  );
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // 切換角色時，自動套用該角色的預設可見性（僅新增模式）
+  const handleRoleChange = (value: ApiStaffRole) => {
+    setFormData((p) => ({
+      ...p,
+      role: value,
+      // 編輯時不要覆蓋使用者已選的 visibility
+      is_public_visible: isEditing ? p.is_public_visible : defaultVisibilityForRole(value),
+    }));
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarError(null);
+
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("檔案不可超過 5MB");
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setAvatarError("僅支援 JPG / PNG / WebP");
+      return;
+    }
+
+    setPendingAvatarFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const uploadAvatarFor = async (staffId: string) => {
+    if (!pendingAvatarFile) return;
+    setIsUploadingAvatar(true);
+    try {
+      await adminClinicsApi.staff.uploadAvatar(
+        facilityId,
+        staffId,
+        pendingAvatarFile,
+      );
+    } catch (err) {
+      console.error("Avatar upload failed:", err);
+      setAvatarError("照片上傳失敗，但人員資料已儲存");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -375,6 +552,7 @@ function PersonnelFormContent({
       role: formData.role,
       phone: formData.phone || undefined,
       email: formData.email || undefined,
+      is_public_visible: formData.is_public_visible,
     };
 
     // 專業人員欄位（醫師/美容師/治療師）
@@ -390,11 +568,29 @@ function PersonnelFormContent({
       });
     }
 
-    await onSubmit(data);
+    // 學歷欄位只給支援詳細頁的角色（doctor / therapist）
+    if (HAS_DETAIL_VIEW.has(formData.role)) {
+      Object.assign(data, {
+        education: formData.education
+          ? formData.education.split("\n").filter(Boolean)
+          : [],
+      });
+    }
+
+    const saved = await onSubmit(data);
+    if (!saved) return;
+
+    // 有新照片要上傳 → 用剛拿到的 staff id 上傳
+    if (pendingAvatarFile) {
+      await uploadAvatarFor(saved.id);
+    }
+
+    await onDone();
   };
 
   // 專業人員才顯示額外欄位（醫師/美容師/治療師）
   const showProfessionalFields = ["doctor", "beautician", "therapist"].includes(formData.role);
+  const showEducation = HAS_DETAIL_VIEW.has(formData.role);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -419,11 +615,9 @@ function PersonnelFormContent({
             <Label htmlFor="role">角色 *</Label>
             <Select
               value={formData.role}
-              onValueChange={(value: ApiStaffRole) =>
-                setFormData((p) => ({ ...p, role: value }))
-              }
+              onValueChange={(value: ApiStaffRole) => handleRoleChange(value)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="role">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -434,6 +628,64 @@ function PersonnelFormContent({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </div>
+
+        {/* 照片上傳 + 可見性 */}
+        <div className="grid gap-3 rounded-2xl p-4 ring-1 ring-foreground/5">
+          <Label>照片與顯示設定</Label>
+          <div className="flex items-start gap-4">
+            <div className="size-20 shrink-0 overflow-hidden rounded-2xl bg-muted ring-1 ring-foreground/5">
+              {previewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewUrl}
+                  alt={formData.name || "avatar"}
+                  className="size-full object-cover"
+                />
+              ) : (
+                <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
+                  無照片
+                </div>
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <Input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarChange}
+                disabled={isUploadingAvatar}
+              />
+              <p className="text-xs text-muted-foreground">
+                JPG / PNG / WebP，最大 5MB · 自動轉檔 AVIF + 縮圖至 800px
+                {!isEditing && " · 儲存後自動上傳"}
+              </p>
+              {avatarError && (
+                <p className="text-xs text-destructive">{avatarError}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 pt-2">
+            <Checkbox
+              id="is_public_visible"
+              checked={formData.is_public_visible}
+              onCheckedChange={(checked) =>
+                setFormData((p) => ({
+                  ...p,
+                  is_public_visible: checked === true,
+                }))
+              }
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <Label htmlFor="is_public_visible" className="font-normal">
+                在民眾端顯示此人員
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                關閉後，此人員不會出現在民眾預約頁與診所詳情頁
+              </p>
+            </div>
           </div>
         </div>
 
@@ -489,8 +741,23 @@ function PersonnelFormContent({
             </div>
           </>
         )}
+
+        {showEducation && (
+          <div className="grid gap-2">
+            <Label htmlFor="education">學歷（每行一筆）</Label>
+            <Textarea
+              id="education"
+              value={formData.education}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, education: e.target.value }))
+              }
+              placeholder="台大醫學系&#10;北醫復健研究所"
+              rows={3}
+            />
+          </div>
+        )}
       </div>
-      <DialogFooter>
+      <DialogFooter className={lumaDialogFooter}>
         <Button
           type="button"
           variant="outline"
@@ -510,14 +777,20 @@ function PersonnelFormContent({
 function PersonnelFormDialog({
   open,
   onOpenChange,
+  facilityId,
   person,
   onSubmit,
+  onDone,
   isLoading,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  facilityId: string;
   person: PersonnelData | null;
-  onSubmit: (data: ApiStaffCreate | ApiStaffUpdate) => Promise<void>;
+  onSubmit: (
+    data: ApiStaffCreate | ApiStaffUpdate,
+  ) => Promise<ApiStaff | null>;
+  onDone: () => void | Promise<void>;
   isLoading: boolean;
 }) {
   return (
@@ -526,9 +799,11 @@ function PersonnelFormDialog({
         {open && (
           <PersonnelFormContent
             key={person?.id || "new"}
+            facilityId={facilityId}
             person={person}
             onOpenChange={onOpenChange}
             onSubmit={onSubmit}
+            onDone={onDone}
             isLoading={isLoading}
           />
         )}

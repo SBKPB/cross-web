@@ -61,13 +61,22 @@ function transformClinicData(found: any): Clinic {
         }))
     : undefined;
 
-  const members: Member[] | undefined = found.members?.map((s: { id: string; name: string; role: string; main_specialties?: string[] }) => ({
-    id: s.id,
-    name: s.name,
-    role: s.role as Member["role"],
-    specialties: s.main_specialties,
-    title: ROLE_NAMES[s.role] || s.role,
-  }));
+  const members: Member[] | undefined = found.members?.map(
+    (s: {
+      id: string;
+      name: string;
+      role: string;
+      main_specialties?: string[];
+      avatar_url?: string | null;
+    }) => ({
+      id: s.id,
+      name: s.name,
+      role: s.role as Member["role"],
+      specialties: s.main_specialties,
+      title: ROLE_NAMES[s.role] || s.role,
+      avatar: s.avatar_url || undefined,
+    }),
+  );
 
   const departments = found.departments?.length
     ? found.departments

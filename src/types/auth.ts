@@ -1,9 +1,22 @@
+// 使用者所屬院所概要（含訂閱狀態，供前端 banner 用）
+export interface FacilitySummary {
+  id: string;
+  name: string;
+  subscription_plan: "trial" | "basic" | "standard" | "premium";
+  subscription_status: "trial" | "active" | "suspended" | "cancelled";
+  subscription_started_at: string | null;
+  subscription_expires_at: string | null;
+}
+
 // 使用者資料
 export interface User {
   id: string;
   email: string;
   is_active: boolean;
   phone_number: string | null;
+  facility_id: string | null;
+  roles: string[];
+  facility: FacilitySummary | null;
   created_at: string;
   updated_at: string | null;
 }

@@ -2,19 +2,33 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { zhTW } from "date-fns/locale";
-import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
-import { DayPicker } from "react-day-picker";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  isSameDay,
+  parseISO,
+} from "date-fns";
+import { CalendarOff, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
+import {
+  lumaCardInner,
+  lumaDialogFooter,
+  lumaIconBadge,
+} from "@/lib/admin/luma-styles";
+import { cn } from "@/lib/utils";
 import type { ApiStaff, ApiStaffLeave } from "@/types/clinic";
 
 interface StaffLeaveDialogProps {
@@ -49,7 +63,7 @@ export function StaffLeaveDialog({
         {
           start_date: format(start, "yyyy-MM-dd"),
           end_date: format(end, "yyyy-MM-dd"),
-        }
+        },
       );
       setLeaves(data);
     } catch (err) {
@@ -87,8 +101,7 @@ export function StaffLeaveDialog({
         note: noteInput || undefined,
       });
       await fetchLeaves();
-      setSelectedDate(undefined);
-      setNoteInput("");
+      // 保留選取日期讓使用者看到剛建立的休假
     } catch (err) {
       console.error("Failed to add leave:", err);
     } finally {
@@ -105,7 +118,6 @@ export function StaffLeaveDialog({
     try {
       await adminClinicsApi.staffLeaves.delete(facilityId, staff.id, leave.id);
       await fetchLeaves();
-      setSelectedDate(undefined);
       setNoteInput("");
     } catch (err) {
       console.error("Failed to remove leave:", err);
@@ -115,106 +127,148 @@ export function StaffLeaveDialog({
   };
 
   const selectedLeave = selectedDate ? getLeaveForDate(selectedDate) : null;
-
-  // 取得所有休假日期作為修飾符
   const leaveDates = leaves.map((leave) => parseISO(leave.date));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>管理休假</DialogTitle>
-          <DialogDescription>
-            點擊日期設定「{staff?.name}」的休假日
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className={lumaIconBadge}>
+              <CalendarOff className="size-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <DialogTitle>管理休假</DialogTitle>
+              <DialogDescription>
+                {staff?.name
+                  ? `設定「${staff.name}」的休假日，本月共 ${leaves.length} 天`
+                  : "點擊日期設定休假"}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="border-primary size-6 animate-spin rounded-full border-2 border-t-transparent" />
+          <div className="flex items-center justify-center py-12">
+            <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
           </div>
         ) : (
           <div className="space-y-4">
-            <DayPicker
-              mode="single"
-              selected={selectedDate}
-              onSelect={handleDayClick}
-              month={currentMonth}
-              onMonthChange={setCurrentMonth}
-              locale={zhTW}
-              weekStartsOn={0}
-              modifiers={{
-                leave: leaveDates,
-              }}
-              modifiersClassNames={{
-                leave: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-              }}
-              classNames={{
-                root: "w-full",
-                months: "w-full",
-                month: "w-full space-y-4",
-                month_caption: "flex justify-center pt-1 relative items-center",
-                caption_label: "text-sm font-medium",
-                nav: "flex items-center gap-1",
-                button_previous: "absolute left-1 size-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center",
-                button_next: "absolute right-1 size-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center",
-                month_grid: "w-full border-collapse",
-                weekdays: "flex",
-                weekday: "text-muted-foreground w-9 font-normal text-xs",
-                week: "flex w-full mt-2",
-                day: "size-9 text-center text-sm p-0 relative",
-                day_button: "size-9 rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-                today: "bg-accent text-accent-foreground font-semibold",
-                outside: "text-muted-foreground opacity-50",
-                disabled: "text-muted-foreground opacity-50",
-              }}
-            />
+            <div className={cn(lumaCardInner, "flex justify-center p-2")}>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDayClick}
+                month={currentMonth}
+                onMonthChange={setCurrentMonth}
+                locale={zhTW}
+                weekStartsOn={0}
+                modifiers={{
+                  leave: leaveDates,
+                }}
+                modifiersClassNames={{
+                  leave:
+                    "[&>button]:bg-destructive/10 [&>button]:text-destructive [&>button]:font-semibold [&>button]:ring-1 [&>button]:ring-destructive/20",
+                }}
+                className="w-full"
+              />
+            </div>
 
+            {/* 圖例 */}
+            <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="size-3 rounded bg-destructive/10 ring-1 ring-destructive/20" />
+                <span>休假日</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="size-3 rounded bg-primary" />
+                <span>已選取</span>
+              </div>
+            </div>
+
+            {/* 選取日期面板 */}
             {selectedDate && (
-              <div className="space-y-3 border-t pt-4">
-                <p className="text-sm font-medium">
-                  {format(selectedDate, "yyyy/MM/dd (EEEE)", { locale: zhTW })}
-                </p>
+              <div className={lumaCardInner}>
+                <div className="mb-3 flex items-baseline justify-between">
+                  <p className="text-sm font-semibold text-foreground">
+                    {format(selectedDate, "yyyy/MM/dd", { locale: zhTW })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(selectedDate, "EEEE", { locale: zhTW })}
+                  </p>
+                </div>
 
                 {selectedLeave ? (
-                  <div className="space-y-2">
-                    <p className="text-muted-foreground text-sm">
-                      已設定休假{selectedLeave.note && `：${selectedLeave.note}`}
-                    </p>
+                  <div className="space-y-3">
+                    <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
+                      <p className="font-medium">已設定為休假日</p>
+                      {selectedLeave.note && (
+                        <p className="mt-1 text-xs opacity-80">
+                          備註：{selectedLeave.note}
+                        </p>
+                      )}
+                    </div>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={handleRemoveLeave}
                       disabled={isSaving}
+                      className="w-full"
                     >
+                      <Trash2 className="mr-1.5 size-4" />
                       {isSaving ? "處理中..." : "移除休假"}
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="grid gap-2">
-                      <Label htmlFor="leave-note">備註（選填）</Label>
+                      <Label htmlFor="leave-note" className="text-xs">
+                        備註（選填）
+                      </Label>
                       <Input
                         id="leave-note"
                         value={noteInput}
                         onChange={(e) => setNoteInput(e.target.value)}
-                        placeholder="例：特休、病假"
+                        placeholder="例：特休、病假、進修"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !isSaving) {
+                            e.preventDefault();
+                            handleAddLeave();
+                          }
+                        }}
                       />
                     </div>
                     <Button
                       size="sm"
                       onClick={handleAddLeave}
                       disabled={isSaving}
+                      className="w-full"
                     >
+                      <CalendarOff className="mr-1.5 size-4" />
                       {isSaving ? "處理中..." : "設定休假"}
                     </Button>
                   </div>
                 )}
               </div>
             )}
+
+            {!selectedDate && (
+              <p className="text-center text-xs text-muted-foreground">
+                點擊日曆中的日期以設定或移除休假
+              </p>
+            )}
           </div>
         )}
+
+        <DialogFooter className={lumaDialogFooter}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            完成
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

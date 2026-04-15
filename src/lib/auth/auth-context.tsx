@@ -12,7 +12,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   sessionExpiredMessage: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -83,20 +83,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshUser]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     // 清除過期訊息
     setSessionExpiredMessage(null);
     const tokens = await authApi.login(email, password);
     localStorage.setItem("access_token", tokens.access_token);
     localStorage.setItem("refresh_token", tokens.refresh_token);
-    await refreshUser();
-    router.push("/");
+    const userData = await authApi.me();
+    setUser(userData);
+    return userData;
   };
 
   const register = async (email: string, password: string) => {
     await authApi.register({ email, password });
-    // 註冊成功後自動登入
+    // 註冊成功後自動登入並導向民眾端首頁
     await login(email, password);
+    router.push("/");
   };
 
   const logout = () => {

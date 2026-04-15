@@ -3,6 +3,7 @@ import type {
   MedicalFacility,
   MedicalFacilityCreate,
   MedicalFacilityUpdate,
+  FacilitySubscriptionUpdate,
   ApiStaff,
   ApiStaffCreate,
   ApiStaffUpdate,
@@ -34,6 +35,11 @@ export const adminClinicsApi = {
     api.patch<MedicalFacility>(`${BASE_PATH}/${id}`, data),
 
   delete: (id: string) => api.delete<void>(`${BASE_PATH}/${id}`),
+
+  // ========== 訂閱（superadmin only） ==========
+
+  updateSubscription: (id: string, data: FacilitySubscriptionUpdate) =>
+    api.patch<MedicalFacility>(`${BASE_PATH}/${id}/subscription`, data),
 
   // ========== 單位設定 ==========
 
@@ -70,6 +76,15 @@ export const adminClinicsApi = {
 
     delete: (facilityId: string, staffId: string) =>
       api.delete<void>(`${BASE_PATH}/${facilityId}/staff/${staffId}`),
+
+    uploadAvatar: (facilityId: string, staffId: string, file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      return api.post<ApiStaff>(
+        `${BASE_PATH}/${facilityId}/staff/${staffId}/avatar`,
+        formData,
+      );
+    },
   },
 
   // ========== 服務項目 ==========

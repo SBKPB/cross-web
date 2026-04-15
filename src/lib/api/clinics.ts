@@ -108,9 +108,15 @@ function transformClinic(backendClinic: BackendClinic): Clinic {
 export const clinicsApi = {
   /**
    * 取得所有診所列表
+   *
+   * 用 no-store 避免 Next.js fetch cache 在 SSR 階段回舊資料；
+   * page-level `revalidate` 仍然控制 ISR 頻率。
    */
   getClinics: async (): Promise<Clinic[]> => {
-    const backendClinics = await api.get<BackendClinic[]>("/api/v1/booking/clinics");
+    const backendClinics = await api.get<BackendClinic[]>(
+      "/api/v1/booking/clinics",
+      { cache: "no-store" },
+    );
     return backendClinics.map(transformClinic);
   },
 

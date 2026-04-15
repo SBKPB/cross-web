@@ -287,12 +287,13 @@ export const FACILITY_TYPE_OPTIONS = [
  * - 有美容師 / 治療師 → aesthetic
  * - 否則 → healthcare（自費暫無法從現有欄位判斷，等後端支援）
  */
-export function deriveFacilityType(members: Member[] | undefined): FacilityType {
-  if (!members || members.length === 0) return "healthcare";
-  const hasAestheticMember = members.some(
-    (m) => m.role === "beautician" || m.role === "therapist",
-  );
-  return hasAestheticMember ? "aesthetic" : "healthcare";
+export function deriveFacilityType(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _members: Member[] | undefined,
+): FacilityType {
+  // 後端已有 facility_type 欄位，此 fallback 僅在後端漏回時用，
+  // 永遠回 healthcare 最安全（不依職業身分臆測，避免治療師被誤判為醫美）
+  return "healthcare";
 }
 
 // ========== 熱門搜尋（Hero chips） ==========

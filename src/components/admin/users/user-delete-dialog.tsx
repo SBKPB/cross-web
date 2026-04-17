@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { lumaDialogFooter } from "@/lib/styles/luma";
 import type { AdminUser } from "@/types/user";
 
 interface UserDeleteDialogProps {

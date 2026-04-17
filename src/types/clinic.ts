@@ -41,45 +41,6 @@ export type MedicalDepartment =
   | "dentistry" // 牙科
   | "chinese_medicine"; // 中醫科
 
-// 醫生
-/** @deprecated 改用 Member */
-export interface Doctor {
-  id: string;
-  name: string;
-  title: string; // 職稱：主治醫師、主任醫師等
-  department: MedicalDepartment;
-  specialties: string[]; // 專長
-  education: string; // 學歷
-  experience: string; // 經歷
-  avatar?: string;
-}
-
-// 職員角色
-/** @deprecated 改用 MemberRole */
-export type StaffRole = "nurse" | "receptionist" | "admin" | "assistant";
-
-// 職員
-/** @deprecated 改用 Member */
-export interface Staff {
-  id: string;
-  name: string;
-  role: StaffRole;
-  title: string;
-  avatar?: string;
-}
-
-// 美容師
-/** @deprecated 改用 Member */
-export interface Beautician {
-  id: string;
-  name: string;
-  title: string; // 職稱：資深美容師、美容顧問等
-  specialties: string[]; // 專長項目
-  certifications: string[]; // 證照
-  experience_years: number;
-  avatar?: string;
-}
-
 // 人員（統一管理醫師、職員、美容師）
 export interface Member {
   id: string;
@@ -141,12 +102,6 @@ export interface Clinic {
   rating?: number;
   review_count?: number;
   members?: Member[]; // 統一的人員列表
-  /** @deprecated 改用 members 篩選 role === "doctor" */
-  doctors?: Doctor[];
-  /** @deprecated 改用 members */
-  staff?: Staff[];
-  /** @deprecated 改用 members 篩選 role === "beautician" */
-  beauticians?: Beautician[];
   services?: Service[];
   business_hours?: BusinessHours[];
   images?: string[];

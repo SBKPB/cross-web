@@ -33,7 +33,7 @@ import {
   API_DEPARTMENT_OPTIONS,
   PAYMENT_TYPE_OPTIONS,
 } from "@/lib/constants/clinic-constants";
-import { lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { lumaDialogFooter } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 
 interface ClinicFormDialogProps {

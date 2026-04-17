@@ -26,7 +26,7 @@ import {
   requiresFacility,
   STAFF_ROLE_NAMES,
 } from "@/lib/auth/roles";
-import { lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { lumaDialogFooter } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 import type {
   AdminUser,

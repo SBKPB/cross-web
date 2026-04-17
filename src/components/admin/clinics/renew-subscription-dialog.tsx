@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
-import { lumaDialogFooter, lumaIconBadge } from "@/lib/admin/luma-styles";
+import { lumaDialogFooter, lumaIconBadge } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 import type { MedicalFacility } from "@/types/clinic";
 

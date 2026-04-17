@@ -27,7 +27,7 @@ import {
   lumaPageContainer,
   lumaSectionDesc,
   lumaSectionTitle,
-} from "@/lib/admin/luma-styles";
+} from "@/lib/styles/luma";
 import type {
   MedicalFacility,
   MedicalFacilityCreate,

@@ -10,7 +10,7 @@ import {
   lumaPageContainer,
   lumaSectionDesc,
   lumaSectionTitle,
-} from "@/lib/admin/luma-styles";
+} from "@/lib/styles/luma";
 import type { MedicalFacility } from "@/types/clinic";
 
 export default function MySubscriptionPage() {

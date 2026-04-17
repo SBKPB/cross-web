@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { useBooking, useBookingDispatch } from "@/lib/booking/booking-context";
+import { useBooking, useBookingDispatch } from "@/components/booking/booking-context";
 import { GENDER_OPTIONS } from "@/lib/constants/booking-constants";
 import { cn } from "@/lib/utils";
 

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { STAFF_ROLES } from "@/lib/constants/clinic-constants";
-import { lumaIconBadge } from "@/lib/admin/luma-styles";
+import { lumaIconBadge } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 import type { ApiStaff } from "@/types/clinic";
 

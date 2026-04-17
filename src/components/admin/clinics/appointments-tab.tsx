@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
-import { lumaCardHover, lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { lumaCardHover, lumaDialogFooter } from "@/lib/styles/luma";
 import {
   Dialog,
   DialogContent,

@@ -5,7 +5,7 @@ import { PlusIcon, PencilIcon, TrashIcon, BriefcaseIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
-import { lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { lumaDialogFooter } from "@/lib/styles/luma";
 import {
   Dialog,
   DialogContent,

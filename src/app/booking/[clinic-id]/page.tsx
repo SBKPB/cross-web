@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { BookingProvider } from "@/lib/booking/booking-context";
+import { BookingProvider } from "@/components/booking/booking-context";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import { BookingError } from "@/components/booking/booking-error";
 import { bookingApi } from "@/lib/api/booking";

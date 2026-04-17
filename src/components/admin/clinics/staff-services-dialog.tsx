@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { lumaDialogFooter } from "@/lib/styles/luma";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import type { ApiStaff, ApiService, ApiStaffService } from "@/types/clinic";
 

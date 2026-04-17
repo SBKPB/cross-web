@@ -13,7 +13,7 @@ import {
   lumaPageContainer,
   lumaSectionDesc,
   lumaSectionTitle,
-} from "@/lib/admin/luma-styles";
+} from "@/lib/styles/luma";
 import { useRequireSystemAdmin } from "@/lib/auth/use-require-system-admin";
 
 export default function AdminSettingsPage() {

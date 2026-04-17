@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useBooking, useBookingDispatch } from "@/lib/booking/booking-context";
+import { useRouter, usePathname } from "next/navigation";
+import { useBooking, useBookingDispatch } from "@/components/booking/booking-context";
+import { useAuth } from "@/lib/auth/auth-context";
 import { bookingApi } from "@/lib/api/booking";
 import type {
   ClinicConfig,
@@ -10,6 +11,7 @@ import type {
   DoctorOption,
   BookableDate,
 } from "@/types/booking";
+import type { MemberPatientRead } from "@/types/member-patient";
 
 import { ClinicHeader } from "./clinic-header";
 import { BookingStepper } from "./booking-stepper";
@@ -18,6 +20,7 @@ import { DoctorSelector } from "./doctor-selector";
 import { DatePicker } from "./date-picker";
 import { TimeSlotGrid } from "./time-slot-grid";
 import { BookingForm } from "./booking-form";
+import { PatientSelector } from "@/components/patient/patient-selector";
 import { StickySubmitButton } from "./sticky-submit-button";
 
 interface BookingFlowProps {
@@ -34,6 +37,8 @@ export function BookingFlow({
   doctors,
 }: BookingFlowProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { selection, formData, currentStep } = useBooking();
   const dispatch = useBookingDispatch();
 
@@ -42,6 +47,16 @@ export function BookingFlow({
   const [slotsError, setSlotsError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const [selectedPatient, setSelectedPatient] = useState<MemberPatientRead | null>(null);
+
+  // 未登入 → 先去 /auth 登入，登入完自動回來
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      router.replace(`/auth?next=${encodeURIComponent(pathname)}`);
+    }
+  }, [authLoading, isAuthenticated, router, pathname]);
 
   const primaryColor = clinicConfig.primary_color;
 
@@ -80,16 +95,13 @@ export function BookingFlow({
         return (
           selection.date !== null &&
           selection.timeSlot !== null &&
-          formData.name.trim() !== "" &&
-          formData.gender !== null &&
-          formData.birthDate !== "" &&
-          formData.phone.trim() !== "" &&
+          selectedPatient !== null &&
           formData.privacyAccepted
         );
       default:
         return false;
     }
-  }, [currentStep, selection, formData]);
+  }, [currentStep, selection, formData, selectedPatient]);
 
   // 下一步按鈕文字
   const nextButtonLabel = useMemo(() => {
@@ -111,7 +123,7 @@ export function BookingFlow({
 
     if (currentStep === 3) {
       // 送出預約
-      if (!selection.service || !selection.date || !selection.timeSlot || !formData.gender) {
+      if (!selection.service || !selection.date || !selection.timeSlot || !selectedPatient) {
         return;
       }
 
@@ -120,14 +132,11 @@ export function BookingFlow({
       try {
         const response = await bookingApi.createBooking({
           clinic_id: clinicId,
+          member_patient_id: selectedPatient.id,
           service_id: selection.service.id,
           doctor_id: selection.doctor?.id ?? null,
           appointment_date: selection.date,
           appointment_time: selection.timeSlot.time,
-          patient_name: formData.name,
-          patient_gender: formData.gender,
-          patient_birth_date: formData.birthDate,
-          patient_phone: formData.phone,
           notes: formData.notes || undefined,
         });
 
@@ -142,7 +151,7 @@ export function BookingFlow({
     } else {
       dispatch({ type: "NEXT_STEP" });
     }
-  }, [canProceed, currentStep, clinicId, selection, formData, dispatch, router]);
+  }, [canProceed, currentStep, clinicId, selection, formData, selectedPatient, dispatch, router]);
 
   // 處理返回上一步
   const handleStepClick = useCallback(
@@ -153,6 +162,15 @@ export function BookingFlow({
     },
     [currentStep, dispatch]
   );
+
+  // 未登入或 loading → 顯示 loading（等 redirect 完成）
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background pb-28">
@@ -252,6 +270,15 @@ export function BookingFlow({
               </>
             )}
 
+            {/* 看診對象選擇 */}
+            <div className="border-t border-border/60 px-4 pt-6">
+              <PatientSelector
+                selectedId={selectedPatient?.id || null}
+                onSelect={setSelectedPatient}
+              />
+            </div>
+
+            {/* 備註 + 隱私同意 */}
             <div className="border-t border-border/60 pt-6">
               <BookingForm primaryColor={primaryColor} />
             </div>

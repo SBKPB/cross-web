@@ -16,7 +16,7 @@ import {
   lumaTableHeader,
   lumaTableRowHover,
   lumaTableShell,
-} from "@/lib/admin/luma-styles";
+} from "@/lib/styles/luma";
 import type { MedicalFacility } from "@/types/clinic";
 import {
   API_MEDICAL_DEPARTMENTS,

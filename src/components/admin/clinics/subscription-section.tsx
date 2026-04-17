@@ -27,7 +27,7 @@ import {
 import { useAuth } from "@/lib/auth/auth-context";
 import { isSystemAdmin } from "@/lib/auth/roles";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
-import { lumaDialogFooter, lumaIconBadge } from "@/lib/admin/luma-styles";
+import { lumaDialogFooter, lumaIconBadge } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 import type {
   MedicalFacility,

@@ -31,7 +31,7 @@ import {
   lumaSectionTitle,
   lumaTabsList,
   lumaTabsTrigger,
-} from "@/lib/admin/luma-styles";
+} from "@/lib/styles/luma";
 import type { MedicalFacility, MedicalFacilityUpdate } from "@/types/clinic";
 
 export default function ClinicDetailPage() {

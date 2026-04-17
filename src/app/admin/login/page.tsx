@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAdminHomePath } from "@/lib/auth/roles";
-import { lumaIconBadge } from "@/lib/admin/luma-styles";
+import { lumaIconBadge } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 
 export default function AdminLoginPage() {

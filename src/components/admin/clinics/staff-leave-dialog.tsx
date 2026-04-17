@@ -27,7 +27,7 @@ import {
   lumaCardInner,
   lumaDialogFooter,
   lumaIconBadge,
-} from "@/lib/admin/luma-styles";
+} from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 import type { ApiStaff, ApiStaffLeave } from "@/types/clinic";
 

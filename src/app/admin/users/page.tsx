@@ -39,7 +39,7 @@ import {
   lumaTableHeader,
   lumaTableRowHover,
   lumaTableShell,
-} from "@/lib/admin/luma-styles";
+} from "@/lib/styles/luma";
 import { adminUsersApi } from "@/lib/api/admin/users";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import type {

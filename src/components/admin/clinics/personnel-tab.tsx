@@ -16,7 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
 import { StaffDetailDialog } from "@/components/admin/clinics/staff-detail-dialog";
-import { lumaCardHover, lumaDialogFooter } from "@/lib/admin/luma-styles";
+import { lumaCardHover, lumaDialogFooter } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 
 /** 哪些角色支援「點卡片看詳細」與學歷欄位 */

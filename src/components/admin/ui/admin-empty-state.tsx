@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import type { LucideProps } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { lumaIconBadge } from "@/lib/admin/luma-styles";
+import { lumaIconBadge } from "@/lib/styles/luma";
 
 interface AdminEmptyStateProps {
   icon: ComponentType<LucideProps>;

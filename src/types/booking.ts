@@ -66,14 +66,11 @@ export interface BookingFormData {
 
 export interface BookingRequest {
   clinic_id: string;
+  member_patient_id: string;
   service_id: string;
   doctor_id: string | null;
   appointment_date: string;
   appointment_time: string;
-  patient_name: string;
-  patient_gender: Gender;
-  patient_birth_date: string;
-  patient_phone: string;
   notes?: string;
 }
 
@@ -97,5 +94,4 @@ export interface BookingResponse {
   appointment_datetime: string;
   patient_name: string;
   patient_phone?: string;
-  bind_token?: string;
 }

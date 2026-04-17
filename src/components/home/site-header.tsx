@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Building2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AuthButton } from "@/components/home/auth-button";
 
 export function SiteHeader() {
   return (
@@ -28,6 +29,7 @@ export function SiteHeader() {
           >
             <Link href="/admin">診所登入</Link>
           </Button>
+          <AuthButton />
         </nav>
       </div>
     </header>

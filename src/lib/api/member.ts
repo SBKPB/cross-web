@@ -1,11 +1,5 @@
 import { api } from "./client";
 
-export interface GoogleAuthRequest {
-  id_token: string;
-  phone?: string;
-  bind_token?: string;
-}
-
 export interface MemberAuthResponse {
   access_token: string;
   refresh_token: string;
@@ -13,7 +7,18 @@ export interface MemberAuthResponse {
   is_new_user: boolean;
 }
 
+const MEMBER_PREFIX = "/api/v1/member";
+
 export const memberApi = {
-  googleAuth: (data: GoogleAuthRequest) =>
-    api.post<MemberAuthResponse>("/api/v1/member/google", data),
+  googleAuth: (idToken: string, phone?: string) =>
+    api.post<MemberAuthResponse>(`${MEMBER_PREFIX}/google`, {
+      id_token: idToken,
+      phone: phone || undefined,
+    }),
+
+  appleAuth: (idToken: string, userName?: string) =>
+    api.post<MemberAuthResponse>(`${MEMBER_PREFIX}/apple`, {
+      id_token: idToken,
+      user_name: userName || undefined,
+    }),
 };

@@ -17,6 +17,8 @@ export interface User {
   facility_id: string | null;
   roles: string[];
   facility: FacilitySummary | null;
+  display_name: string | null;
+  last_booked_member_patient_id: string | null;
   created_at: string;
   updated_at: string | null;
 }

@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
+import { memberApi } from "@/lib/api/member";
 import { onTokenExpired } from "@/lib/auth/auth-events";
 import { SessionExpiredDialog } from "@/components/auth/session-expired-dialog";
 import type { User } from "@/types/auth";
@@ -13,6 +14,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   sessionExpiredMessage: string | null;
   login: (email: string, password: string) => Promise<User>;
+  loginWithGoogle: (idToken: string) => Promise<User>;
+  loginWithApple: (idToken: string, userName?: string) => Promise<User>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -94,6 +97,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return userData;
   };
 
+  const loginWithGoogle = async (idToken: string): Promise<User> => {
+    setSessionExpiredMessage(null);
+    const tokens = await memberApi.googleAuth(idToken);
+    localStorage.setItem("access_token", tokens.access_token);
+    localStorage.setItem("refresh_token", tokens.refresh_token);
+    const userData = await authApi.me();
+    setUser(userData);
+    return userData;
+  };
+
+  const loginWithApple = async (
+    idToken: string,
+    userName?: string,
+  ): Promise<User> => {
+    setSessionExpiredMessage(null);
+    const tokens = await memberApi.appleAuth(idToken, userName);
+    localStorage.setItem("access_token", tokens.access_token);
+    localStorage.setItem("refresh_token", tokens.refresh_token);
+    const userData = await authApi.me();
+    setUser(userData);
+    return userData;
+  };
+
   const register = async (email: string, password: string) => {
     await authApi.register({ email, password });
     // 註冊成功後自動登入並導向民眾端首頁
@@ -122,6 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         sessionExpiredMessage,
         login,
+        loginWithGoogle,
+        loginWithApple,
         register,
         logout,
         refreshUser,

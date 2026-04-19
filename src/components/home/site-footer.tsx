@@ -40,9 +40,14 @@ export function SiteFooter() {
               </h4>
               <ul className="space-y-1.5 text-muted-foreground">
                 <li>
-                  <Link href="/privacy" className="hover:text-primary">
-                    隱私政策
-                  </Link>
+                  <a
+                    href="https://blog.twinhao.com/5nilhs02DalcM7"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary"
+                  >
+                    隱私權政策
+                  </a>
                 </li>
                 <li>
                   <Link href="/terms" className="hover:text-primary">

@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isLoading, loginWithGoogle } = useAuth();
+  const { isAuthenticated, isLoading, loginWithGoogle, loginWithApple } = useAuth();
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,6 +39,19 @@ function AuthContent() {
     setIsSubmitting(true);
     try {
       await loginWithGoogle(idToken);
+      router.push(nextUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "登入失敗，請稍後再試");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleSuccess = async (idToken: string, userName?: string) => {
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await loginWithApple(idToken, userName);
       router.push(nextUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "登入失敗，請稍後再試");
@@ -81,9 +94,8 @@ function AuthContent() {
           />
 
           <AppleSignInButton
-            onClick={() =>
-              setError("Apple 登入尚未設定，請使用 Google 登入")
-            }
+            onSuccess={handleAppleSuccess}
+            onError={(msg) => setError(msg ?? "Apple 登入失敗，請重試")}
             disabled={isSubmitting}
           />
 

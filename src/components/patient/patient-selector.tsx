@@ -28,8 +28,13 @@ export function PatientSelector({
   onSelect,
   className,
 }: PatientSelectorProps) {
-  const { user, isAuthenticated, isLoading: authLoading, loginWithGoogle } =
-    useAuth();
+  const {
+    user,
+    isAuthenticated,
+    isLoading: authLoading,
+    loginWithGoogle,
+    loginWithApple,
+  } = useAuth();
   const [patients, setPatients] = useState<MemberPatientRead[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -79,6 +84,20 @@ export function PatientSelector({
     }
   };
 
+  const handleAppleLogin = async (idToken: string, userName?: string) => {
+    setLoginError("");
+    setIsLoggingIn(true);
+    try {
+      await loginWithApple(idToken, userName);
+    } catch (err) {
+      setLoginError(
+        err instanceof Error ? err.message : "登入失敗，請稍後再試",
+      );
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
   const handleCreated = (newPatient: MemberPatientRead) => {
     setPatients((prev) => [...prev, newPatient]);
     onSelect(newPatient);
@@ -113,9 +132,8 @@ export function PatientSelector({
               disabled={isLoggingIn}
             />
             <AppleSignInButton
-              onClick={() =>
-                setLoginError("Apple 登入尚未設定，請使用 Google 登入")
-              }
+              onSuccess={handleAppleLogin}
+              onError={(msg) => setLoginError(msg ?? "Apple 登入失敗")}
               disabled={isLoggingIn}
             />
           </div>

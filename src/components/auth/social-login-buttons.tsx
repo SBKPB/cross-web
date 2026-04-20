@@ -1,8 +1,13 @@
 "use client";
 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import AppleSignin from "react-apple-signin-auth";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID ?? "";
+const APPLE_REDIRECT_URI =
+  process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ??
+  (typeof window !== "undefined" ? `${window.location.origin}/auth` : "");
 
 // ─── Google SVG icon ───
 function GoogleIcon({ className }: { className?: string }) {
@@ -94,20 +99,71 @@ export function GoogleSignInButton({
 
 // ─── Apple 登入按鈕 ───
 interface AppleButtonProps {
-  onClick: () => void;
+  onSuccess: (idToken: string, userName?: string) => void;
+  onError?: (message?: string) => void;
   disabled?: boolean;
 }
 
-export function AppleSignInButton({ onClick, disabled }: AppleButtonProps) {
+interface AppleSigninResponse {
+  authorization?: { id_token?: string };
+  user?: { name?: { firstName?: string; lastName?: string } };
+}
+
+function buildAppleUserName(user?: AppleSigninResponse["user"]): string | undefined {
+  if (!user?.name) return undefined;
+  const { firstName, lastName } = user.name;
+  const joined = [lastName, firstName].filter(Boolean).join("");
+  return joined || undefined;
+}
+
+export function AppleSignInButton({
+  onSuccess,
+  onError,
+  disabled,
+}: AppleButtonProps) {
+  if (!APPLE_CLIENT_ID) {
+    return (
+      <button type="button" disabled className={btnBase}>
+        <AppleIcon className="size-5" />
+        Apple 登入尚未設定
+      </button>
+    );
+  }
+
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={btnBase}
-      onClick={onClick}
-    >
-      <AppleIcon className="size-5" />
-      <span>使用 Apple 帳號登入</span>
-    </button>
+    <AppleSignin
+      authOptions={{
+        clientId: APPLE_CLIENT_ID,
+        scope: "name email",
+        redirectURI: APPLE_REDIRECT_URI,
+        usePopup: true,
+      }}
+      uiType="dark"
+      onSuccess={(response: AppleSigninResponse) => {
+        if (disabled) return;
+        const idToken = response.authorization?.id_token;
+        if (!idToken) {
+          onError?.("Apple 未回傳授權，請重試");
+          return;
+        }
+        onSuccess(idToken, buildAppleUserName(response.user));
+      }}
+      onError={(err: unknown) => {
+        const code = (err as { error?: string } | null)?.error;
+        if (code === "popup_closed_by_user") return;
+        onError?.();
+      }}
+      render={(props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+        <button
+          type="button"
+          {...props}
+          disabled={disabled || props.disabled}
+          className={btnBase}
+        >
+          <AppleIcon className="size-5" />
+          <span>使用 Apple 帳號登入</span>
+        </button>
+      )}
+    />
   );
 }

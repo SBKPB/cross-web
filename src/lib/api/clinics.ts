@@ -106,36 +106,19 @@ function transformClinic(backendClinic: BackendClinic): Clinic {
 }
 
 export const clinicsApi = {
-  /**
-   * 取得所有診所列表
-   *
-   * 用 no-store 避免 Next.js fetch cache 在 SSR 階段回舊資料；
-   * page-level `revalidate` 仍然控制 ISR 頻率。
-   */
   getClinics: async (): Promise<Clinic[]> => {
     const backendClinics = await api.get<BackendClinic[]>(
       "/api/v1/booking/clinics",
-      { cache: "no-store" },
+      { next: { revalidate: 300 } },
     );
     return backendClinics.map(transformClinic);
   },
 
-  /**
-   * 取得熱門診所（首頁用）
-   * 目前排序規則：評分高 → 評論數多 → 名稱
-   * 後端若之後提供 /clinics/popular 可直接換
-   */
   getPopularClinics: async (limit = 6): Promise<Clinic[]> => {
-    const all = await clinicsApi.getClinics();
-    return [...all]
-      .sort((a, b) => {
-        const ra = a.rating ?? 0;
-        const rb = b.rating ?? 0;
-        if (rb !== ra) return rb - ra;
-        const ca = a.review_count ?? 0;
-        const cb = b.review_count ?? 0;
-        return cb - ca;
-      })
-      .slice(0, limit);
+    const backendClinics = await api.get<BackendClinic[]>(
+      `/api/v1/booking/clinics/popular?limit=${limit}`,
+      { next: { revalidate: 300 } },
+    );
+    return backendClinics.map(transformClinic);
   },
 };

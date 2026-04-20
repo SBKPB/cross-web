@@ -156,6 +156,7 @@ export interface MedicalFacility {
   address: string | null;
   medical_department: ApiMedicalDepartment;
   payment_type: PaymentType;
+  facility_type: FacilityType;
   business_hours: Record<string, { open: string; close: string; breaks?: BreakTime[] }> | null;
   slot_duration: number; // 預約時段間隔（分鐘）
   is_active: boolean;
@@ -185,6 +186,7 @@ export interface MedicalFacilityCreate {
   address?: string;
   medical_department: ApiMedicalDepartment;
   payment_type: PaymentType;
+  facility_type: FacilityType;
   business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
   slot_duration?: number; // 預約時段間隔（分鐘）
 }
@@ -196,6 +198,7 @@ export interface MedicalFacilityUpdate {
   address?: string;
   medical_department?: ApiMedicalDepartment;
   payment_type?: PaymentType;
+  facility_type?: FacilityType;
   business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
   slot_duration?: number; // 預約時段間隔（分鐘）
   is_active?: boolean;

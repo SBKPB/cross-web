@@ -27,11 +27,13 @@ import type {
   MedicalFacilityUpdate,
   ApiMedicalDepartment,
   PaymentType,
+  FacilityType,
   BreakTime,
 } from "@/types/clinic";
 import {
   API_DEPARTMENT_OPTIONS,
   PAYMENT_TYPE_OPTIONS,
+  FACILITY_TYPE_FORM_OPTIONS,
 } from "@/lib/constants/clinic-constants";
 import { lumaDialogFooter } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
@@ -59,6 +61,7 @@ interface FormData {
   address: string;
   medical_department: ApiMedicalDepartment;
   payment_type: PaymentType;
+  facility_type: FacilityType;
   is_active: boolean;
   business_hours: BusinessHours;
   slot_duration: number;
@@ -122,6 +125,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
       address: clinic.address || "",
       medical_department: clinic.medical_department,
       payment_type: clinic.payment_type,
+      facility_type: clinic.facility_type ?? "healthcare",
       is_active: clinic.is_active,
       business_hours: parseBusinessHours(clinic.business_hours),
       slot_duration: clinic.slot_duration ?? 30,
@@ -133,6 +137,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
     address: "",
     medical_department: "general_practice",
     payment_type: "nhi",
+    facility_type: "healthcare",
     is_active: true,
     business_hours: { ...DEFAULT_BUSINESS_HOURS },
     slot_duration: 30,
@@ -171,6 +176,7 @@ function ClinicFormContent({
       address: formData.address || undefined,
       medical_department: formData.medical_department,
       payment_type: formData.payment_type,
+      facility_type: formData.facility_type,
       business_hours: Object.keys(business_hours).length > 0 ? business_hours : undefined,
       slot_duration: formData.slot_duration,
     };
@@ -321,6 +327,30 @@ function ClinicFormContent({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="facility_type">服務類型（民眾端分流）</Label>
+              <Select
+                value={formData.facility_type}
+                onValueChange={(value: FacilityType) =>
+                  setFormData((prev) => ({ ...prev, facility_type: value }))
+                }
+              >
+                <SelectTrigger id="facility_type" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FACILITY_TYPE_FORM_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-xs">
+                決定此院所顯示在民眾端的哪一個 tab（健保看診 / 自費門診 / 醫美諮詢）
+              </p>
             </div>
 
             <div className="grid gap-2">

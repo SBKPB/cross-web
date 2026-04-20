@@ -274,13 +274,20 @@ export const FACILITY_TYPE_COLORS: Record<FacilityType, string> = {
   aesthetic: "bg-pink-100 text-pink-700",
 };
 
-// 服務類型選項（含「全部」）
+// 服務類型選項（含「全部」，前台篩選用）
 export const FACILITY_TYPE_OPTIONS = [
   { value: "all", label: "全部類型" },
   { value: "healthcare", label: "健保看診" },
   { value: "self_pay", label: "自費門診" },
   { value: "aesthetic", label: "醫美諮詢" },
 ] as const;
+
+// 後台表單用（不含「全部」）
+export const FACILITY_TYPE_FORM_OPTIONS: ReadonlyArray<{ value: FacilityType; label: string }> = [
+  { value: "healthcare", label: "健保看診" },
+  { value: "self_pay", label: "自費門診" },
+  { value: "aesthetic", label: "醫美諮詢" },
+];
 
 /**
  * 依成員組成推導服務類型

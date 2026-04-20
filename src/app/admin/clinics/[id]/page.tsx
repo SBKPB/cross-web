@@ -23,6 +23,7 @@ import { SubscriptionSection } from "@/components/admin/clinics/subscription-sec
 import {
   API_MEDICAL_DEPARTMENTS,
   PAYMENT_TYPES,
+  FACILITY_TYPE_LABELS,
 } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
 import {
@@ -205,6 +206,12 @@ export default function ClinicDetailPage() {
                 <h3 className="mb-1 text-sm text-muted-foreground">付費類型</h3>
                 <p className="font-medium text-foreground">
                   {PAYMENT_TYPES[clinic.payment_type]}
+                </p>
+              </div>
+              <div>
+                <h3 className="mb-1 text-sm text-muted-foreground">服務類型（民眾端）</h3>
+                <p className="font-medium text-foreground">
+                  {FACILITY_TYPE_LABELS[clinic.facility_type]}
                 </p>
               </div>
               <div>

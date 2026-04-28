@@ -41,10 +41,6 @@ const initialState: BookingState = {
     timeSlot: null,
   },
   formData: {
-    name: "",
-    gender: null,
-    birthDate: "",
-    phone: "",
     notes: "",
     privacyAccepted: false,
   },

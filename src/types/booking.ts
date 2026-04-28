@@ -56,10 +56,6 @@ export interface BookingSelection {
 }
 
 export interface BookingFormData {
-  name: string;
-  gender: Gender | null;
-  birthDate: string;
-  phone: string;
   notes: string;
   privacyAccepted: boolean;
 }

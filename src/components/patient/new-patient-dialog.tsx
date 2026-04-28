@@ -95,7 +95,7 @@ export function NewPatientDialog({
         identifier_value: identifierValue,
         birth_date: birthDate,
         gender,
-        phone: phone || undefined,
+        phone,
         relation,
       });
       resetForm();
@@ -227,13 +227,17 @@ export function NewPatientDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="np-phone">電話（選填）</Label>
+              <Label htmlFor="np-phone">
+                手機號碼 <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="np-phone"
                 type="tel"
+                placeholder="0912345678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 maxLength={15}
+                required
               />
             </div>
             <div className="grid gap-2">
@@ -268,7 +272,8 @@ export function NewPatientDialog({
                 !name.trim() ||
                 !identifierValue.trim() ||
                 !birthDate ||
-                !gender
+                !gender ||
+                !phone.trim()
               }
             >
               {isSubmitting ? "建立中..." : "新增"}

@@ -114,7 +114,7 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
             type="button"
             onClick={() => {
               onNavigate?.();
-              logout();
+              logout("/admin/login");
             }}
             className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
             aria-label="登出"

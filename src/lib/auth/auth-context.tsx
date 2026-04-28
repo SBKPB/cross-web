@@ -17,7 +17,7 @@ interface AuthContextType {
   loginWithGoogle: (idToken: string) => Promise<User>;
   loginWithApple: (idToken: string, userName?: string) => Promise<User>;
   register: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: (redirectTo?: string) => void;
   refreshUser: () => Promise<void>;
   clearSessionExpiredMessage: () => void;
 }
@@ -127,12 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/");
   };
 
-  const logout = () => {
+  const logout = (redirectTo: string = "/") => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     setUser(null);
     setSessionExpiredMessage(null);
-    router.push("/login");
+    router.push(redirectTo);
   };
 
   // 清除過期訊息

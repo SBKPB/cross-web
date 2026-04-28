@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CalendarDays, Users } from "lucide-react";
+import { CalendarDays, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -48,7 +48,7 @@ function formatTime(t: string) {
 
 export default function MemberPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const [appointments, setAppointments] = useState<MemberAppointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -170,6 +170,16 @@ export default function MemberPage() {
             </div>
           )}
         </div>
+
+        {/* 登出 */}
+        <Button
+          variant="outline"
+          className="w-full gap-2"
+          onClick={() => logout("/")}
+        >
+          <LogOut className="size-4" />
+          登出
+        </Button>
       </div>
     </div>
   );

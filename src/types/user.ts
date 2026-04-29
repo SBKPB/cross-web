@@ -14,6 +14,8 @@ export interface AdminUser {
   is_active: boolean;
   phone_number: string | null;
   facility_id: string | null;
+  /** active role 名稱列表，避免 per-user 打 /permissions 造成 N+1 */
+  roles: string[];
   last_login: string | null;
   member_patients_count: number;
   created_at: string;

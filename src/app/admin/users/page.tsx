@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   PlusIcon,
   SearchIcon,
@@ -50,7 +50,6 @@ import type {
   AdminUserCreate,
   AdminUserUpdate,
   Role,
-  UserPermissions,
 } from "@/types/user";
 import type { MedicalFacility } from "@/types/clinic";
 
@@ -68,9 +67,24 @@ export default function AdminUsersPage() {
   // 參考資料
   const [roles, setRoles] = useState<Role[]>([]);
   const [facilities, setFacilities] = useState<MedicalFacility[]>([]);
-  const [userRolesMap, setUserRolesMap] = useState<
-    Record<string, Role[]>
-  >({});
+
+  // role name → Role 物件的對應，給 badge 顯示 display_name 用（避免 N+1）
+  const roleByName = useMemo(
+    () => new Map(roles.map((r) => [r.name, r])),
+    [roles],
+  );
+
+  // 從清單裡每個 user.roles 直接組出 user_id → Role[] 的對應
+  // 取代舊版 per-user 打 /permissions 的 N+1
+  const userRolesMap = useMemo(() => {
+    const map: Record<string, Role[]> = {};
+    for (const user of users) {
+      map[user.id] = user.roles
+        .map((name) => roleByName.get(name))
+        .filter((r): r is Role => Boolean(r));
+    }
+    return map;
+  }, [users, roleByName]);
 
   // Dialog 狀態
   const [formDialogOpen, setFormDialogOpen] = useState(false);
@@ -85,43 +99,21 @@ export default function AdminUsersPage() {
   const [unbindUser, setUnbindUser] = useState<AdminUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchUserRolesMap = useCallback(
-    async (userList: AdminUser[]): Promise<Record<string, Role[]>> => {
-      const map: Record<string, Role[]> = {};
-      await Promise.all(
-        userList.map(async (user) => {
-          try {
-            const perms: UserPermissions =
-              await adminUsersApi.getUserPermissions(user.id);
-            map[user.id] = perms.roles;
-          } catch {
-            map[user.id] = [];
-          }
-        }),
-      );
-      return map;
-    },
-    [],
-  );
-
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const data = await adminUsersApi.list();
-      // 串接 roles 一起載完才解除 loading，避免 empty state 閃現
-      const map = await fetchUserRolesMap(data);
       setUsers(data);
-      setUserRolesMap(map);
     } catch (err) {
       setError("無法載入使用者資料");
       console.error("Failed to fetch users:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchUserRolesMap]);
+  };
 
-  const fetchRolesAndFacilities = useCallback(async () => {
+  const fetchRolesAndFacilities = async () => {
     try {
       const [rolesData, facilitiesData] = await Promise.all([
         adminUsersApi.getRoles(),
@@ -132,12 +124,12 @@ export default function AdminUsersPage() {
     } catch (err) {
       console.error("Failed to fetch roles/facilities:", err);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchUsers();
     fetchRolesAndFacilities();
-  }, [fetchUsers, fetchRolesAndFacilities]);
+  }, []);
 
   useEffect(() => {
     // 依分頁過濾：

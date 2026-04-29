@@ -31,4 +31,13 @@ export const authApi = {
    * 取得當前使用者資訊
    */
   me: () => api.get<User>(`${AUTH_PREFIX}/me`),
+
+  /**
+   * 更改自己的密碼（需驗證目前密碼）
+   */
+  changePassword: (current_password: string, new_password: string) =>
+    api.post<void>(`${AUTH_PREFIX}/change-password`, {
+      current_password,
+      new_password,
+    }),
 };

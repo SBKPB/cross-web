@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
   CreditCard,
+  KeyRound,
   LogOut,
   Settings,
   UserCog,
@@ -19,6 +21,7 @@ import {
   isSystemAdmin,
 } from "@/lib/auth/roles";
 import type { User } from "@/types/auth";
+import { ChangePasswordDialog } from "@/components/admin/change-password-dialog";
 
 interface NavItem {
   href: string;
@@ -64,6 +67,7 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
   const { user, logout } = useAuth();
   const navItems = getNavItems(user);
   const homePath = getAdminHomePath(user);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
@@ -106,7 +110,7 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
       </nav>
 
       <div className="mt-auto border-t border-sidebar-border/60 p-3">
-        <div className="flex items-center gap-3 rounded-xl px-3 py-2.5">
+        <div className="flex items-center gap-2 rounded-xl px-3 py-2.5">
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium text-sidebar-foreground/60">
               登入中
@@ -117,17 +121,32 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
           </div>
           <button
             type="button"
+            onClick={() => setPasswordDialogOpen(true)}
+            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            aria-label="修改密碼"
+            title="修改密碼"
+          >
+            <KeyRound className="size-4" />
+          </button>
+          <button
+            type="button"
             onClick={() => {
               onNavigate?.();
               logout("/admin/login");
             }}
             className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
             aria-label="登出"
+            title="登出"
           >
             <LogOut className="size-4" />
           </button>
         </div>
       </div>
+
+      <ChangePasswordDialog
+        open={passwordDialogOpen}
+        onOpenChange={setPasswordDialogOpen}
+      />
     </div>
   );
 }

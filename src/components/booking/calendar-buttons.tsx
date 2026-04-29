@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { Calendar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,10 +40,20 @@ function isAppleDevice(): boolean {
   return false;
 }
 
+// 用 useSyncExternalStore 在 client 才回傳 isAppleDevice()，避免 hydration mismatch
+const subscribeNoop = () => () => {};
+
 export function CalendarButtons({
   booking,
   primaryColor = "#3b82f6",
 }: CalendarButtonsProps) {
+  // Apple 日曆按鈕只在 Apple 裝置顯示
+  const showApple = useSyncExternalStore(
+    subscribeNoop,
+    () => isAppleDevice(),
+    () => false,
+  );
+
   const startDate = new Date(booking.appointment_datetime);
   const endDate = new Date(
     startDate.getTime() + booking.service.duration_minutes * 60 * 1000,
@@ -73,26 +84,10 @@ export function CalendarButtons({
   ].join("\r\n");
 
   const handleAppleCalendar = () => {
-    if (isAppleDevice()) {
-      // Apple 裝置：用 data: URL 直接導航，Safari 會跳「加入行事曆」prompt
-      // 不用 a.download，避免被當成檔案存到 Files。
-      const dataUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(appleCalendarData)}`;
-      window.location.href = dataUrl;
-      return;
-    }
-
-    // 非 Apple 裝置：下載 .ics 檔，使用者自行匯入到行事曆 app
-    const blob = new Blob([appleCalendarData], {
-      type: "text/calendar;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `appointment-${booking.booking_number}.ics`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Apple 裝置：用 data: URL 直接導航，Safari 會跳「加入行事曆」prompt
+    // 不用 a.download，避免被當成檔案存到 Files。
+    const dataUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(appleCalendarData)}`;
+    window.location.href = dataUrl;
   };
 
   return (
@@ -111,15 +106,17 @@ export function CalendarButtons({
           </a>
         </Button>
 
-        <Button
-          variant="outline"
-          size="lg"
-          className="flex-1"
-          onClick={handleAppleCalendar}
-        >
-          <Calendar className="size-5" style={{ color: primaryColor }} />
-          Apple 日曆
-        </Button>
+        {showApple && (
+          <Button
+            variant="outline"
+            size="lg"
+            className="flex-1"
+            onClick={handleAppleCalendar}
+          >
+            <Calendar className="size-5" style={{ color: primaryColor }} />
+            Apple 日曆
+          </Button>
+        )}
       </div>
     </div>
   );

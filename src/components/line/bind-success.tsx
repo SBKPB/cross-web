@@ -3,6 +3,7 @@
 import { CheckCircle, Bell } from "lucide-react";
 
 interface BindSuccessProps {
+  /** 已綁定到的帳號 email，會顯示在標題下 */
   patientName?: string;
 }
 
@@ -14,13 +15,11 @@ export function BindSuccess({ patientName }: BindSuccessProps) {
         <CheckCircle className="size-8 text-green-600" />
       </div>
 
-      {/* 歡迎訊息 */}
+      {/* 訊息 */}
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-slate-800">綁定成功</h2>
         {patientName && (
-          <p className="text-base text-slate-600">
-            {patientName}，您好！
-          </p>
+          <p className="text-base text-slate-600">已綁定到 {patientName}</p>
         )}
       </div>
 

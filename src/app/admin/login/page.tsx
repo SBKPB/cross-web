@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import { Building2, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +18,6 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getAdminHomePath } from "@/lib/auth/roles";
-import { lumaIconBadge } from "@/lib/styles/luma";
-import { cn } from "@/lib/utils";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -53,12 +52,15 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
-          <Link
-            href="/"
-            aria-label="返回首頁"
-            className={cn(lumaIconBadge, "size-14 self-center")}
-          >
-            <Building2 className="size-6" />
+          <Link href="/" aria-label="返回首頁" className="self-center">
+            <Image
+              src="/cross-icon.png"
+              alt="Cross"
+              width={56}
+              height={56}
+              priority
+              className="size-14 rounded-2xl"
+            />
           </Link>
           <CardTitle className="mt-3 text-2xl">Console 登入</CardTitle>
           <CardDescription>請輸入管理員帳號密碼</CardDescription>

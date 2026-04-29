@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -71,9 +72,13 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
         onClick={onNavigate}
         className="flex h-14 items-center gap-2.5 border-b border-sidebar-border/60 px-5 font-semibold"
       >
-        <span className="inline-flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Building2 className="size-4" />
-        </span>
+        <Image
+          src="/cross-icon.png"
+          alt="Cross"
+          width={32}
+          height={32}
+          className="size-8 rounded-xl"
+        />
         <span className="text-sm tracking-tight">Cross Console</span>
       </Link>
 

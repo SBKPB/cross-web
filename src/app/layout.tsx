@@ -19,7 +19,11 @@ const notoSansTC = Noto_Sans_TC({
 });
 
 export const metadata: Metadata = {
-  title: "Cross | 線上預約看診",
+  metadataBase: new URL("https://cross.twinhao.com"),
+  title: {
+    default: "Cross | 線上預約看診",
+    template: "%s | Cross",
+  },
   description: "搜尋全台診所，24 小時線上掛號，不用再打電話排隊。",
 };
 

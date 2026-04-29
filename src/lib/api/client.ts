@@ -7,11 +7,17 @@ const API_BASE_URL =
     ? ""
     : process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-// 不需要觸發 token 過期事件的端點
-const AUTH_ENDPOINTS = ["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh"];
+// 不需要觸發 silent refresh 的端點（避免遞迴或登入態重置）
+const AUTH_ENDPOINTS = [
+  "/api/v1/auth/login",
+  "/api/v1/auth/register",
+  "/api/v1/auth/refresh",
+];
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>;
+  /** 內部用：標記此 request 已嘗試過 refresh，避免無限遞迴 */
+  _retried?: boolean;
 }
 
 class ApiError extends Error {
@@ -25,11 +31,54 @@ class ApiError extends Error {
   }
 }
 
+// ---------- Silent refresh：dedupe 並行 refresh 請求 ----------
+// 多個 request 同時 401 時，只跑一次 /auth/refresh，其他人 await 同一個 promise
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshAccessToken(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const refreshToken = localStorage.getItem("refresh_token");
+  if (!refreshToken) return false;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as {
+      access_token: string;
+      refresh_token: string;
+    };
+    localStorage.setItem("access_token", data.access_token);
+    // rolling refresh：refresh_token 也輪替
+    if (data.refresh_token) {
+      localStorage.setItem("refresh_token", data.refresh_token);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function startRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken().finally(() => {
+      // 短暫保留結果讓並行 401 共用，next tick 再清掉
+      setTimeout(() => {
+        refreshPromise = null;
+      }, 0);
+    });
+  }
+  return refreshPromise;
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { params, ...fetchOptions } = options;
+  const { params, _retried, ...fetchOptions } = options;
 
   let url = `${API_BASE_URL}${endpoint}`;
   if (params) {
@@ -83,14 +132,25 @@ async function request<T>(
   }
 
   if (!response.ok) {
-    const data = await response.json().catch(() => null);
-
-    // 401 Unauthorized: Token 過期或無效
-    // 排除登入/註冊等認證端點本身的 401 錯誤
-    if (response.status === 401 && !AUTH_ENDPOINTS.some((ep) => endpoint.startsWith(ep))) {
+    // 401 Unauthorized：先試 silent refresh 換 access token，成功就 retry 一次
+    // - 排除 auth 端點自身（避免遞迴）
+    // - 排除已 retry 過的（避免無限迴圈）
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((ep) =>
+      endpoint.startsWith(ep),
+    );
+    if (response.status === 401 && !isAuthEndpoint && !_retried) {
+      const refreshed = await startRefresh();
+      if (refreshed) {
+        return request<T>(endpoint, { ...options, _retried: true });
+      }
+      // refresh 也失敗 → 真的過期，提示重登
+      emitTokenExpired();
+    } else if (response.status === 401 && !isAuthEndpoint) {
+      // 重試後仍 401（多半是 refresh 也過期）
       emitTokenExpired();
     }
 
+    const data = await response.json().catch(() => null);
     throw new ApiError(response.status, response.statusText, data);
   }
 

@@ -7,13 +7,15 @@ export interface Role {
   is_active: boolean;
 }
 
-// 使用者（管理端，含角色與院所資訊）
+// 使用者（管理端，含角色、院所與民眾端會員資訊）
 export interface AdminUser {
   id: string;
   email: string;
   is_active: boolean;
   phone_number: string | null;
   facility_id: string | null;
+  last_login: string | null;
+  member_patients_count: number;
   created_at: string;
   updated_at: string | null;
 }

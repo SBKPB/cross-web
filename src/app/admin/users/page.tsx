@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -53,11 +54,14 @@ import type {
 } from "@/types/user";
 import type { MedicalFacility } from "@/types/clinic";
 
+type UserTab = "staff" | "patient";
+
 export default function AdminUsersPage() {
   useRequireSystemAdmin();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [tab, setTab] = useState<UserTab>("staff");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -136,23 +140,38 @@ export default function AdminUsersPage() {
   }, [fetchUsers, fetchRolesAndFacilities]);
 
   useEffect(() => {
-    // 只顯示「員工」帳號（含 superadmin / admin / facility_admin / facility_staff）
-    // 過濾掉 patient 與無角色帳號
-    const staffUsers = users.filter((user) => {
+    // 依分頁過濾：
+    //  - staff：擁有 superadmin / admin / facility_admin / facility_staff 任一角色
+    //  - patient：以上都沒有（patient role 或無角色）
+    const scoped = users.filter((user) => {
       const userRoles = userRolesMap[user.id];
-      if (!userRoles) return false;
-      return userRoles.some((r) => isStaffRole(r.name));
+      if (!userRoles) return tab === "patient"; // 無角色資料當成一般使用者
+      const isStaff = userRoles.some((r) => isStaffRole(r.name));
+      return tab === "staff" ? isStaff : !isStaff;
     });
 
     if (!searchTerm.trim()) {
-      setFilteredUsers(staffUsers);
+      setFilteredUsers(scoped);
     } else {
       const term = searchTerm.toLowerCase();
       setFilteredUsers(
-        staffUsers.filter((user) => user.email.toLowerCase().includes(term)),
+        scoped.filter((user) => user.email.toLowerCase().includes(term)),
       );
     }
-  }, [users, userRolesMap, searchTerm]);
+  }, [users, userRolesMap, searchTerm, tab]);
+
+  // 兩個分頁的計數（給 tab 上的 badge 用）
+  const tabCounts = useMemo(() => {
+    let staff = 0;
+    let patient = 0;
+    for (const user of users) {
+      const roles = userRolesMap[user.id];
+      const isStaff = roles?.some((r) => isStaffRole(r.name)) ?? false;
+      if (isStaff) staff += 1;
+      else patient += 1;
+    }
+    return { staff, patient };
+  }, [users, userRolesMap]);
 
   const facilityMap = useMemo(
     () => new Map(facilities.map((f) => [f.id, f])),
@@ -378,11 +397,31 @@ export default function AdminUsersPage() {
           <h1 className={lumaSectionTitle}>使用者管理</h1>
           <p className={lumaSectionDesc}>管理系統使用者帳號、角色與權限</p>
         </div>
-        <Button onClick={handleOpenCreate}>
-          <PlusIcon className="mr-2 size-4" />
-          新增使用者
-        </Button>
+        {tab === "staff" && (
+          <Button onClick={handleOpenCreate}>
+            <PlusIcon className="mr-2 size-4" />
+            新增使用者
+          </Button>
+        )}
       </div>
+
+      {/* 分頁切換：員工 / 一般使用者 */}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as UserTab)}>
+        <TabsList>
+          <TabsTrigger value="staff">
+            員工帳號
+            <Badge variant="outline" className="ml-2 text-xs">
+              {tabCounts.staff}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="patient">
+            一般使用者
+            <Badge variant="outline" className="ml-2 text-xs">
+              {tabCounts.patient}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* 搜尋 */}
       <div className={cn(lumaCardInner, "p-3")}>
@@ -431,9 +470,19 @@ export default function AdminUsersPage() {
               <TableRow>
                 <TableHead>電子信箱</TableHead>
                 <TableHead>狀態</TableHead>
-                <TableHead>角色</TableHead>
-                <TableHead>所屬院所</TableHead>
-                <TableHead>訂閱到期</TableHead>
+                {tab === "staff" ? (
+                  <>
+                    <TableHead>角色</TableHead>
+                    <TableHead>所屬院所</TableHead>
+                    <TableHead>訂閱到期</TableHead>
+                  </>
+                ) : (
+                  <>
+                    <TableHead>電話</TableHead>
+                    <TableHead>最後登入</TableHead>
+                    <TableHead>家屬人數</TableHead>
+                  </>
+                )}
                 <TableHead>建立時間</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
@@ -449,27 +498,71 @@ export default function AdminUsersPage() {
                       {user.is_active ? "啟用" : "停用"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {(userRolesMap[user.id] || []).length > 0 ? (
-                        userRolesMap[user.id].map((role) => (
-                          <Badge key={role.id} variant="outline">
-                            {role.display_name}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          無角色
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{getFacilityName(user.facility_id)}</TableCell>
-                  <TableCell>{renderSubscriptionCell(user.facility_id)}</TableCell>
+                  {tab === "staff" ? (
+                    <>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {(userRolesMap[user.id] || []).length > 0 ? (
+                            userRolesMap[user.id].map((role) => (
+                              <Badge key={role.id} variant="outline">
+                                {role.display_name}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              無角色
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getFacilityName(user.facility_id)}
+                      </TableCell>
+                      <TableCell>
+                        {renderSubscriptionCell(user.facility_id)}
+                      </TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell>
+                        {user.phone_number ? (
+                          <span className="text-sm text-foreground">
+                            {user.phone_number}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {user.last_login ? (
+                          <span className="text-sm text-foreground">
+                            {formatDate(user.last_login)}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {user.member_patients_count > 0 ? (
+                          <span className="text-sm text-foreground">
+                            {user.member_patients_count}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell>{formatDate(user.created_at)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      {user.facility_id && (
+                      {tab === "staff" && user.facility_id && (
                         <Button
                           variant="ghost"
                           size="icon-sm"
@@ -487,14 +580,16 @@ export default function AdminUsersPage() {
                       >
                         <PencilIcon className="size-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleOpenRoles(user)}
-                        title="角色管理"
-                      >
-                        <ShieldIcon className="size-4" />
-                      </Button>
+                      {tab === "staff" && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleOpenRoles(user)}
+                          title="角色管理"
+                        >
+                          <ShieldIcon className="size-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon-sm"
@@ -530,6 +625,7 @@ export default function AdminUsersPage() {
         user={editingUser}
         roles={roles}
         facilities={facilities}
+        kind={editingUser && tab === "patient" ? "patient" : "staff"}
         onSubmit={editingUser ? handleUpdate : handleCreate}
         isLoading={isSubmitting}
       />

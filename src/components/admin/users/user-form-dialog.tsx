@@ -42,6 +42,8 @@ interface UserFormDialogProps {
   user?: AdminUser | null;
   roles: Role[];
   facilities: MedicalFacility[];
+  /** 表單模式：staff（員工，預設）或 patient（民眾端會員，隱藏所屬院所與角色） */
+  kind?: "staff" | "patient";
   onSubmit: (data: AdminUserCreate | AdminUserUpdate) => Promise<void>;
   isLoading?: boolean;
 }
@@ -83,11 +85,13 @@ function UserFormContent({
   user,
   roles,
   facilities,
+  kind = "staff",
   onOpenChange,
   onSubmit,
   isLoading,
 }: Omit<UserFormDialogProps, "open">) {
   const isEditing = !!user;
+  const isPatient = kind === "patient";
   const [formData, setFormData] = useState<FormData>(() =>
     getInitialFormData(user),
   );
@@ -238,7 +242,9 @@ function UserFormContent({
           />
         </div>
 
-        {/* 所屬院所：先決定範圍（系統 vs 院所），角色清單依此過濾 */}
+        {/* 所屬院所：先決定範圍（系統 vs 院所），角色清單依此過濾。
+            民眾端會員（patient）不顯示這欄。 */}
+        {!isPatient && (
         <div className="grid gap-2">
           <Label htmlFor="facility_id">所屬院所</Label>
           <Select
@@ -265,9 +271,10 @@ function UserFormContent({
             </p>
           )}
         </div>
+        )}
 
-        {/* 角色：新增時必選，編輯時不變更；清單依所屬院所過濾 */}
-        {!isEditing && (
+        {/* 角色：員工模式下新增時必選，編輯時不變更；patient 模式不顯示 */}
+        {!isEditing && !isPatient && (
           <div className="grid gap-2">
             <Label>
               角色 <span className="text-destructive">*</span>

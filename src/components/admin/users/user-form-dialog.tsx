@@ -93,16 +93,24 @@ function UserFormContent({
   );
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // 只列出 4 種員工角色，依固定順序（superadmin 先、facility_staff 後）
+  // 角色清單依「是否選了院所」過濾：
+  //   有選院所 → 只顯示院所端角色（facility_admin / facility_staff）
+  //   未選院所 → 只顯示系統端角色（superadmin / admin）
+  // 避免操作者把「超級管理員」誤指派給院所人員
   const staffRoles = useMemo(() => {
     const order = STAFF_ROLE_NAMES;
-    return roles
-      .filter((r) => isStaffRole(r.name))
-      .sort((a, b) => order.indexOf(a.name as (typeof STAFF_ROLE_NAMES)[number]) - order.indexOf(b.name as (typeof STAFF_ROLE_NAMES)[number]));
-  }, [roles]);
+    const allStaff = roles.filter((r) => isStaffRole(r.name));
+    const scoped = formData.facility_id
+      ? allStaff.filter((r) => requiresFacility(r.name))
+      : allStaff.filter((r) => !requiresFacility(r.name));
+    return scoped.sort(
+      (a, b) =>
+        order.indexOf(a.name as (typeof STAFF_ROLE_NAMES)[number]) -
+        order.indexOf(b.name as (typeof STAFF_ROLE_NAMES)[number]),
+    );
+  }, [roles, formData.facility_id]);
 
   const facilityRequired = requiresFacility(formData.role_name);
-  const facilityForbidden = !!formData.role_name && !facilityRequired;
 
   const handleRoleChange = (roleId: string) => {
     const role = staffRoles.find((r) => r.id === roleId);
@@ -111,9 +119,26 @@ function UserFormContent({
       ...prev,
       role_id: role.id,
       role_name: role.name,
-      // 切到 system admin 角色時清空 facility
-      facility_id: requiresFacility(role.name) ? prev.facility_id : "",
     }));
+    setValidationError(null);
+  };
+
+  const handleFacilityChange = (value: string) => {
+    const newFacilityId = value === "_none" ? "" : value;
+    setFormData((prev) => {
+      // 切換院所/系統範圍時，若原本選的角色已不在新清單，清掉
+      const stillValid =
+        !prev.role_name ||
+        (newFacilityId
+          ? requiresFacility(prev.role_name)
+          : !requiresFacility(prev.role_name));
+      return {
+        ...prev,
+        facility_id: newFacilityId,
+        role_id: stillValid ? prev.role_id : "",
+        role_name: stillValid ? prev.role_name : "",
+      };
+    });
     setValidationError(null);
   };
 
@@ -213,7 +238,35 @@ function UserFormContent({
           />
         </div>
 
-        {/* 角色：新增時必選，編輯時不變更 */}
+        {/* 所屬院所：先決定範圍（系統 vs 院所），角色清單依此過濾 */}
+        <div className="grid gap-2">
+          <Label htmlFor="facility_id">所屬院所</Label>
+          <Select
+            value={formData.facility_id || "_none"}
+            onValueChange={handleFacilityChange}
+          >
+            <SelectTrigger id="facility_id" className="w-full">
+              <SelectValue placeholder="選擇院所" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_none">無（系統管理員）</SelectItem>
+              {facilities.map((f) => (
+                <SelectItem key={f.id} value={f.id}>
+                  {f.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!isEditing && (
+            <p className="text-xs text-muted-foreground">
+              {formData.facility_id
+                ? "將建立院所端使用者（角色限院所管理員 / 院所職員）"
+                : "將建立系統端使用者（角色限超級管理員 / 系統管理員）"}
+            </p>
+          )}
+        </div>
+
+        {/* 角色：新增時必選，編輯時不變更；清單依所屬院所過濾 */}
         {!isEditing && staffRoles.length > 0 && (
           <div className="grid gap-2">
             <Label>
@@ -250,49 +303,6 @@ function UserFormContent({
             </RadioGroup>
           </div>
         )}
-
-        {/* 所屬院所：根據角色決定是否必填或不可選 */}
-        <div className="grid gap-2">
-          <Label htmlFor="facility_id">
-            所屬院所
-            {!isEditing && facilityRequired && (
-              <span className="text-destructive"> *</span>
-            )}
-          </Label>
-          {facilityForbidden && !isEditing ? (
-            <div className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground ring-1 ring-foreground/5">
-              此角色為系統範圍，不需指派院所
-            </div>
-          ) : (
-            <Select
-              value={formData.facility_id || (facilityRequired ? "" : "_none")}
-              onValueChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  facility_id: value === "_none" ? "" : value,
-                }))
-              }
-            >
-              <SelectTrigger id="facility_id" className="w-full">
-                <SelectValue
-                  placeholder={
-                    facilityRequired ? "請選擇院所" : "選擇院所"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {!facilityRequired && (
-                  <SelectItem value="_none">無（系統管理員）</SelectItem>
-                )}
-                {facilities.map((f) => (
-                  <SelectItem key={f.id} value={f.id}>
-                    {f.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
 
         {isEditing && (
           <div className="flex items-center gap-2">

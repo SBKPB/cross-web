@@ -39,4 +39,10 @@ export const adminUsersApi = {
     api.put<{ message: string }>(`${USERS_PATH}/${id}/roles`, {
       role_ids: roleIds,
     }),
+
+  // ========== LINE 綁定 ==========
+
+  /** 強制清除指定 user 所有 LINE 綁定（user-based + patient-based） */
+  unbindLine: (id: string) =>
+    api.delete<{ deleted_count: number }>(`${USERS_PATH}/${id}/line-bindings`),
 };

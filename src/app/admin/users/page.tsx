@@ -9,6 +9,7 @@ import {
   ShieldIcon,
   Trash2Icon,
   CalendarPlus,
+  Link2Off,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import {
   UserFormDialog,
   UserRoleDialog,
   UserDeleteDialog,
+  UserLineUnbindDialog,
 } from "@/components/admin/users";
 import { RenewSubscriptionDialog } from "@/components/admin/clinics/renew-subscription-dialog";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
@@ -75,6 +77,8 @@ export default function AdminUsersPage() {
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
   const [renewDialogOpen, setRenewDialogOpen] = useState(false);
   const [renewFacility, setRenewFacility] = useState<MedicalFacility | null>(null);
+  const [unbindDialogOpen, setUnbindDialogOpen] = useState(false);
+  const [unbindUser, setUnbindUser] = useState<AdminUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchUserRolesMap = useCallback(
@@ -323,6 +327,28 @@ export default function AdminUsersPage() {
     setRenewFacility(null);
   };
 
+  // ========== 解除 LINE 綁定 ==========
+  const handleOpenUnbind = (user: AdminUser) => {
+    setUnbindUser(user);
+    setUnbindDialogOpen(true);
+  };
+
+  const handleUnbind = async () => {
+    if (!unbindUser) return;
+    setIsSubmitting(true);
+    try {
+      const res = await adminUsersApi.unbindLine(unbindUser.id);
+      setUnbindDialogOpen(false);
+      setUnbindUser(null);
+      alert(`已清除 ${res.deleted_count} 筆 LINE 綁定`);
+    } catch (err) {
+      console.error("Failed to unbind LINE:", err);
+      alert("解除失敗，請稍後再試");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // ========== 刪除使用者 ==========
   const handleOpenDelete = (user: AdminUser) => {
     setDeletingUser(user);
@@ -472,6 +498,14 @@ export default function AdminUsersPage() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
+                        onClick={() => handleOpenUnbind(user)}
+                        title="解除 LINE 綁定"
+                      >
+                        <Link2Off className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={() => handleOpenDelete(user)}
                         title="刪除"
                       >
@@ -533,6 +567,17 @@ export default function AdminUsersPage() {
         }}
         user={deletingUser}
         onConfirm={handleDelete}
+        isLoading={isSubmitting}
+      />
+
+      <UserLineUnbindDialog
+        open={unbindDialogOpen}
+        onOpenChange={(open) => {
+          setUnbindDialogOpen(open);
+          if (!open) setUnbindUser(null);
+        }}
+        user={unbindUser}
+        onConfirm={handleUnbind}
         isLoading={isSubmitting}
       />
     </div>

@@ -66,31 +66,25 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const staffData = await adminClinicsApi.staff.list(facilityId);
-      setStaff(staffData);
-
-      // 取得所有專業人員的休假
-      const professionals = staffData.filter((s) =>
-        ["doctor", "beautician", "therapist"].includes(s.role)
-      );
-
       const start = startOfMonth(currentMonth);
       const end = endOfMonth(currentMonth);
 
-      const leavesPromises = professionals.map((s) =>
-        adminClinicsApi.staffLeaves
-          .list(facilityId, s.id, {
-            start_date: format(start, "yyyy-MM-dd"),
-            end_date: format(end, "yyyy-MM-dd"),
-          })
-          .then((leaves) => ({ staffId: s.id, leaves }))
-      );
+      // staff 與整個院所的 leaves 並行抓（leaves 一次撈完，避免 per-staff N+1）
+      const [staffData, allLeaves] = await Promise.all([
+        adminClinicsApi.staff.list(facilityId),
+        adminClinicsApi.staffLeaves.listAll(facilityId, {
+          start_date: format(start, "yyyy-MM-dd"),
+          end_date: format(end, "yyyy-MM-dd"),
+        }),
+      ]);
+      setStaff(staffData);
 
-      const leavesResults = await Promise.all(leavesPromises);
+      // group by staff_id，前端組成原本的 map
       const newLeavesMap: StaffLeaveMap = {};
-      leavesResults.forEach(({ staffId, leaves }) => {
-        newLeavesMap[staffId] = leaves;
-      });
+      for (const leave of allLeaves) {
+        if (!newLeavesMap[leave.staff_id]) newLeavesMap[leave.staff_id] = [];
+        newLeavesMap[leave.staff_id].push(leave);
+      }
       setLeavesMap(newLeavesMap);
     } catch (err) {
       console.error("Failed to fetch schedule data:", err);

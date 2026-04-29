@@ -183,6 +183,20 @@ export const adminClinicsApi = {
       );
     },
 
+    /** 一次撈整個院所所有人員的休假（取代 per-staff 逐一打的 N+1） */
+    listAll: (
+      facilityId: string,
+      params?: { start_date?: string; end_date?: string }
+    ) => {
+      const searchParams = new URLSearchParams();
+      if (params?.start_date) searchParams.append("start_date", params.start_date);
+      if (params?.end_date) searchParams.append("end_date", params.end_date);
+      const query = searchParams.toString();
+      return api.get<ApiStaffLeave[]>(
+        `${BASE_PATH}/${facilityId}/staff-leaves${query ? `?${query}` : ""}`
+      );
+    },
+
     create: (facilityId: string, staffId: string, data: ApiStaffLeaveCreate) =>
       api.post<ApiStaffLeave>(
         `${BASE_PATH}/${facilityId}/staff/${staffId}/leaves`,

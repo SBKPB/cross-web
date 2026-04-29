@@ -153,7 +153,7 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
 
 export function AdminSidebar() {
   return (
-    <aside className="hidden w-60 shrink-0 border-r border-sidebar-border/60 md:flex">
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-sidebar-border/60 md:flex">
       <AdminSidebarContent />
     </aside>
   );

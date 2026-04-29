@@ -267,40 +267,48 @@ function UserFormContent({
         </div>
 
         {/* 角色：新增時必選，編輯時不變更；清單依所屬院所過濾 */}
-        {!isEditing && staffRoles.length > 0 && (
+        {!isEditing && (
           <div className="grid gap-2">
             <Label>
               角色 <span className="text-destructive">*</span>
             </Label>
-            <RadioGroup
-              value={formData.role_id}
-              onValueChange={handleRoleChange}
-              className="rounded-2xl p-3 ring-1 ring-foreground/5"
-            >
-              {staffRoles.map((role) => (
-                <label
-                  key={role.id}
-                  htmlFor={`role-${role.id}`}
-                  className="flex cursor-pointer items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-muted/40"
-                >
-                  <RadioGroupItem
-                    value={role.id}
-                    id={`role-${role.id}`}
-                    className="mt-0.5"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-foreground">
-                      {role.display_name}
-                    </div>
-                    {role.description && (
-                      <div className="text-xs text-muted-foreground">
-                        {role.description}
+            {staffRoles.length > 0 ? (
+              <RadioGroup
+                value={formData.role_id}
+                onValueChange={handleRoleChange}
+                className="rounded-2xl p-3 ring-1 ring-foreground/5"
+              >
+                {staffRoles.map((role) => (
+                  <label
+                    key={role.id}
+                    htmlFor={`role-${role.id}`}
+                    className="flex cursor-pointer items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-muted/40"
+                  >
+                    <RadioGroupItem
+                      value={role.id}
+                      id={`role-${role.id}`}
+                      className="mt-0.5"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-foreground">
+                        {role.display_name}
                       </div>
-                    )}
-                  </div>
-                </label>
-              ))}
-            </RadioGroup>
+                      {role.description && (
+                        <div className="text-xs text-muted-foreground">
+                          {role.description}
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </RadioGroup>
+            ) : (
+              <div className="rounded-2xl bg-destructive/5 p-3 text-sm text-destructive ring-1 ring-destructive/20">
+                {formData.facility_id
+                  ? "系統尚未建立院所端角色（facility_admin / facility_staff），請先聯絡系統管理員初始化角色資料。"
+                  : "系統尚未建立系統端角色（superadmin / admin），請先聯絡系統管理員初始化角色資料。"}
+              </div>
+            )}
           </div>
         )}
 
@@ -341,7 +349,8 @@ function UserFormContent({
           disabled={
             isLoading ||
             !formData.email.trim() ||
-            (!isEditing && !formData.password.trim())
+            (!isEditing && !formData.password.trim()) ||
+            (!isEditing && staffRoles.length === 0)
           }
         >
           {isLoading ? "處理中..." : isEditing ? "儲存" : "新增"}

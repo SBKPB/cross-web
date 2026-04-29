@@ -94,6 +94,10 @@ async function request<T>(
     throw new ApiError(response.status, response.statusText, data);
   }
 
+  // 204 No Content（DELETE 等端點）無 body，不能直接 .json()
+  if (response.status === 204) {
+    return undefined as T;
+  }
   return response.json();
 }
 

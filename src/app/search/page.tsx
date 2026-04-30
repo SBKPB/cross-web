@@ -11,8 +11,8 @@ import type {
 } from "@/types/clinic";
 
 export const metadata: Metadata = {
-  title: "搜尋診所 | Cross",
-  description: "搜尋全台醫療院所，線上預約掛號",
+  title: "搜尋店家 | Cross",
+  description: "搜尋全台健保、美容與自費合作店家，線上預約",
 };
 
 interface SearchPageProps {
@@ -44,10 +44,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <div className="container mx-auto px-4 py-8">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
-              搜尋診所
+              搜尋店家
             </h1>
             <p className="text-sm text-muted-foreground">
-              輸入關鍵字、挑選縣市與科別，找到最適合的醫療院所
+              依健保、美容、自費三大類型搜尋，找到最適合的合作店家
             </p>
           </div>
           <ClinicSearchView initialFilters={initialFilters} />

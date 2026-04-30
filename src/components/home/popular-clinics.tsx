@@ -17,10 +17,10 @@ export function PopularClinics({ clinics }: PopularClinicsProps) {
         <div className="flex items-end justify-between mb-10">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-              熱門診所
+              熱門推薦
             </h2>
             <p className="text-sm text-muted-foreground">
-              民眾最常預約的醫療院所
+              民眾最常預約的合作店家
             </p>
           </div>
           <Link

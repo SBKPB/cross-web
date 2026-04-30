@@ -38,6 +38,10 @@ export function ClinicToolbar({
     filters.city !== "all" ||
     filters.facilityType !== "all";
 
+  // 健保看診才有「醫療分級 / 科別」概念；美容、自費不分
+  const showHealthcareFilters =
+    filters.facilityType === "all" || filters.facilityType === "healthcare";
+
   const handleClearFilters = () => {
     onFiltersChange({
       search: "",
@@ -81,12 +85,16 @@ export function ClinicToolbar({
       <div className="flex flex-wrap gap-2">
         <Select
           value={filters.facilityType}
-          onValueChange={(value) =>
+          onValueChange={(value) => {
+            const next = value as ClinicFilters["facilityType"];
+            const isHealthcareScope = next === "all" || next === "healthcare";
             onFiltersChange({
               ...filters,
-              facilityType: value as ClinicFilters["facilityType"],
-            })
-          }
+              facilityType: next,
+              hospitalLevel: isHealthcareScope ? filters.hospitalLevel : "all",
+              department: isHealthcareScope ? filters.department : "all",
+            });
+          }}
         >
           <SelectTrigger
             className={cn("w-[140px]", "bg-white text-foreground", "border-border")}
@@ -130,59 +138,63 @@ export function ClinicToolbar({
           </SelectContent>
         </Select>
 
-        <Select
-          value={filters.hospitalLevel}
-          onValueChange={(value) =>
-            onFiltersChange({
-              ...filters,
-              hospitalLevel: value as ClinicFilters["hospitalLevel"],
-            })
-          }
-        >
-          <SelectTrigger
-            className={cn("w-[140px]", "bg-white text-foreground", "border-border")}
-          >
-            <SelectValue placeholder="醫療分級" />
-          </SelectTrigger>
-          <SelectContent className="bg-white border-border text-foreground">
-            {HOSPITAL_LEVEL_OPTIONS.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-                className="focus:bg-accent focus:text-primary"
+        {showHealthcareFilters && (
+          <>
+            <Select
+              value={filters.hospitalLevel}
+              onValueChange={(value) =>
+                onFiltersChange({
+                  ...filters,
+                  hospitalLevel: value as ClinicFilters["hospitalLevel"],
+                })
+              }
+            >
+              <SelectTrigger
+                className={cn("w-[140px]", "bg-white text-foreground", "border-border")}
               >
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                <SelectValue placeholder="醫療分級" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-border text-foreground">
+                {HOSPITAL_LEVEL_OPTIONS.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="focus:bg-accent focus:text-primary"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-        <Select
-          value={filters.department}
-          onValueChange={(value) =>
-            onFiltersChange({
-              ...filters,
-              department: value as ClinicFilters["department"],
-            })
-          }
-        >
-          <SelectTrigger
-            className={cn("w-[140px]", "bg-white text-foreground", "border-border")}
-          >
-            <SelectValue placeholder="科別" />
-          </SelectTrigger>
-          <SelectContent className="bg-white border-border text-foreground">
-            {DEPARTMENT_OPTIONS.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-                className="focus:bg-accent focus:text-primary"
+            <Select
+              value={filters.department}
+              onValueChange={(value) =>
+                onFiltersChange({
+                  ...filters,
+                  department: value as ClinicFilters["department"],
+                })
+              }
+            >
+              <SelectTrigger
+                className={cn("w-[140px]", "bg-white text-foreground", "border-border")}
               >
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                <SelectValue placeholder="科別" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-border text-foreground">
+                {DEPARTMENT_OPTIONS.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="focus:bg-accent focus:text-primary"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        )}
 
         {hasActiveFilters && (
           <Button

@@ -4,12 +4,12 @@ const FEATURES = [
   {
     icon: MapPin,
     title: "一站找服務",
-    desc: "健保、自費、醫美診所通通能搜，不用裝好幾個 App",
+    desc: "健保、自費、美容通通能搜，不用裝好幾個 App",
   },
   {
     icon: CalendarCheck,
     title: "24 小時預約",
-    desc: "看診掛號、醫美諮詢隨時都能約，不用等電話開放",
+    desc: "看診掛號、美容諮詢隨時都能約，不用等電話開放",
   },
   {
     icon: ShieldCheck,

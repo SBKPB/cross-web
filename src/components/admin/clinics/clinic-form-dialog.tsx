@@ -349,7 +349,7 @@ function ClinicFormContent({
                 </SelectContent>
               </Select>
               <p className="text-muted-foreground text-xs">
-                決定此院所顯示在民眾端的哪一個 tab（健保看診 / 自費門診 / 醫美諮詢）
+                決定此院所顯示在民眾端的哪一個 tab（健保看診 / 自費門診 / 美容諮詢）
               </p>
             </div>
 

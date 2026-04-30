@@ -6,9 +6,9 @@ export type HospitalLevel =
   | "clinic"; // 診所
 
 // 服務類型（民眾分流用）
-// healthcare: 健保診所（一般看診）
-// self_pay:   自費診所（體檢、預防醫療、不收健保的專科）
-// aesthetic:  醫美診所（微整、雷射、美容療程）
+// healthcare: 健保（一般看診，依科別分流）
+// self_pay:   自費（體檢、預防醫療、不收健保的專科）
+// aesthetic:  美容（微整、雷射、美容療程，含醫美與美容業店家）
 export type FacilityType = "healthcare" | "self_pay" | "aesthetic";
 
 // 人員角色
@@ -95,7 +95,7 @@ export interface Clinic {
   phone: string | null;
   address: string | null;
   city?: string; // 由 address 解析出的縣市，用於篩選
-  facility_type?: FacilityType; // 服務類型（看診 / 自費 / 醫美）
+  facility_type?: FacilityType; // 服務類型（健保 / 自費 / 美容）
   email?: string;
   website?: string;
   description?: string;

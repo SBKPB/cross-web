@@ -23,14 +23,14 @@ import { cn } from "@/lib/utils";
 import type { FacilityType } from "@/types/clinic";
 
 const TABS: { value: FacilityType; label: string; icon: typeof Stethoscope }[] = [
-  { value: "healthcare", label: "看診", icon: Stethoscope },
-  { value: "aesthetic", label: "醫美", icon: Sparkles },
+  { value: "healthcare", label: "健保", icon: Stethoscope },
+  { value: "aesthetic", label: "美容", icon: Sparkles },
   { value: "self_pay", label: "自費", icon: Wallet },
 ];
 
 const TAB_PLACEHOLDERS: Record<FacilityType, string> = {
   healthcare: "診所名稱、症狀或醫師…",
-  aesthetic: "療程、醫師或品牌…例如「雷射」",
+  aesthetic: "店家、療程或品牌…例如「雷射」",
   self_pay: "健檢、疫苗、專科療程…",
 };
 

@@ -257,14 +257,14 @@ export function parseCityFromAddress(address: string | null | undefined): string
 export const FACILITY_TYPE_LABELS: Record<FacilityType, string> = {
   healthcare: "健保看診",
   self_pay: "自費門診",
-  aesthetic: "醫美諮詢",
+  aesthetic: "美容諮詢",
 };
 
 // Hero tabs 短標籤
 export const FACILITY_TYPE_SHORT_LABELS: Record<FacilityType, string> = {
-  healthcare: "看診",
+  healthcare: "健保",
   self_pay: "自費",
-  aesthetic: "醫美",
+  aesthetic: "美容",
 };
 
 // 服務類型顏色（用於 badge）
@@ -279,14 +279,14 @@ export const FACILITY_TYPE_OPTIONS = [
   { value: "all", label: "全部類型" },
   { value: "healthcare", label: "健保看診" },
   { value: "self_pay", label: "自費門診" },
-  { value: "aesthetic", label: "醫美諮詢" },
+  { value: "aesthetic", label: "美容諮詢" },
 ] as const;
 
 // 後台表單用（不含「全部」）
 export const FACILITY_TYPE_FORM_OPTIONS: ReadonlyArray<{ value: FacilityType; label: string }> = [
   { value: "healthcare", label: "健保看診" },
   { value: "self_pay", label: "自費門診" },
-  { value: "aesthetic", label: "醫美諮詢" },
+  { value: "aesthetic", label: "美容諮詢" },
 ];
 
 /**

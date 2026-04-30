@@ -39,6 +39,10 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
     ? FACILITY_TYPE_ICONS[clinic.facility_type]
     : null;
 
+  // 美容 / 自費 不分醫療分級，僅健保（或舊資料）顯示
+  const showHospitalLevel =
+    !clinic.facility_type || clinic.facility_type === "healthcare";
+
   return (
     <Card
       onClick={onClick}
@@ -64,9 +68,11 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
                   {FACILITY_TYPE_LABELS[clinic.facility_type]}
                 </Badge>
               )}
-              <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                {HOSPITAL_LEVELS[clinic.hospital_level]}
-              </Badge>
+              {showHospitalLevel && (
+                <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                  {HOSPITAL_LEVELS[clinic.hospital_level]}
+                </Badge>
+              )}
             </div>
 
             {/* 診所名稱 */}
@@ -98,8 +104,8 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* 科別標籤 */}
-        {displayDepartments.length > 0 && (
+        {/* 科別標籤（只在健保 / 舊資料顯示，美容、自費不分科） */}
+        {showHospitalLevel && displayDepartments.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {displayDepartments.map((dept) => (
               <Badge key={dept} variant="outline" className="text-muted-foreground">

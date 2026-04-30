@@ -181,8 +181,10 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
         {/* Quick actions: call, navigate, hours */}
         <ClinicContactInfo clinic={clinic} />
 
-        {/* Department badges */}
-        <DepartmentBadges departments={clinic.departments} />
+        {/* Department badges（美容、自費不分科） */}
+        {(!clinic.facility_type || clinic.facility_type === "healthcare") && (
+          <DepartmentBadges departments={clinic.departments} />
+        )}
 
         {/* Team members */}
         {clinic.members && clinic.members.length > 0 && (

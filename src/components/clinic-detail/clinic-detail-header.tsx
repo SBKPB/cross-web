@@ -33,6 +33,10 @@ export function ClinicDetailHeader({
     ? FACILITY_TYPE_ICONS[clinic.facility_type]
     : null;
 
+  // 美容 / 自費 不分醫療分級，僅健保（或舊資料）顯示
+  const showHospitalLevel =
+    !clinic.facility_type || clinic.facility_type === "healthcare";
+
   return (
     <div className={cn("relative", className)}>
       {/* Hero banner */}
@@ -90,10 +94,12 @@ export function ClinicDetailHeader({
                     {FACILITY_TYPE_LABELS[clinic.facility_type]}
                   </Badge>
                 )}
-                <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                  <Building2 />
-                  {HOSPITAL_LEVELS[clinic.hospital_level]}
-                </Badge>
+                {showHospitalLevel && (
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                    <Building2 />
+                    {HOSPITAL_LEVELS[clinic.hospital_level]}
+                  </Badge>
+                )}
               </div>
 
               {clinic.rating !== undefined && clinic.rating !== null && (

@@ -82,14 +82,16 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
 
             {/* 評分（改放描述位置，而不是右上角） */}
             {clinic.rating !== undefined && clinic.rating !== null && (
-              <CardDescription className="flex items-center gap-1.5 text-amber-500">
-                <Star className="h-4 w-4 fill-current" />
-                <span className="text-sm font-medium text-foreground">
-                  {clinic.rating.toFixed(1)}
+              <CardDescription className="flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-amber-600 dark:bg-amber-900/20 dark:text-amber-300">
+                  <Star className="size-3.5 fill-current" />
+                  <span className="text-xs font-semibold">
+                    {clinic.rating.toFixed(1)}
+                  </span>
                 </span>
                 {clinic.review_count && (
                   <span className="text-xs text-muted-foreground">
-                    · {clinic.review_count} 則評論
+                    {clinic.review_count} 則評論
                   </span>
                 )}
               </CardDescription>

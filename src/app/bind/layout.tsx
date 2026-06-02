@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "LINE 帳號綁定 - Cross",
+  title: "LINE 帳號綁定",
   description: "綁定 LINE 帳號以接收預約提醒通知",
 };
 

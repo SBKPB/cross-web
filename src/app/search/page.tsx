@@ -13,7 +13,7 @@ import type {
 } from "@/types/clinic";
 
 export const metadata: Metadata = {
-  title: "搜尋店家 | Cross",
+  title: "搜尋店家",
   description: "搜尋全台健保、美容與自費合作店家，線上預約",
 };
 

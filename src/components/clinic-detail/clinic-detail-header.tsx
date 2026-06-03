@@ -2,7 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Building2, Sparkles, Star, Stethoscope, Wallet } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  MapPin,
+  Sparkles,
+  Star,
+  Stethoscope,
+  Wallet,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,100 +32,128 @@ interface ClinicDetailHeaderProps {
   className?: string;
 }
 
-export function ClinicDetailHeader({
-  clinic,
-  className,
-}: ClinicDetailHeaderProps) {
-  const hasImages = clinic.images && clinic.images.length > 0;
-  const TypeIcon = clinic.facility_type
-    ? FACILITY_TYPE_ICONS[clinic.facility_type]
-    : null;
-
-  // 美容 / 自費 不分醫療分級，僅健保（或舊資料）顯示
+export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProps) {
+  const hasImage = !!clinic.images?.length;
+  const TypeIcon = clinic.facility_type ? FACILITY_TYPE_ICONS[clinic.facility_type] : null;
   const showHospitalLevel =
     !clinic.facility_type || clinic.facility_type === "healthcare";
+  const rating = clinic.rating ?? null;
 
   return (
-    <div className={cn("relative", className)}>
-      {/* Hero banner */}
-      <div className="relative h-48 w-full overflow-hidden sm:h-60">
-        {hasImages && clinic.images ? (
-          <Image
-            src={clinic.images[0]}
-            alt={clinic.clinic_name}
-            fill
-            className="object-cover"
-            priority
-          />
+    <section className={cn("relative", className)}>
+      {/* ===== 裝飾性 banner ===== */}
+      <div className="relative h-56 w-full overflow-hidden sm:h-64">
+        {hasImage && clinic.images ? (
+          <>
+            <Image
+              src={clinic.images[0]}
+              alt={clinic.clinic_name}
+              fill
+              priority
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-blue-950/80 via-blue-900/30 to-blue-900/40" />
+          </>
         ) : (
-          <div className="absolute inset-0 bg-linear-to-br from-primary via-primary to-accent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-primary to-sky-500" />
         )}
-        {/* 可讀性漸層 */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
 
-        {/* Back button */}
-        <div className="absolute left-4 top-4 z-10">
+        {/* 柔光暈 */}
+        <div className="pointer-events-none absolute -top-24 right-[8%] size-72 rounded-full bg-white/20 blur-3xl" />
+        <div className="pointer-events-none absolute top-10 left-[12%] size-56 rounded-full bg-sky-300/25 blur-3xl" />
+        {/* 點陣 */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+            maskImage: "radial-gradient(ellipse at top right, black, transparent 75%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse at top right, black, transparent 75%)",
+          }}
+        />
+        {/* 同心圓裝飾 */}
+        <div className="pointer-events-none absolute -bottom-28 -left-16 size-72 rounded-full border border-white/10" />
+        <div className="pointer-events-none absolute -bottom-40 -left-6 size-96 rounded-full border border-white/10" />
+
+        {/* 返回 */}
+        <div className="container relative mx-auto px-4 pt-5 sm:px-6">
           <Link
             href="/"
             aria-label="返回首頁"
-            className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-white/30"
+            className="inline-flex size-10 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/25"
           >
             <ArrowLeft className="size-5" />
           </Link>
         </div>
       </div>
 
-      {/* Floating info card */}
-      <div className="relative -mt-16 px-4 sm:px-6">
-        <div className="rounded-4xl bg-card p-5 shadow-xl ring-1 ring-foreground/5 sm:p-6">
-          <div className="flex items-start gap-4">
-            {/* Logo 方塊 */}
-            <div className="flex size-16 shrink-0 items-center justify-center rounded-3xl bg-primary text-2xl font-bold text-primary-foreground shadow-md sm:size-18">
+      {/* ===== 院所識別卡（疊在 banner 上） ===== */}
+      <div className="container relative mx-auto px-4 sm:px-6">
+        <div className="-mt-20 rounded-[1.75rem] bg-card p-5 shadow-xl ring-1 ring-foreground/5 sm:-mt-24 sm:p-7">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+            {/* Logo */}
+            <div className="flex size-20 shrink-0 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-primary to-sky-500 text-3xl font-bold text-primary-foreground shadow-lg shadow-primary/25 ring-1 ring-white/20 sm:size-24 sm:text-4xl">
               {clinic.clinic_name.charAt(0)}
             </div>
 
-            {/* Name / badges / rating */}
-            <div className="min-w-0 flex-1 space-y-2">
-              <h1 className="text-xl font-semibold leading-tight text-foreground sm:text-2xl">
-                {clinic.clinic_name}
-              </h1>
-
+            {/* 識別資訊 */}
+            <div className="min-w-0 flex-1 space-y-3">
               <div className="flex flex-wrap items-center gap-1.5">
                 {clinic.facility_type && TypeIcon && (
                   <Badge
-                    className={cn(
-                      "gap-1 border-0",
-                      FACILITY_TYPE_COLORS[clinic.facility_type],
-                    )}
+                    className={cn("gap-1 border-0", FACILITY_TYPE_COLORS[clinic.facility_type])}
                   >
                     <TypeIcon />
                     {FACILITY_TYPE_LABELS[clinic.facility_type]}
                   </Badge>
                 )}
                 {showHospitalLevel && (
-                  <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                  <Badge variant="secondary" className="gap-1 bg-accent text-accent-foreground">
                     <Building2 />
                     {HOSPITAL_LEVELS[clinic.hospital_level]}
                   </Badge>
                 )}
               </div>
 
-              {clinic.rating !== undefined && clinic.rating !== null && (
-                <div className="flex items-center gap-1.5 text-amber-500">
-                  <Star className="size-4 fill-current" />
-                  <span className="text-sm font-semibold text-foreground">
-                    {clinic.rating.toFixed(1)}
-                  </span>
-                  {clinic.review_count && (
-                    <span className="text-xs text-muted-foreground">
-                      · {clinic.review_count.toLocaleString()} 則評論
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                {clinic.clinic_name}
+              </h1>
+
+              {/* 評分 + 關鍵資訊 */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
+                {rating !== null && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-0.5 text-amber-400">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={cn(
+                            "size-3.5",
+                            i < Math.round(rating) ? "fill-current" : "fill-muted stroke-muted-foreground/30",
+                          )}
+                        />
+                      ))}
                     </span>
-                  )}
-                </div>
-              )}
+                    <span className="font-semibold text-foreground">{rating.toFixed(1)}</span>
+                    {clinic.review_count ? (
+                      <span className="text-muted-foreground">
+                        ({clinic.review_count.toLocaleString()})
+                      </span>
+                    ) : null}
+                  </span>
+                )}
+                {clinic.city && (
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <MapPin className="size-4" />
+                    {clinic.city}
+                  </span>
+                )}
+              </div>
 
               {clinic.description && (
-                <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                <p className="line-clamp-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                   {clinic.description}
                 </p>
               )}
@@ -125,6 +161,6 @@ export function ClinicDetailHeader({
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

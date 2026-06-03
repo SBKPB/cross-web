@@ -37,7 +37,8 @@ import {
 import { cn } from "@/lib/utils";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import { STAFF_ROLES } from "@/lib/constants/clinic-constants";
-import type { ApiStaff, ApiStaffLeave } from "@/types/clinic";
+import type { ApiSchedule, ApiStaff, ApiStaffLeave } from "@/types/clinic";
+import type { ScheduleSession } from "@/types/schedule";
 
 interface ScheduleTabProps {
   facilityId: string;
@@ -47,16 +48,39 @@ interface StaffLeaveMap {
   [staffId: string]: ApiStaffLeave[];
 }
 
+// 診次預設時間（與公開門診時刻表一致）
+const SESSION_PRESETS: Record<
+  ScheduleSession,
+  { label: string; short: string; start: string; end: string }
+> = {
+  morning: { label: "早診", short: "早", start: "09:00", end: "12:00" },
+  afternoon: { label: "午診", short: "午", start: "13:00", end: "17:00" },
+  evening: { label: "晚診", short: "晚", start: "17:00", end: "21:00" },
+};
+
+const SESSION_ORDER: ScheduleSession[] = ["morning", "afternoon", "evening"];
+
+const hhmm = (t: string) => t.slice(0, 5);
+
 export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [staff, setStaff] = useState<ApiStaff[]>([]);
   const [leavesMap, setLeavesMap] = useState<StaffLeaveMap>({});
+  const [schedules, setSchedules] = useState<ApiSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 休假表單
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
   const [noteInput, setNoteInput] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+
+  // 排班表單
+  const [shiftStaffId, setShiftStaffId] = useState<string>("");
+  const [shiftSession, setShiftSession] = useState<ScheduleSession>("morning");
+  const [shiftStart, setShiftStart] = useState(SESSION_PRESETS.morning.start);
+  const [shiftEnd, setShiftEnd] = useState(SESSION_PRESETS.morning.end);
 
   // 只載入專業人員（可提供服務的人員）
   const professionalStaff = staff.filter((s) =>
@@ -68,18 +92,19 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
     try {
       const start = startOfMonth(currentMonth);
       const end = endOfMonth(currentMonth);
+      const range = {
+        start_date: format(start, "yyyy-MM-dd"),
+        end_date: format(end, "yyyy-MM-dd"),
+      };
 
-      // staff 與整個院所的 leaves 並行抓（leaves 一次撈完，避免 per-staff N+1）
-      const [staffData, allLeaves] = await Promise.all([
+      const [staffData, allLeaves, allSchedules] = await Promise.all([
         adminClinicsApi.staff.list(facilityId),
-        adminClinicsApi.staffLeaves.listAll(facilityId, {
-          start_date: format(start, "yyyy-MM-dd"),
-          end_date: format(end, "yyyy-MM-dd"),
-        }),
+        adminClinicsApi.staffLeaves.listAll(facilityId, range),
+        adminClinicsApi.schedules.listAll(facilityId, range),
       ]);
       setStaff(staffData);
+      setSchedules(allSchedules);
 
-      // group by staff_id，前端組成原本的 map
       const newLeavesMap: StaffLeaveMap = {};
       for (const leave of allLeaves) {
         if (!newLeavesMap[leave.staff_id]) newLeavesMap[leave.staff_id] = [];
@@ -100,23 +125,43 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
-  const getLeavesForDate = (date: Date): { staff: ApiStaff; leave: ApiStaffLeave }[] => {
+  const getLeavesForDate = (
+    date: Date
+  ): { staff: ApiStaff; leave: ApiStaffLeave }[] => {
     const result: { staff: ApiStaff; leave: ApiStaffLeave }[] = [];
     professionalStaff.forEach((s) => {
       const staffLeaves = leavesMap[s.id] || [];
       const leave = staffLeaves.find((l) => isSameDay(parseISO(l.date), date));
-      if (leave) {
-        result.push({ staff: s, leave });
-      }
+      if (leave) result.push({ staff: s, leave });
     });
     return result;
   };
+
+  const getSchedulesForDate = (date: Date): ApiSchedule[] =>
+    schedules
+      .filter((s) => isSameDay(parseISO(s.date), date))
+      .sort(
+        (a, b) =>
+          SESSION_ORDER.indexOf(a.session_type) -
+          SESSION_ORDER.indexOf(b.session_type)
+      );
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
     setSelectedStaffId("");
     setNoteInput("");
+    setShiftStaffId("");
+    setShiftSession("morning");
+    setShiftStart(SESSION_PRESETS.morning.start);
+    setShiftEnd(SESSION_PRESETS.morning.end);
     setDialogOpen(true);
+  };
+
+  const handleSessionChange = (value: string) => {
+    const s = value as ScheduleSession;
+    setShiftSession(s);
+    setShiftStart(SESSION_PRESETS[s].start);
+    setShiftEnd(SESSION_PRESETS[s].end);
   };
 
   const handleAddLeave = async () => {
@@ -149,15 +194,52 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
     }
   };
 
+  const handleAddShift = async () => {
+    if (!shiftStaffId || !selectedDate) return;
+    if (shiftEnd <= shiftStart) return;
+    setIsSaving(true);
+    try {
+      await adminClinicsApi.schedules.create(facilityId, shiftStaffId, {
+        date: format(selectedDate, "yyyy-MM-dd"),
+        start_time: shiftStart,
+        end_time: shiftEnd,
+        session_type: shiftSession,
+      });
+      await fetchData();
+      setShiftStaffId("");
+    } catch (err) {
+      console.error("Failed to add schedule:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRemoveShift = async (staffId: string, scheduleId: string) => {
+    setIsSaving(true);
+    try {
+      await adminClinicsApi.schedules.delete(facilityId, staffId, scheduleId);
+      await fetchData();
+    } catch (err) {
+      console.error("Failed to remove schedule:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // 產生日曆資料
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  const calendarDays = eachDayOfInterval({
+    start: calendarStart,
+    end: calendarEnd,
+  });
 
-  // 目前選取日期的休假資料
   const selectedDateLeaves = selectedDate ? getLeavesForDate(selectedDate) : [];
+  const selectedDateShifts = selectedDate
+    ? getSchedulesForDate(selectedDate)
+    : [];
   const availableStaffForLeave = professionalStaff.filter(
     (s) => !selectedDateLeaves.some((l) => l.staff.id === s.id)
   );
@@ -173,9 +255,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">
-          排班/休假總覽
-        </h2>
+        <h2 className="text-lg font-semibold text-foreground">排班/休假總覽</h2>
       </div>
 
       <Card className="p-6">
@@ -194,7 +274,6 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
 
         {/* 日曆 */}
         <div className="grid grid-cols-7 gap-1">
-          {/* 星期標題 */}
           {["日", "一", "二", "三", "四", "五", "六"].map((day) => (
             <div
               key={day}
@@ -204,17 +283,21 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
             </div>
           ))}
 
-          {/* 日期格子 */}
           {calendarDays.map((date) => {
+            const dayShifts = getSchedulesForDate(date);
             const dayLeaves = getLeavesForDate(date);
             const isCurrentMonth = isSameMonth(date, currentMonth);
             const isToday = isSameDay(date, new Date());
+            const items = [
+              ...dayShifts.map((s) => ({ kind: "shift" as const, data: s })),
+              ...dayLeaves.map((l) => ({ kind: "leave" as const, data: l })),
+            ];
 
             return (
               <div
                 key={date.toISOString()}
                 className={cn(
-                  "min-h-[80px] cursor-pointer rounded-xl p-1.5 ring-1 ring-foreground/5 transition hover:bg-muted/40 hover:ring-primary/20",
+                  "min-h-[88px] cursor-pointer rounded-xl p-1.5 ring-1 ring-foreground/5 transition hover:bg-muted/40 hover:ring-primary/20",
                   !isCurrentMonth && "bg-muted/20 opacity-50",
                   isToday && "ring-2 ring-primary",
                 )}
@@ -229,18 +312,29 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                   {format(date, "d")}
                 </div>
                 <div className="space-y-0.5">
-                  {dayLeaves.slice(0, 3).map(({ staff: s, leave }) => (
-                    <div
-                      key={leave.id}
-                      className="truncate rounded bg-destructive/10 px-1 py-0.5 text-xs text-destructive"
-                      title={`${s.name}${leave.note ? ` - ${leave.note}` : ""}`}
-                    >
-                      {s.name}
-                    </div>
-                  ))}
-                  {dayLeaves.length > 3 && (
+                  {items.slice(0, 3).map((item) =>
+                    item.kind === "shift" ? (
+                      <div
+                        key={`s-${item.data.id}`}
+                        className="truncate rounded bg-emerald-100 px-1 py-0.5 text-xs text-emerald-700"
+                        title={`${item.data.staff_name}・${SESSION_PRESETS[item.data.session_type].label} ${hhmm(item.data.start_time)}–${hhmm(item.data.end_time)}`}
+                      >
+                        {SESSION_PRESETS[item.data.session_type].short}{" "}
+                        {item.data.staff_name}
+                      </div>
+                    ) : (
+                      <div
+                        key={`l-${item.data.leave.id}`}
+                        className="truncate rounded bg-destructive/10 px-1 py-0.5 text-xs text-destructive"
+                        title={`${item.data.staff.name} 休假${item.data.leave.note ? ` - ${item.data.leave.note}` : ""}`}
+                      >
+                        休 {item.data.staff.name}
+                      </div>
+                    ),
+                  )}
+                  {items.length > 3 && (
                     <div className="text-xs text-muted-foreground">
-                      +{dayLeaves.length - 3} 人
+                      +{items.length - 3}
                     </div>
                   )}
                 </div>
@@ -250,34 +344,156 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
         </div>
 
         {/* 圖例 */}
-        <div className="mt-4 flex items-center gap-4 border-t border-border/60 pt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-border/60 pt-4">
+          <div className="flex items-center gap-2">
+            <div className="size-3 rounded bg-emerald-100" />
+            <span className="text-sm text-muted-foreground">門診排班</span>
+          </div>
           <div className="flex items-center gap-2">
             <div className="size-3 rounded bg-destructive/10" />
             <span className="text-sm text-muted-foreground">休假</span>
           </div>
           <div className="text-sm text-muted-foreground">
-            點擊日期可新增或移除休假
+            點擊日期可管理排班與休假
           </div>
         </div>
       </Card>
 
       {/* 日期詳情 Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[450px]">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>
               {selectedDate
                 ? format(selectedDate, "yyyy/MM/dd (EEEE)", { locale: zhTW })
                 : ""}
             </DialogTitle>
-            <DialogDescription>管理此日期的人員休假</DialogDescription>
+            <DialogDescription>管理此日期的門診排班與人員休假</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* 已休假人員 */}
-            {selectedDateLeaves.length > 0 && (
-              <div className="space-y-2">
-                <Label>已設定休假</Label>
+          <div className="space-y-5">
+            {/* ===== 門診排班 ===== */}
+            <div className="space-y-3">
+              <Label className="text-emerald-700">門診排班</Label>
+
+              {selectedDateShifts.length > 0 && (
+                <div className="space-y-2">
+                  {selectedDateShifts.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex items-center justify-between rounded-xl p-3 ring-1 ring-foreground/5"
+                    >
+                      <div className="min-w-0">
+                        <span className="font-medium text-foreground">
+                          {s.staff_name}
+                        </span>
+                        <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
+                          {SESSION_PRESETS[s.session_type].label}
+                        </span>
+                        <span className="ml-2 text-sm text-muted-foreground tabular-nums">
+                          {hhmm(s.start_time)}–{hhmm(s.end_time)}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleRemoveShift(s.staff_id, s.id)}
+                        disabled={isSaving}
+                      >
+                        <XIcon className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {professionalStaff.length > 0 ? (
+                <div className="grid gap-3 rounded-xl bg-muted/40 p-3">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="shift-staff" className="text-xs">
+                        人員
+                      </Label>
+                      <Select
+                        value={shiftStaffId}
+                        onValueChange={setShiftStaffId}
+                      >
+                        <SelectTrigger id="shift-staff">
+                          <SelectValue placeholder="選擇人員" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {professionalStaff.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name} ({STAFF_ROLES[s.role]})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="shift-session" className="text-xs">
+                        診次
+                      </Label>
+                      <Select
+                        value={shiftSession}
+                        onValueChange={handleSessionChange}
+                      >
+                        <SelectTrigger id="shift-session">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SESSION_ORDER.map((key) => (
+                            <SelectItem key={key} value={key}>
+                              {SESSION_PRESETS[key].label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="shift-start" className="text-xs">
+                        開始
+                      </Label>
+                      <Input
+                        id="shift-start"
+                        type="time"
+                        value={shiftStart}
+                        onChange={(e) => setShiftStart(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="shift-end" className="text-xs">
+                        結束
+                      </Label>
+                      <Input
+                        id="shift-end"
+                        type="time"
+                        value={shiftEnd}
+                        onChange={(e) => setShiftEnd(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleAddShift}
+                    disabled={!shiftStaffId || shiftEnd <= shiftStart || isSaving}
+                  >
+                    {isSaving ? "處理中..." : "新增排班"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="py-2 text-center text-sm text-muted-foreground">
+                  尚無專業人員（醫師/美容師/治療師）
+                </p>
+              )}
+            </div>
+
+            {/* ===== 休假 ===== */}
+            <div className="space-y-3 border-t border-border/60 pt-4">
+              <Label className="text-destructive">休假</Label>
+
+              {selectedDateLeaves.length > 0 && (
                 <div className="space-y-2">
                   {selectedDateLeaves.map(({ staff: s, leave }) => (
                     <div
@@ -308,16 +524,14 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* 新增休假 */}
-            {availableStaffForLeave.length > 0 && (
-              <div className="space-y-3 border-t border-border/60 pt-4">
-                <Label>新增休假</Label>
-                <div className="grid gap-3">
-                  <div className="grid gap-2">
-                    <Label htmlFor="staff-select">選擇人員</Label>
+              {availableStaffForLeave.length > 0 && (
+                <div className="grid gap-3 rounded-xl bg-muted/40 p-3">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="staff-select" className="text-xs">
+                      選擇人員
+                    </Label>
                     <Select
                       value={selectedStaffId}
                       onValueChange={setSelectedStaffId}
@@ -334,8 +548,10 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="leave-note">備註（選填）</Label>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="leave-note" className="text-xs">
+                      備註（選填）
+                    </Label>
                     <Input
                       id="leave-note"
                       value={noteInput}
@@ -344,21 +560,15 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                     />
                   </div>
                   <Button
+                    variant="outline"
                     onClick={handleAddLeave}
                     disabled={!selectedStaffId || isSaving}
                   >
                     {isSaving ? "處理中..." : "設定休假"}
                   </Button>
                 </div>
-              </div>
-            )}
-
-            {availableStaffForLeave.length === 0 &&
-              selectedDateLeaves.length === 0 && (
-                <p className="text-muted-foreground py-4 text-center">
-                  尚無專業人員（醫師/美容師/治療師）
-                </p>
               )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

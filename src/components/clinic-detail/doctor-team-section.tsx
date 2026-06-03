@@ -3,12 +3,7 @@
 import { useMemo, useState } from "react";
 import { User, Users } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { SectionCard } from "@/components/clinic-detail/section-card";
 import { MEMBER_ROLES } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
 import type { Member, MemberRole } from "@/types/clinic";
@@ -26,10 +21,7 @@ const ROLE_GROUPS: { key: "all" | MemberRole; label: string; roles: MemberRole[]
   { key: "admin", label: "行政", roles: ["receptionist", "admin"] },
 ];
 
-export function DoctorTeamSection({
-  members,
-  className,
-}: DoctorTeamSectionProps) {
+export function DoctorTeamSection({ members, className }: DoctorTeamSectionProps) {
   const [activeTab, setActiveTab] = useState<string>("all");
 
   const availableTabs = useMemo(
@@ -51,90 +43,74 @@ export function DoctorTeamSection({
   if (members.length === 0) return null;
 
   return (
-    <div className={cn("px-4 sm:px-6", className)}>
-      <Card size="sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Users className="size-4 text-primary" />
-              團隊成員
-            </CardTitle>
-            <span className="text-xs text-muted-foreground">
-              {members.length} 人
-            </span>
-          </div>
-        </CardHeader>
+    <SectionCard
+      icon={Users}
+      title="團隊成員"
+      action={
+        <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+          {members.length} 人
+        </span>
+      }
+      className={className}
+    >
+      {availableTabs.length > 2 && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {availableTabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={cn(
+                  "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-        <CardContent className="space-y-4">
-          {/* 角色 Tab 切換 */}
-          {availableTabs.length > 2 && (
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
-              {availableTabs.map((tab) => {
-                const isActive = activeTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setActiveTab(tab.key)}
-                    className={cn(
-                      "shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* 人員卡片 — 橫向滾動 */}
-          <div className="-mx-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
-            <div className="flex snap-x snap-mandatory gap-4 pb-1">
-              {filteredMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="w-28 shrink-0 snap-start text-center sm:w-32"
-                >
-                  {/* Avatar */}
-                  <div className="relative mx-auto size-18 overflow-hidden rounded-full ring-1 ring-foreground/5 shadow-sm sm:size-20">
-                    {member.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        loading="lazy"
-                        className="size-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex size-full items-center justify-center bg-accent">
-                        <User className="size-8 text-primary" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="mt-2.5 space-y-0.5">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {member.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {member.title || MEMBER_ROLES[member.role]}
-                    </p>
-                    {member.specialties && member.specialties.length > 0 && (
-                      <p className="line-clamp-1 text-xs text-muted-foreground/80">
-                        {member.specialties.slice(0, 2).join("、")}
-                      </p>
-                    )}
-                  </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+        {filteredMembers.map((member) => (
+          <div
+            key={member.id}
+            className="flex flex-col items-center rounded-2xl bg-muted/40 p-4 text-center ring-1 ring-transparent transition-all hover:bg-accent/40 hover:ring-primary/15"
+          >
+            <div className="relative size-16 overflow-hidden rounded-full shadow-sm ring-2 ring-card">
+              {member.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={member.avatar}
+                  alt={member.name}
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              ) : (
+                <div className="flex size-full items-center justify-center bg-gradient-to-br from-primary/15 to-sky-200/50">
+                  <User className="size-7 text-primary" />
                 </div>
-              ))}
+              )}
             </div>
+            <p className="mt-3 truncate text-sm font-semibold text-foreground">
+              {member.name}
+            </p>
+            <p className="text-xs text-primary">
+              {member.title || MEMBER_ROLES[member.role]}
+            </p>
+            {member.specialties && member.specialties.length > 0 && (
+              <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                {member.specialties.slice(0, 2).join("、")}
+              </p>
+            )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        ))}
+      </div>
+    </SectionCard>
   );
 }

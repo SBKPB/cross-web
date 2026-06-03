@@ -4,9 +4,11 @@ import {
   ClinicContactInfo,
   DepartmentBadges,
   DoctorTeamSection,
+  ScheduleTimetable,
   ServicePreviewList,
   BusinessHoursSection,
   StickyBookingButton,
+  BookingCard,
 } from "@/components/clinic-detail";
 import {
   deriveFacilityType,
@@ -19,6 +21,7 @@ import type {
   Member,
   Service,
 } from "@/types/clinic";
+import type { WeeklySchedule } from "@/types/schedule";
 
 const API_BASE_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -122,6 +125,21 @@ async function getServicesFromApi(clinicId: string): Promise<Service[]> {
   }
 }
 
+async function getScheduleFromApi(
+  clinicId: string,
+): Promise<WeeklySchedule | null> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/booking/clinics/${clinicId}/schedule`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as WeeklySchedule;
+  } catch {
+    return null;
+  }
+}
+
 async function getClinicFromApi(clinicId: string): Promise<Clinic | null> {
   // 1. 優先嘗試 booking 單一院所端點
   try {
@@ -156,10 +174,11 @@ async function getClinicFromApi(clinicId: string): Promise<Clinic | null> {
 export default async function ClinicDetailPage({ params }: ClinicDetailPageProps) {
   const { "clinic-id": clinicId } = await params;
 
-  // 平行取得院所資訊和服務項目
-  const [clinic, services] = await Promise.all([
+  // 平行取得院所資訊、服務項目與門診排班
+  const [clinic, services, schedule] = await Promise.all([
     getClinicFromApi(clinicId),
     getServicesFromApi(clinicId),
+    getScheduleFromApi(clinicId),
   ]);
 
   if (!clinic) {
@@ -171,38 +190,56 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
     clinic.services = services;
   }
 
+  // 健保科別只在健保 / 舊資料顯示
+  const isHealthcareScope =
+    !clinic.facility_type || clinic.facility_type === "healthcare";
+  // 門診時刻表：健保、自費（皆有醫師 / 治療師排班）一律顯示（無資料呈現空狀態）；
+  // 美容僅在確有排班時才顯示
+  const showSchedule =
+    schedule !== null &&
+    (clinic.facility_type !== "aesthetic" || schedule.entries.length > 0);
+
   return (
-    <div className="min-h-screen bg-background pb-28">
-      {/* Hero header with gradient + clinic info card */}
+    <div className="min-h-screen bg-background pb-28 lg:pb-16">
+      {/* Hero：裝飾性 banner + 院所識別卡 */}
       <ClinicDetailHeader clinic={clinic} />
 
-      {/* Content sections */}
-      <div className="mt-4 space-y-4">
-        {/* Quick actions: call, navigate, hours */}
-        <ClinicContactInfo clinic={clinic} />
+      {/* 桌機雙欄：主內容 + 黏性側欄 */}
+      <div className="container mx-auto px-4 pt-6 sm:px-6 sm:pt-8">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          {/* ===== 主內容 ===== */}
+          <div className="space-y-6">
+            {/* 醫療科別（美容、自費不分科） */}
+            {isHealthcareScope && (
+              <DepartmentBadges departments={clinic.departments} />
+            )}
 
-        {/* Department badges（美容、自費不分科） */}
-        {(!clinic.facility_type || clinic.facility_type === "healthcare") && (
-          <DepartmentBadges departments={clinic.departments} />
-        )}
+            {/* 門診時刻表（醫師排班：早/午/晚 × 週一~週日） */}
+            {showSchedule && <ScheduleTimetable schedule={schedule} />}
 
-        {/* Team members */}
-        {clinic.members && clinic.members.length > 0 && (
-          <DoctorTeamSection members={clinic.members} />
-        )}
+            {/* 團隊成員 */}
+            {clinic.members && clinic.members.length > 0 && (
+              <DoctorTeamSection members={clinic.members} />
+            )}
 
-        {/* Services */}
-        {clinic.services && clinic.services.length > 0 && (
-          <ServicePreviewList services={clinic.services} />
-        )}
+            {/* 服務項目 */}
+            {clinic.services && clinic.services.length > 0 && (
+              <ServicePreviewList services={clinic.services} />
+            )}
+          </div>
 
-        {/* Business hours */}
-        {clinic.business_hours && clinic.business_hours.length > 0 && (
-          <BusinessHoursSection businessHours={clinic.business_hours} />
-        )}
+          {/* ===== 側欄（桌機黏性） ===== */}
+          <aside className="space-y-6 lg:sticky lg:top-6">
+            <BookingCard clinicId={clinicId} className="hidden lg:block" />
+            <ClinicContactInfo clinic={clinic} />
+            {clinic.business_hours && clinic.business_hours.length > 0 && (
+              <BusinessHoursSection businessHours={clinic.business_hours} />
+            )}
+          </aside>
+        </div>
       </div>
 
-      {/* Sticky bottom booking bar */}
+      {/* 手機底部 sticky 預約 bar（桌機隱藏，改用側欄 CTA 卡片） */}
       <StickyBookingButton clinicId={clinicId} />
     </div>
   );

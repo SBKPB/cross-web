@@ -2,13 +2,8 @@
 
 import { Stethoscope } from "lucide-react";
 
+import { SectionCard } from "@/components/clinic-detail/section-card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   API_MEDICAL_DEPARTMENTS,
   DEPARTMENT_COLORS,
@@ -30,31 +25,21 @@ export function DepartmentBadges({ departments, className }: DepartmentBadgesPro
     dept;
 
   return (
-    <div className={cn("px-4 sm:px-6", className)}>
-      <Card size="sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <Stethoscope className="size-4 text-primary" />
-            醫療科別
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {departments.map((dept) => (
-              <Badge
-                key={dept}
-                className={cn(
-                  "border-0 px-3 py-1",
-                  DEPARTMENT_COLORS[dept as keyof typeof DEPARTMENT_COLORS] ??
-                    "bg-muted text-muted-foreground",
-                )}
-              >
-                {getDeptLabel(dept)}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionCard icon={Stethoscope} title="醫療科別" className={className}>
+      <div className="flex flex-wrap gap-2">
+        {departments.map((dept) => (
+          <Badge
+            key={dept}
+            className={cn(
+              "border-0 px-3 py-1 text-sm",
+              DEPARTMENT_COLORS[dept as keyof typeof DEPARTMENT_COLORS] ??
+                "bg-muted text-muted-foreground",
+            )}
+          >
+            {getDeptLabel(dept)}
+          </Badge>
+        ))}
+      </div>
+    </SectionCard>
   );
 }

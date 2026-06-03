@@ -17,6 +17,9 @@ import type {
   ApiStaffLeave,
   ApiStaffLeaveCreate,
   ApiStaffLeaveUpdate,
+  ApiSchedule,
+  ApiScheduleCreate,
+  ApiScheduleUpdate,
 } from "@/types/clinic";
 
 const BASE_PATH = "/api/v1/medical-facilities";
@@ -217,6 +220,46 @@ export const adminClinicsApi = {
     delete: (facilityId: string, staffId: string, leaveId: string) =>
       api.delete<void>(
         `${BASE_PATH}/${facilityId}/staff/${staffId}/leaves/${leaveId}`
+      ),
+  },
+
+  // ========== 門診排班 ==========
+
+  schedules: {
+    /** 一次撈整個院所所有人員的排班 */
+    listAll: (
+      facilityId: string,
+      params?: { start_date?: string; end_date?: string }
+    ) => {
+      const searchParams = new URLSearchParams();
+      if (params?.start_date) searchParams.append("start_date", params.start_date);
+      if (params?.end_date) searchParams.append("end_date", params.end_date);
+      const query = searchParams.toString();
+      return api.get<ApiSchedule[]>(
+        `${BASE_PATH}/${facilityId}/schedules${query ? `?${query}` : ""}`
+      );
+    },
+
+    create: (facilityId: string, staffId: string, data: ApiScheduleCreate) =>
+      api.post<ApiSchedule>(
+        `${BASE_PATH}/${facilityId}/staff/${staffId}/schedules`,
+        data
+      ),
+
+    update: (
+      facilityId: string,
+      staffId: string,
+      scheduleId: string,
+      data: ApiScheduleUpdate
+    ) =>
+      api.patch<ApiSchedule>(
+        `${BASE_PATH}/${facilityId}/staff/${staffId}/schedules/${scheduleId}`,
+        data
+      ),
+
+    delete: (facilityId: string, staffId: string, scheduleId: string) =>
+      api.delete<void>(
+        `${BASE_PATH}/${facilityId}/staff/${staffId}/schedules/${scheduleId}`
       ),
   },
 };

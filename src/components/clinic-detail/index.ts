@@ -4,4 +4,7 @@ export { DepartmentBadges } from "./department-badges";
 export { DoctorTeamSection } from "./doctor-team-section";
 export { ServicePreviewList } from "./service-preview-list";
 export { BusinessHoursSection } from "./business-hours-section";
+export { ScheduleTimetable } from "./schedule-timetable";
 export { StickyBookingButton } from "./sticky-booking-button";
+export { BookingCard } from "./booking-card";
+export { SectionCard } from "./section-card";

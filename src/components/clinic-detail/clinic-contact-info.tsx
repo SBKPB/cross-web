@@ -2,7 +2,8 @@
 
 import { MapPin, Navigation, Phone } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { SectionCard } from "@/components/clinic-detail/section-card";
+import { Button } from "@/components/ui/button";
 import type { Clinic } from "@/types/clinic";
 
 interface ClinicContactInfoProps {
@@ -11,71 +12,54 @@ interface ClinicContactInfoProps {
 }
 
 export function ClinicContactInfo({ clinic, className }: ClinicContactInfoProps) {
-  // 地址 / 電話兩者都空就整段不渲染，避免出現空白卡或孤零零的單一 tile
-  if (!clinic.address && !clinic.phone) {
-    return null;
-  }
+  if (!clinic.address && !clinic.phone) return null;
 
-  const actionTileClass = cn(
-    "group/tile flex w-32 flex-col items-center gap-1.5 rounded-3xl bg-card px-3 py-4",
-    "shadow-sm ring-1 ring-foreground/5",
-    "transition-all hover:-translate-y-0.5 hover:shadow-md",
-  );
-
-  const iconCircleClass =
-    "flex size-11 items-center justify-center rounded-full transition-colors";
+  const mapsUrl = clinic.address
+    ? `https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`
+    : null;
 
   return (
-    <div className={cn("px-4 sm:px-6", className)}>
-      {/* Quick action row（地址/電話可點，僅在有資料時呈現） */}
-      <div className="flex items-stretch justify-center gap-3 sm:gap-4">
+    <SectionCard icon={MapPin} title="聯絡資訊" className={className}>
+      <div className="space-y-3">
         {clinic.address && (
+          <div className="flex items-start gap-2.5">
+            <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <span className="text-sm leading-relaxed text-foreground">
+              {clinic.address}
+            </span>
+          </div>
+        )}
+        {clinic.phone && (
           <a
-            href={`https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={actionTileClass}
+            href={`tel:${clinic.phone}`}
+            className="flex items-center gap-2.5 text-foreground transition-colors hover:text-primary"
           >
-            <div className={cn(iconCircleClass, "bg-accent text-accent-foreground")}>
-              <Navigation className="size-4.5" />
-            </div>
-            <span className="text-xs font-medium text-foreground">導航</span>
+            <Phone className="size-4 shrink-0 text-muted-foreground" />
+            <span className="text-sm tabular-nums">{clinic.phone}</span>
           </a>
         )}
 
-        {clinic.phone && (
-          <a href={`tel:${clinic.phone}`} className={actionTileClass}>
-            <div className={cn(iconCircleClass, "bg-sky-100 text-sky-600")}>
-              <Phone className="size-4.5" />
-            </div>
-            <span className="text-xs font-medium text-foreground">電話</span>
-          </a>
+        {(mapsUrl || clinic.phone) && (
+          <div className="flex gap-2 pt-1">
+            {mapsUrl && (
+              <Button asChild variant="outline" size="sm" className="flex-1">
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                  <Navigation className="size-4" />
+                  導航
+                </a>
+              </Button>
+            )}
+            {clinic.phone && (
+              <Button asChild variant="outline" size="sm" className="flex-1">
+                <a href={`tel:${clinic.phone}`}>
+                  <Phone className="size-4" />
+                  撥打
+                </a>
+              </Button>
+            )}
+          </div>
         )}
       </div>
-
-      {/* 地址列 */}
-      {clinic.address && (
-        <a
-          href={`https://maps.google.com/?q=${encodeURIComponent(clinic.address)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 flex items-center gap-2.5 rounded-3xl bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5 transition-all hover:shadow-md"
-        >
-          <MapPin className="size-4 shrink-0 text-muted-foreground" />
-          <span className="truncate text-sm text-foreground">{clinic.address}</span>
-        </a>
-      )}
-
-      {/* 電話列 */}
-      {clinic.phone && (
-        <a
-          href={`tel:${clinic.phone}`}
-          className="mt-2 flex items-center gap-2.5 rounded-3xl bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5 transition-all hover:shadow-md"
-        >
-          <Phone className="size-4 shrink-0 text-muted-foreground" />
-          <span className="text-sm text-foreground">{clinic.phone}</span>
-        </a>
-      )}
-    </div>
+    </SectionCard>
   );
 }

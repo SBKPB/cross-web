@@ -1,3 +1,5 @@
+import type { ScheduleSession } from "./schedule";
+
 // 醫療分級
 export type HospitalLevel =
   | "medical_center" // 醫學中心
@@ -373,4 +375,41 @@ export interface ApiStaffLeaveCreate {
 export interface ApiStaffLeaveUpdate {
   date?: string;
   note?: string;
+}
+
+// ========== 門診排班 API 型別 ==========
+
+export interface ApiSchedule {
+  id: string;
+  staff_id: string;
+  staff_name: string;
+  date: string; // YYYY-MM-DD
+  start_time: string; // "13:00:00"
+  end_time: string; // "17:00:00"
+  session_type: ScheduleSession; // morning / afternoon / evening
+  max_appointments: number;
+  is_available: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface ApiScheduleCreate {
+  date: string; // YYYY-MM-DD
+  start_time: string; // "13:00"
+  end_time: string; // "17:00"
+  session_type?: ScheduleSession;
+  max_appointments?: number;
+  is_available?: boolean;
+  notes?: string;
+}
+
+export interface ApiScheduleUpdate {
+  date?: string;
+  start_time?: string;
+  end_time?: string;
+  session_type?: ScheduleSession;
+  max_appointments?: number;
+  is_available?: boolean;
+  notes?: string;
 }

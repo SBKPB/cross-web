@@ -1,5 +1,6 @@
 "use client";
 
+import { Loader2, TriangleAlert } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -35,11 +36,32 @@ export function UserDeleteDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>確認刪除</DialogTitle>
-          <DialogDescription>
-            確定要刪除「{user?.email}」嗎？此操作無法復原。
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+              <TriangleAlert className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <DialogTitle>確認刪除使用者</DialogTitle>
+              <DialogDescription>此操作無法復原</DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
+
+        <div className="space-y-3 rounded-2xl bg-destructive/10 p-4 text-sm text-destructive ring-1 ring-destructive/20">
+          {user && (
+            <div className="flex items-center gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-destructive/15 text-sm font-semibold uppercase text-destructive">
+                {user.email.charAt(0)}
+              </span>
+              <span className="min-w-0 flex-1 truncate font-medium">
+                {user.email}
+              </span>
+            </div>
+          )}
+          <p className="leading-relaxed">
+            確定要刪除此使用者嗎？刪除後相關帳號資料將永久移除。
+          </p>
+        </div>
 
         <DialogFooter className={lumaDialogFooter}>
           <Button
@@ -56,6 +78,7 @@ export function UserDeleteDialog({
             onClick={handleConfirm}
             disabled={isLoading}
           >
+            {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
             {isLoading ? "刪除中..." : "確認刪除"}
           </Button>
         </DialogFooter>

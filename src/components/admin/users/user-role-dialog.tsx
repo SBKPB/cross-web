@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -52,15 +53,33 @@ function UserRoleContent({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>角色管理</DialogTitle>
-        <DialogDescription>
-          設定「{user?.email}」的角色
-        </DialogDescription>
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <ShieldCheck className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <DialogTitle>角色管理</DialogTitle>
+            <DialogDescription>設定使用者的系統角色</DialogDescription>
+          </div>
+        </div>
       </DialogHeader>
+
+      {user && (
+        <div className="flex items-center gap-3 rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold uppercase text-primary">
+            {user.email.charAt(0)}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+            {user.email}
+          </span>
+        </div>
+      )}
 
       <div className="space-y-2">
         {allRoles.length === 0 ? (
-          <p className="text-sm text-muted-foreground">尚無可用角色</p>
+          <p className="rounded-2xl bg-muted/30 p-4 text-center text-sm text-muted-foreground ring-1 ring-foreground/5">
+            尚無可用角色
+          </p>
         ) : (
           allRoles.map((role) => {
             const checked = selectedRoleIds.includes(role.id);
@@ -72,7 +91,7 @@ function UserRoleContent({
                   "flex cursor-pointer items-start gap-3 rounded-2xl p-3 ring-1 transition",
                   checked
                     ? "ring-primary bg-primary/5"
-                    : "ring-foreground/5 hover:ring-primary/20",
+                    : "ring-foreground/5 hover:ring-primary/30",
                 )}
               >
                 <Checkbox
@@ -82,11 +101,20 @@ function UserRoleContent({
                   className="mt-0.5"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium text-foreground">
-                    {role.display_name}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full px-2.5 py-1 text-xs font-medium transition",
+                        checked
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {role.display_name}
+                    </span>
                   </div>
                   {role.description && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="mt-1.5 text-xs text-muted-foreground">
                       {role.description}
                     </div>
                   )}
@@ -106,11 +134,8 @@ function UserRoleContent({
         >
           取消
         </Button>
-        <Button
-          type="button"
-          onClick={handleConfirm}
-          disabled={isLoading}
-        >
+        <Button type="button" onClick={handleConfirm} disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
           {isLoading ? "儲存中..." : "儲存"}
         </Button>
       </DialogFooter>

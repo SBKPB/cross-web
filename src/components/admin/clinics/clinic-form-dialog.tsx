@@ -2,6 +2,14 @@
 
 import { useRef, useState } from "react";
 import {
+  BuildingIcon,
+  ClockIcon,
+  ImageIcon,
+  Loader2,
+  PlusIcon,
+  XIcon,
+} from "lucide-react";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -37,8 +45,12 @@ import Image from "next/image";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import { categoriesFor } from "@/lib/api/service-categories";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
-import { lumaDialogFooter } from "@/lib/styles/luma";
+import { lumaDialogFooter, lumaIconBadge } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
+
+// 表單分區卡：相關欄位群組，柔色底 + 細邊框，與後台其他區塊一致
+const sectionCard = "rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5";
+const sectionTitle = "text-sm font-medium text-foreground";
 
 interface ClinicFormDialogProps {
   open: boolean;
@@ -322,10 +334,17 @@ function ClinicFormContent({
   return (
     <form onSubmit={handleSubmit}>
       <DialogHeader>
-        <DialogTitle>{isEditing ? "編輯院所" : "新增院所"}</DialogTitle>
-        <DialogDescription>
-          {isEditing ? "修改院所資訊" : "填寫院所基本資料"}
-        </DialogDescription>
+        <div className="flex items-center gap-3">
+          <div className={lumaIconBadge}>
+            <BuildingIcon className="size-5" />
+          </div>
+          <div>
+            <DialogTitle>{isEditing ? "編輯院所" : "新增院所"}</DialogTitle>
+            <DialogDescription>
+              {isEditing ? "修改院所資訊" : "填寫院所基本資料"}
+            </DialogDescription>
+          </div>
+        </div>
       </DialogHeader>
 
       <Tabs defaultValue="basic" className="mt-4">
@@ -336,24 +355,58 @@ function ClinicFormContent({
 
         <TabsContent value="basic" className="mt-4">
           <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">
-                院所名稱 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder="請輸入院所名稱"
-                required
-              />
+            {/* 基本資訊 */}
+            <div className={cn(sectionCard, "grid gap-4")}>
+              <p className={cn(sectionTitle, "flex items-center gap-2")}>
+                <BuildingIcon className="size-4 text-primary" />
+                基本資訊
+              </p>
+              <div className="grid gap-2">
+                <Label htmlFor="name">
+                  院所名稱 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  placeholder="請輸入院所名稱"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="phone">電話</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                  }
+                  placeholder="例：02-12345678"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="address">地址</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, address: e.target.value }))
+                  }
+                  placeholder="請輸入地址"
+                />
+              </div>
             </div>
 
             {/* 院所 Logo */}
-            <div className="grid gap-2">
-              <Label>院所 Logo</Label>
+            <div className={cn(sectionCard, "grid gap-2")}>
+              <Label className={cn(sectionTitle, "flex items-center gap-2")}>
+                <ImageIcon className="size-4 text-primary" />
+                院所 Logo
+              </Label>
               {isEditing ? (
                 <div className="flex items-center gap-4">
                   <div className="size-16 shrink-0 overflow-hidden rounded-2xl ring-1 ring-border">
@@ -381,6 +434,9 @@ function ClinicFormContent({
                         disabled={logoBusy}
                         onClick={() => logoFileRef.current?.click()}
                       >
+                        {logoBusy && (
+                          <Loader2 className="size-4 animate-spin" />
+                        )}
                         {logoBusy ? "處理中…" : logoUrl ? "更換" : "上傳"}
                       </Button>
                       {logoUrl && (
@@ -399,7 +455,9 @@ function ClinicFormContent({
                       建議 512×512 正方形 PNG（≤2MB）；未上傳則用院所名首字頭像
                     </p>
                     {logoError && (
-                      <p className="text-xs text-destructive">{logoError}</p>
+                      <p className="inline-flex rounded-lg bg-destructive/10 px-2 py-1 text-xs text-destructive">
+                        {logoError}
+                      </p>
                     )}
                   </div>
                   <input
@@ -419,111 +477,112 @@ function ClinicFormContent({
               )}
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="facility_type">服務類型（民眾端分流）</Label>
-              <Select
-                value={formData.facility_type}
-                onValueChange={handleFacilityTypeChange}
-              >
-                <SelectTrigger id="facility_type" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FACILITY_TYPE_FORM_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-muted-foreground text-xs">
-                決定此院所顯示在民眾端的哪一個 tab（看診 / 醫美 / 美容 / 其他）。切換時會清空已勾選的服務子類別。
-              </p>
-            </div>
+            {/* 服務型態 */}
+            <div className={cn(sectionCard, "grid gap-4")}>
+              <p className={sectionTitle}>服務型態</p>
 
-            {/* 服務子類別（依目前服務類型顯示，可複選） */}
-            <div className="grid gap-2">
-              <Label>服務子類別（可複選）</Label>
-              <div className="grid grid-cols-2 gap-2 rounded-xl p-3 ring-1 ring-foreground/5">
-                {availableCategories.map((category) => {
-                  const checked = formData.service_categories.includes(
-                    category.code,
-                  );
-                  return (
-                    <label
-                      key={category.code}
-                      htmlFor={`cat-${category.code}`}
-                      className="flex cursor-pointer items-center gap-2 text-sm"
-                    >
-                      <Checkbox
-                        id={`cat-${category.code}`}
-                        checked={checked}
-                        onCheckedChange={(value) =>
-                          toggleServiceCategory(category.code, value === true)
-                        }
-                      />
-                      <span className="text-foreground">{category.label}</span>
-                    </label>
-                  );
-                })}
-              </div>
-              {formData.service_categories.length === 0 && (
-                <p className="text-muted-foreground text-xs">
-                  尚未勾選任何子類別
-                </p>
-              )}
-            </div>
-
-            {/* 付費類型：僅看診大類需要區分健保/自費；非看診固定自費 */}
-            {formData.facility_type === "healthcare" && (
               <div className="grid gap-2">
-                <Label htmlFor="payment_type">付費類型</Label>
+                <Label htmlFor="facility_type">服務類型（民眾端分流）</Label>
                 <Select
-                  value={formData.payment_type}
-                  onValueChange={(value: PaymentType) =>
-                    setFormData((prev) => ({ ...prev, payment_type: value }))
-                  }
+                  value={formData.facility_type}
+                  onValueChange={handleFacilityTypeChange}
                 >
-                  <SelectTrigger id="payment_type" className="w-full">
+                  <SelectTrigger id="facility_type" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {PAYMENT_TYPE_OPTIONS.map((option) => (
+                    {FACILITY_TYPE_FORM_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-muted-foreground text-xs">
+                  決定此院所顯示在民眾端的哪一個 tab（看診 / 醫美 / 美容 / 其他）。切換時會清空已勾選的服務子類別。
+                </p>
               </div>
-            )}
 
-            <div className="grid gap-2">
-              <Label htmlFor="phone">電話</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                }
-                placeholder="例：02-12345678"
-              />
-            </div>
+              {/* 付費類型：僅看診大類需要區分健保/自費；非看診固定自費 */}
+              {formData.facility_type === "healthcare" && (
+                <div className="grid gap-2">
+                  <Label htmlFor="payment_type">付費類型</Label>
+                  <Select
+                    value={formData.payment_type}
+                    onValueChange={(value: PaymentType) =>
+                      setFormData((prev) => ({ ...prev, payment_type: value }))
+                    }
+                  >
+                    <SelectTrigger id="payment_type" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_TYPE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-            <div className="grid gap-2">
-              <Label htmlFor="address">地址</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, address: e.target.value }))
-                }
-                placeholder="請輸入地址"
-              />
+              {/* 服務子類別（依目前服務類型顯示，可複選的 chip 卡片） */}
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between">
+                  <Label>服務子類別（可複選）</Label>
+                  {formData.service_categories.length > 0 && (
+                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary tabular-nums">
+                      已選 {formData.service_categories.length}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {availableCategories.map((category) => {
+                    const checked = formData.service_categories.includes(
+                      category.code,
+                    );
+                    return (
+                      <label
+                        key={category.code}
+                        htmlFor={`cat-${category.code}`}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-2 rounded-xl bg-card px-3 py-2.5 text-sm ring-1 transition",
+                          checked
+                            ? "bg-primary/5 ring-primary"
+                            : "ring-foreground/5 hover:ring-primary/30",
+                        )}
+                      >
+                        <Checkbox
+                          id={`cat-${category.code}`}
+                          checked={checked}
+                          onCheckedChange={(value) =>
+                            toggleServiceCategory(category.code, value === true)
+                          }
+                        />
+                        <span
+                          className={cn(
+                            checked
+                              ? "font-medium text-foreground"
+                              : "text-foreground",
+                          )}
+                        >
+                          {category.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {formData.service_categories.length === 0 && (
+                  <p className="text-muted-foreground text-xs">
+                    尚未勾選任何子類別
+                  </p>
+                )}
+              </div>
             </div>
 
             {isEditing && (
-              <div className="flex items-center gap-2">
+              <div className={cn(sectionCard, "flex items-center gap-2")}>
                 <Checkbox
                   id="is_active"
                   checked={formData.is_active}
@@ -543,15 +602,21 @@ function ClinicFormContent({
         </TabsContent>
 
         <TabsContent value="hours" className="mt-4">
-          <div className="mb-4">
-            <Label htmlFor="slot_duration">預約時段間隔</Label>
+          <div className={cn(sectionCard, "mb-4 grid gap-2")}>
+            <Label
+              htmlFor="slot_duration"
+              className={cn(sectionTitle, "flex items-center gap-2")}
+            >
+              <ClockIcon className="size-4 text-primary" />
+              預約時段間隔
+            </Label>
             <Select
               value={String(formData.slot_duration)}
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, slot_duration: Number(value) }))
               }
             >
-              <SelectTrigger id="slot_duration" className="mt-1.5 w-full">
+              <SelectTrigger id="slot_duration" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -562,17 +627,23 @@ function ClinicFormContent({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-muted-foreground mt-1 text-xs">
+            <p className="text-muted-foreground text-xs">
               設定預約系統中每個可選時段的間隔時間
             </p>
           </div>
+          <p className={cn(sectionTitle, "mb-2")}>營業時間</p>
           <div className="space-y-2">
             {WEEKDAYS.map((day) => {
               const hours = formData.business_hours[day.key];
               return (
                 <div
                   key={day.key}
-                  className="rounded-xl p-3 ring-1 ring-foreground/5"
+                  className={cn(
+                    "rounded-2xl p-3 ring-1 transition",
+                    hours.is_closed
+                      ? "bg-muted/30 ring-foreground/5"
+                      : "bg-card ring-primary/15",
+                  )}
                 >
                   <div className="flex items-center gap-2">
                     <span className="w-8 shrink-0 text-sm font-medium text-foreground">
@@ -597,7 +668,7 @@ function ClinicFormContent({
                             onChange={(e) =>
                               updateBusinessHour(day.key, "open", e.target.value)
                             }
-                            className="border-input h-8 w-32 rounded border bg-transparent px-2 text-sm"
+                            className="border-input h-8 w-32 rounded-xl border bg-transparent px-2 text-sm tabular-nums"
                           />
                           <span className="text-muted-foreground mx-2 text-sm">~</span>
                           <input
@@ -606,11 +677,13 @@ function ClinicFormContent({
                             onChange={(e) =>
                               updateBusinessHour(day.key, "close", e.target.value)
                             }
-                            className="border-input h-8 w-32 rounded border bg-transparent px-2 text-sm"
+                            className="border-input h-8 w-32 rounded-xl border bg-transparent px-2 text-sm tabular-nums"
                           />
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">休息</span>
+                        <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                          休息
+                        </span>
                       )}
                     </div>
                   </div>
@@ -624,21 +697,22 @@ function ClinicFormContent({
                             type="time"
                             value={b.start}
                             onChange={(e) => updateBreak(day.key, idx, "start", e.target.value)}
-                            className="border-input h-7 w-28 rounded border bg-transparent px-1.5 text-xs"
+                            className="border-input h-7 w-28 rounded-xl border bg-transparent px-1.5 text-xs tabular-nums"
                           />
                           <span className="text-muted-foreground text-xs">~</span>
                           <input
                             type="time"
                             value={b.end}
                             onChange={(e) => updateBreak(day.key, idx, "end", e.target.value)}
-                            className="border-input h-7 w-28 rounded border bg-transparent px-1.5 text-xs"
+                            className="border-input h-7 w-28 rounded-xl border bg-transparent px-1.5 text-xs tabular-nums"
                           />
                           <button
                             type="button"
                             onClick={() => removeBreak(day.key, idx)}
-                            className="text-muted-foreground hover:text-destructive ml-1 text-xs"
+                            title="移除休息時段"
+                            className="text-muted-foreground hover:text-destructive ml-1 inline-flex items-center"
                           >
-                            ✕
+                            <XIcon className="size-3.5" />
                           </button>
                         </div>
                       ))}
@@ -646,9 +720,10 @@ function ClinicFormContent({
                         <button
                           type="button"
                           onClick={() => addBreak(day.key)}
-                          className="text-muted-foreground hover:text-foreground text-xs"
+                          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs"
                         >
-                          + 新增休息時段
+                          <PlusIcon className="size-3.5" />
+                          新增休息時段
                         </button>
                       )}
                     </div>
@@ -670,6 +745,7 @@ function ClinicFormContent({
           取消
         </Button>
         <Button type="submit" disabled={isLoading || !formData.name.trim()}>
+          {isLoading && <Loader2 className="size-4 animate-spin" />}
           {isLoading ? "處理中..." : isEditing ? "儲存" : "新增"}
         </Button>
       </DialogFooter>

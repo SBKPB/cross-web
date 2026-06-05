@@ -9,7 +9,7 @@ import {
   isSameDay,
   parseISO,
 } from "date-fns";
-import { CalendarOff, Trash2 } from "lucide-react";
+import { CalendarOff, Loader2, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +23,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
-import {
-  lumaCardInner,
-  lumaDialogFooter,
-  lumaIconBadge,
-} from "@/lib/styles/luma";
+import { lumaCardInner, lumaDialogFooter } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 import type { ApiStaff, ApiStaffLeave } from "@/types/clinic";
 
@@ -134,7 +130,7 @@ export function StaffLeaveDialog({
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className={lumaIconBadge}>
+            <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
               <CalendarOff className="size-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -150,7 +146,7 @@ export function StaffLeaveDialog({
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+            <Loader2 className="size-6 animate-spin text-primary" />
           </div>
         ) : (
           <div className="space-y-4">
@@ -189,19 +185,22 @@ export function StaffLeaveDialog({
             {/* 選取日期面板 */}
             {selectedDate && (
               <div className={lumaCardInner}>
-                <div className="mb-3 flex items-baseline justify-between">
-                  <p className="text-sm font-semibold text-foreground">
+                <div className="mb-3 flex items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold tabular-nums text-foreground">
                     {format(selectedDate, "yyyy/MM/dd", { locale: zhTW })}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
                     {format(selectedDate, "EEEE", { locale: zhTW })}
-                  </p>
+                  </span>
                 </div>
 
                 {selectedLeave ? (
                   <div className="space-y-3">
                     <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
-                      <p className="font-medium">已設定為休假日</p>
+                      <p className="flex items-center gap-1.5 font-medium">
+                        <CalendarOff className="size-4 shrink-0" />
+                        已設定為休假日
+                      </p>
                       {selectedLeave.note && (
                         <p className="mt-1 text-xs opacity-80">
                           備註：{selectedLeave.note}
@@ -215,14 +214,18 @@ export function StaffLeaveDialog({
                       disabled={isSaving}
                       className="w-full"
                     >
-                      <Trash2 className="mr-1.5 size-4" />
+                      {isSaving ? (
+                        <Loader2 className="mr-1.5 size-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="mr-1.5 size-4" />
+                      )}
                       {isSaving ? "處理中..." : "移除休假"}
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="grid gap-2">
-                      <Label htmlFor="leave-note" className="text-xs">
+                      <Label htmlFor="leave-note" className="text-sm font-medium">
                         備註（選填）
                       </Label>
                       <Input
@@ -244,7 +247,11 @@ export function StaffLeaveDialog({
                       disabled={isSaving}
                       className="w-full"
                     >
-                      <CalendarOff className="mr-1.5 size-4" />
+                      {isSaving ? (
+                        <Loader2 className="mr-1.5 size-4 animate-spin" />
+                      ) : (
+                        <CalendarOff className="mr-1.5 size-4" />
+                      )}
                       {isSaving ? "處理中..." : "設定休假"}
                     </Button>
                   </div>

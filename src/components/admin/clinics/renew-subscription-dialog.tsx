@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -157,7 +157,11 @@ export function RenewSubscriptionDialog({
                 {facility.subscription_expires_at && (
                   <>
                     {" · "}目前到期日{" "}
-                    {formatDateInput(new Date(facility.subscription_expires_at))}
+                    <span className="tabular-nums">
+                      {formatDateInput(
+                        new Date(facility.subscription_expires_at),
+                      )}
+                    </span>
                   </>
                 )}
               </DialogDescription>
@@ -166,53 +170,66 @@ export function RenewSubscriptionDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-2">
-          <div className="grid gap-2">
-            <Label>續約期間</Label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              {PRESETS.map((p) => (
-                <Button
-                  key={p.value}
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+            <div className="grid gap-3">
+              <Label className="text-sm font-medium">續約期間</Label>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {PRESETS.map((p) => (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={() => handleSelectPreset(p.value)}
+                    className={cn(
+                      "rounded-2xl px-3 py-2.5 text-sm font-medium ring-1 transition hover:ring-primary/30",
+                      preset === p.value
+                        ? "bg-primary/5 text-primary ring-primary"
+                        : "bg-card text-foreground ring-foreground/5",
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+                <button
                   type="button"
-                  variant={preset === p.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleSelectPreset(p.value)}
+                  onClick={() => handleSelectPreset("custom")}
+                  className={cn(
+                    "rounded-2xl px-3 py-2.5 text-sm font-medium ring-1 transition hover:ring-primary/30",
+                    preset === "custom"
+                      ? "bg-primary/5 text-primary ring-primary"
+                      : "bg-card text-foreground ring-foreground/5",
+                  )}
                 >
-                  {p.label}
-                </Button>
-              ))}
-              <Button
-                type="button"
-                variant={preset === "custom" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleSelectPreset("custom")}
-              >
-                自訂
-              </Button>
+                  自訂
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-2">
+              <Label htmlFor="new-expiry" className="text-sm font-medium">
+                續約後到期日
+                {preset !== "custom" && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    （依所選期間自動計算，可手動調整）
+                  </span>
+                )}
+              </Label>
+              <Input
+                id="new-expiry"
+                type="date"
+                className="tabular-nums"
+                value={customExpiry}
+                onChange={(e) => {
+                  setCustomExpiry(e.target.value);
+                  setPreset("custom");
+                }}
+              />
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="new-expiry">
-              續約後到期日
-              {preset !== "custom" && (
-                <span className="ml-2 text-xs text-muted-foreground">
-                  （依所選期間自動計算，可手動調整）
-                </span>
-              )}
+            <Label htmlFor="renewal-note" className="text-sm font-medium">
+              付款記錄 / 備註
             </Label>
-            <Input
-              id="new-expiry"
-              type="date"
-              value={customExpiry}
-              onChange={(e) => {
-                setCustomExpiry(e.target.value);
-                setPreset("custom");
-              }}
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="renewal-note">付款記錄 / 備註</Label>
             <Textarea
               id="renewal-note"
               value={notes}
@@ -225,7 +242,11 @@ export function RenewSubscriptionDialog({
             </p>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          )}
         </div>
 
         <DialogFooter className={cn(lumaDialogFooter)}>
@@ -237,6 +258,7 @@ export function RenewSubscriptionDialog({
             取消
           </Button>
           <Button onClick={handleSubmit} disabled={isSaving || !previewExpiry}>
+            {isSaving && <Loader2 className="size-4 animate-spin" />}
             {isSaving ? "處理中..." : `續約至 ${previewExpiry}`}
           </Button>
         </DialogFooter>

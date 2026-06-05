@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertCircleIcon, KeyRoundIcon, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -72,66 +73,82 @@ function ChangePasswordContent({
 
   return (
     <form onSubmit={handleSubmit}>
-      <DialogHeader>
-        <DialogTitle>修改密碼</DialogTitle>
-        <DialogDescription>
-          需要先輸入目前密碼以驗證身份。
-        </DialogDescription>
+      <DialogHeader className="flex-row items-start gap-3 space-y-0">
+        <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+          <KeyRoundIcon className="size-5" />
+        </span>
+        <div className="flex flex-col gap-1.5">
+          <DialogTitle>修改密碼</DialogTitle>
+          <DialogDescription>需要先輸入目前密碼以驗證身份。</DialogDescription>
+        </div>
       </DialogHeader>
 
       <div className="mt-4 grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="current-password">
-            目前密碼 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="current-password"
-            type="password"
-            autoComplete="current-password"
-            value={form.current}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, current: e.target.value }))
-            }
-            required
-          />
+        <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+          <p className="text-sm font-medium text-foreground">身份驗證</p>
+          <div className="mt-3 grid gap-2">
+            <Label htmlFor="current-password" className="text-sm font-medium">
+              目前密碼 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="current-password"
+              type="password"
+              autoComplete="current-password"
+              value={form.current}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, current: e.target.value }))
+              }
+              required
+            />
+          </div>
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="new-password">
-            新密碼 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="new-password"
-            type="password"
-            autoComplete="new-password"
-            value={form.next}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, next: e.target.value }))
-            }
-            placeholder="至少 6 碼"
-            required
-            minLength={6}
-          />
+        <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+          <p className="text-sm font-medium text-foreground">設定新密碼</p>
+          <div className="mt-3 grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-password" className="text-sm font-medium">
+                新密碼 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                value={form.next}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, next: e.target.value }))
+                }
+                placeholder="至少 6 碼"
+                required
+                minLength={6}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="confirm-password" className="text-sm font-medium">
+                再次輸入新密碼 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                value={form.confirm}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, confirm: e.target.value }))
+                }
+                required
+                minLength={6}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="confirm-password">
-            再次輸入新密碼 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="confirm-password"
-            type="password"
-            autoComplete="new-password"
-            value={form.confirm}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, confirm: e.target.value }))
-            }
-            required
-            minLength={6}
-          />
-        </div>
-
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <div className="flex items-start gap-2 rounded-2xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/15">
+            <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
       </div>
 
       <DialogFooter className={cn("mt-6", lumaDialogFooter)}>
@@ -152,6 +169,7 @@ function ChangePasswordContent({
             !form.confirm
           }
         >
+          {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
           {submitting ? "儲存中..." : "儲存新密碼"}
         </Button>
       </DialogFooter>

@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarPlus, CreditCard, Pencil } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarPlus,
+  Clock3,
+  CreditCard,
+  Loader2,
+  Pencil,
+} from "lucide-react";
 import { RenewSubscriptionDialog } from "@/components/admin/clinics/renew-subscription-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -53,14 +59,12 @@ const STATUS_LABEL: Record<SubscriptionStatus, string> = {
   cancelled: "已取消",
 };
 
-const STATUS_VARIANT: Record<
-  SubscriptionStatus,
-  "default" | "secondary" | "outline" | "destructive"
-> = {
-  trial: "outline",
-  active: "secondary",
-  suspended: "destructive",
-  cancelled: "destructive",
+// 狀態 pill 柔色
+const STATUS_PILL: Record<SubscriptionStatus, string> = {
+  trial: "bg-amber-100 text-amber-700",
+  active: "bg-green-100 text-green-700",
+  suspended: "bg-destructive/10 text-destructive",
+  cancelled: "bg-muted text-muted-foreground",
 };
 
 function formatDate(iso: string | null): string {
@@ -141,47 +145,79 @@ export function SubscriptionSection({
 
         {/* 警示 banner */}
         {isExpired && (
-          <div className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
-            訂閱已於 {formatDate(facility.subscription_expires_at)} 到期，請盡快續訂
+          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-destructive/10 p-3.5 text-sm font-medium text-destructive ring-1 ring-destructive/15">
+            <AlertTriangle className="size-4 shrink-0" />
+            <span>
+              訂閱已於{" "}
+              <span className="tabular-nums">
+                {formatDate(facility.subscription_expires_at)}
+              </span>{" "}
+              到期，請盡快續訂
+            </span>
           </div>
         )}
         {isExpiringSoon && !isExpired && (
-          <div className="mt-4 rounded-xl bg-muted p-3 text-sm text-foreground ring-1 ring-border">
-            訂閱將於 {daysUntil} 天後（{formatDate(facility.subscription_expires_at)}）到期
+          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-amber-100 p-3.5 text-sm font-medium text-amber-700 ring-1 ring-amber-200">
+            <Clock3 className="size-4 shrink-0" />
+            <span>
+              訂閱將於 <span className="tabular-nums">{daysUntil}</span>{" "}
+              天後（
+              <span className="tabular-nums">
+                {formatDate(facility.subscription_expires_at)}
+              </span>
+              ）到期
+            </span>
           </div>
         )}
 
         {/* 資訊網格 */}
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div>
-            <div className="text-sm text-muted-foreground">方案</div>
-            <div className="mt-1 font-medium text-foreground">
-              {PLAN_LABEL[facility.subscription_plan]}
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+            <div className="text-xs font-medium text-muted-foreground">
+              方案
+            </div>
+            <div className="mt-1.5">
+              <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                {PLAN_LABEL[facility.subscription_plan]}
+              </span>
             </div>
           </div>
-          <div>
-            <div className="text-sm text-muted-foreground">狀態</div>
-            <div className="mt-1">
-              <Badge variant={STATUS_VARIANT[facility.subscription_status]}>
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+            <div className="text-xs font-medium text-muted-foreground">
+              狀態
+            </div>
+            <div className="mt-1.5">
+              <span
+                className={cn(
+                  "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                  STATUS_PILL[facility.subscription_status],
+                )}
+              >
                 {STATUS_LABEL[facility.subscription_status]}
-              </Badge>
+              </span>
             </div>
           </div>
-          <div>
-            <div className="text-sm text-muted-foreground">起始日</div>
-            <div className="mt-1 font-medium text-foreground">
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+            <div className="text-xs font-medium text-muted-foreground">
+              起始日
+            </div>
+            <div className="mt-1.5 font-medium text-foreground tabular-nums">
               {formatDate(facility.subscription_started_at)}
             </div>
           </div>
-          <div>
-            <div className="text-sm text-muted-foreground">到期日</div>
-            <div className="mt-1 font-medium text-foreground">
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+            <div className="text-xs font-medium text-muted-foreground">
+              到期日
+            </div>
+            <div className="mt-1.5 font-medium text-foreground tabular-nums">
               {formatDate(facility.subscription_expires_at)}
             </div>
           </div>
-          <div className="md:col-span-2">
-            <div className="text-sm text-muted-foreground">付款記錄 / 備註</div>
-            <div className="mt-1 whitespace-pre-wrap text-sm text-foreground">
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5 sm:col-span-2">
+            <div className="text-xs font-medium text-muted-foreground">
+              付款記錄 / 備註
+            </div>
+            <div className="mt-1.5 whitespace-pre-wrap text-sm text-foreground">
               {facility.subscription_notes || "—"}
             </div>
           </div>
@@ -278,72 +314,93 @@ function SubscriptionEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>編輯訂閱資訊</DialogTitle>
-          <DialogDescription>
-            「{facility.name}」— 此操作只有系統管理員可進行
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className={lumaIconBadge}>
+              <CreditCard className="size-5" />
+            </div>
+            <div>
+              <DialogTitle>編輯訂閱資訊</DialogTitle>
+              <DialogDescription>
+                「{facility.name}」— 此操作只有系統管理員可進行
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="grid gap-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="plan">方案</Label>
-              <Select
-                value={plan}
-                onValueChange={(v) => setPlan(v as SubscriptionPlan)}
-              >
-                <SelectTrigger id="plan">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">免費</SelectItem>
-                  <SelectItem value="standard">標準</SelectItem>
-                  <SelectItem value="pro">專業</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="grid gap-3 rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="plan" className="text-sm font-medium">
+                  方案
+                </Label>
+                <Select
+                  value={plan}
+                  onValueChange={(v) => setPlan(v as SubscriptionPlan)}
+                >
+                  <SelectTrigger id="plan">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">免費</SelectItem>
+                    <SelectItem value="standard">標準</SelectItem>
+                    <SelectItem value="pro">專業</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="status" className="text-sm font-medium">
+                  狀態
+                </Label>
+                <Select
+                  value={statusValue}
+                  onValueChange={(v) => setStatusValue(v as SubscriptionStatus)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="trial">試用中</SelectItem>
+                    <SelectItem value="active">使用中</SelectItem>
+                    <SelectItem value="suspended">已暫停</SelectItem>
+                    <SelectItem value="cancelled">已取消</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="status">狀態</Label>
-              <Select
-                value={statusValue}
-                onValueChange={(v) => setStatusValue(v as SubscriptionStatus)}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="trial">試用中</SelectItem>
-                  <SelectItem value="active">使用中</SelectItem>
-                  <SelectItem value="suspended">已暫停</SelectItem>
-                  <SelectItem value="cancelled">已取消</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="started_at">起始日</Label>
-              <Input
-                id="started_at"
-                type="date"
-                value={startedAt}
-                onChange={(e) => setStartedAt(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="expires_at">到期日</Label>
-              <Input
-                id="expires_at"
-                type="date"
-                value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="started_at" className="text-sm font-medium">
+                  起始日
+                </Label>
+                <Input
+                  id="started_at"
+                  type="date"
+                  className="tabular-nums"
+                  value={startedAt}
+                  onChange={(e) => setStartedAt(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="expires_at" className="text-sm font-medium">
+                  到期日
+                </Label>
+                <Input
+                  id="expires_at"
+                  type="date"
+                  className="tabular-nums"
+                  value={expiresAt}
+                  onChange={(e) => setExpiresAt(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="notes">付款記錄 / 備註</Label>
+            <Label htmlFor="notes" className="text-sm font-medium">
+              付款記錄 / 備註
+            </Label>
             <Textarea
               id="notes"
               value={notes}
@@ -354,7 +411,9 @@ function SubscriptionEditDialog({
           </div>
 
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
           )}
         </div>
 
@@ -367,6 +426,7 @@ function SubscriptionEditDialog({
             取消
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving && <Loader2 className="size-4 animate-spin" />}
             {isSaving ? "儲存中..." : "儲存"}
           </Button>
         </DialogFooter>

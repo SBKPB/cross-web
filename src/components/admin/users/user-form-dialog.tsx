@@ -2,6 +2,14 @@
 
 import { useMemo, useState } from "react";
 import {
+  AlertCircle,
+  Building2,
+  Loader2,
+  ShieldCheck,
+  UserCog,
+  UserPlus,
+} from "lucide-react";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -185,142 +193,194 @@ function UserFormContent({
   return (
     <form onSubmit={handleSubmit}>
       <DialogHeader>
-        <DialogTitle>{isEditing ? "編輯使用者" : "新增使用者"}</DialogTitle>
-        <DialogDescription>
-          {isEditing ? "修改使用者資訊" : "填寫使用者基本資料"}
-        </DialogDescription>
+        <div className="flex items-center gap-3">
+          {isEditing ? (
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold uppercase text-primary">
+              {user.email.charAt(0)}
+            </span>
+          ) : (
+            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <UserPlus className="size-5" />
+            </span>
+          )}
+          <div className="min-w-0">
+            <DialogTitle>{isEditing ? "編輯使用者" : "新增使用者"}</DialogTitle>
+            <DialogDescription className="truncate">
+              {isEditing ? user.email : "填寫使用者基本資料"}
+            </DialogDescription>
+          </div>
+        </div>
       </DialogHeader>
 
-      <div className="mt-4 grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="email">
-            電子信箱 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, email: e.target.value }))
-            }
-            placeholder="user@example.com"
-            required
-          />
-        </div>
+      <div className="mt-5 grid gap-4">
+        {/* 帳號資訊 */}
+        <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+            <UserCog className="size-4 text-muted-foreground" />
+            帳號資訊
+          </h3>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                電子信箱 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
+                placeholder="user@example.com"
+                required
+              />
+            </div>
 
-        {!isEditing && (
-          <div className="grid gap-2">
-            <Label htmlFor="password">
-              密碼 <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, password: e.target.value }))
-              }
-              placeholder="請輸入密碼"
-              required
-              minLength={6}
-            />
-          </div>
-        )}
-
-        <div className="grid gap-2">
-          <Label htmlFor="phone_number">電話號碼</Label>
-          <Input
-            id="phone_number"
-            value={formData.phone_number}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                phone_number: e.target.value,
-              }))
-            }
-            placeholder="例：0912-345-678"
-          />
-        </div>
-
-        {/* 所屬院所：先決定範圍（系統 vs 院所），角色清單依此過濾。
-            民眾端會員（patient）不顯示這欄。 */}
-        {!isPatient && (
-        <div className="grid gap-2">
-          <Label htmlFor="facility_id">所屬院所</Label>
-          <Select
-            value={formData.facility_id || "_none"}
-            onValueChange={handleFacilityChange}
-          >
-            <SelectTrigger id="facility_id" className="w-full">
-              <SelectValue placeholder="選擇院所" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_none">無（系統管理員）</SelectItem>
-              {facilities.map((f) => (
-                <SelectItem key={f.id} value={f.id}>
-                  {f.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {!isEditing && (
-            <p className="text-xs text-muted-foreground">
-              {formData.facility_id
-                ? "將建立院所端使用者（角色限院所管理員 / 院所職員）"
-                : "將建立系統端使用者（角色限超級管理員 / 系統管理員）"}
-            </p>
-          )}
-        </div>
-        )}
-
-        {/* 角色：員工模式下新增時必選，編輯時不變更；patient 模式不顯示 */}
-        {!isEditing && !isPatient && (
-          <div className="grid gap-2">
-            <Label>
-              角色 <span className="text-destructive">*</span>
-            </Label>
-            {staffRoles.length > 0 ? (
-              <RadioGroup
-                value={formData.role_id}
-                onValueChange={handleRoleChange}
-                className="rounded-2xl p-3 ring-1 ring-foreground/5"
-              >
-                {staffRoles.map((role) => (
-                  <label
-                    key={role.id}
-                    htmlFor={`role-${role.id}`}
-                    className="flex cursor-pointer items-start gap-3 rounded-xl px-2 py-2 transition hover:bg-muted/40"
-                  >
-                    <RadioGroupItem
-                      value={role.id}
-                      id={`role-${role.id}`}
-                      className="mt-0.5"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-foreground">
-                        {role.display_name}
-                      </div>
-                      {role.description && (
-                        <div className="text-xs text-muted-foreground">
-                          {role.description}
-                        </div>
-                      )}
-                    </div>
-                  </label>
-                ))}
-              </RadioGroup>
-            ) : (
-              <div className="rounded-2xl bg-destructive/5 p-3 text-sm text-destructive ring-1 ring-destructive/20">
-                {formData.facility_id
-                  ? "系統尚未建立院所端角色（facility_admin / facility_staff），請先聯絡系統管理員初始化角色資料。"
-                  : "系統尚未建立系統端角色（superadmin / admin），請先聯絡系統管理員初始化角色資料。"}
+            {!isEditing && (
+              <div className="grid gap-2">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  密碼 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
+                  placeholder="請輸入密碼"
+                  required
+                  minLength={6}
+                />
               </div>
             )}
+
+            <div className="grid gap-2">
+              <Label htmlFor="phone_number" className="text-sm font-medium">
+                電話號碼
+              </Label>
+              <Input
+                id="phone_number"
+                value={formData.phone_number}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    phone_number: e.target.value,
+                  }))
+                }
+                placeholder="例：0912-345-678"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 指派與角色：先決定範圍（系統 vs 院所），角色清單依此過濾。
+            民眾端會員（patient）不顯示這區。 */}
+        {!isPatient && (
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+              <ShieldCheck className="size-4 text-muted-foreground" />
+              指派與角色
+            </h3>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="facility_id" className="text-sm font-medium">
+                  所屬院所
+                </Label>
+                <Select
+                  value={formData.facility_id || "_none"}
+                  onValueChange={handleFacilityChange}
+                >
+                  <SelectTrigger id="facility_id" className="w-full">
+                    <SelectValue placeholder="選擇院所" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">無（系統管理員）</SelectItem>
+                    {facilities.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {!isEditing && (
+                  <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                    <Building2 className="mt-0.5 size-3.5 shrink-0" />
+                    {formData.facility_id
+                      ? "將建立院所端使用者（角色限院所管理員 / 院所職員）"
+                      : "將建立系統端使用者（角色限超級管理員 / 系統管理員）"}
+                  </p>
+                )}
+              </div>
+
+              {/* 角色：員工模式下新增時必選，編輯時不變更 */}
+              {!isEditing && (
+                <div className="grid gap-2">
+                  <Label className="text-sm font-medium">
+                    角色 <span className="text-destructive">*</span>
+                  </Label>
+                  {staffRoles.length > 0 ? (
+                    <RadioGroup
+                      value={formData.role_id}
+                      onValueChange={handleRoleChange}
+                      className="grid gap-2"
+                    >
+                      {staffRoles.map((role) => {
+                        const selected = formData.role_id === role.id;
+                        return (
+                          <label
+                            key={role.id}
+                            htmlFor={`role-${role.id}`}
+                            className={cn(
+                              "flex cursor-pointer items-start gap-3 rounded-2xl bg-card px-3 py-2.5 ring-1 transition hover:ring-primary/30",
+                              selected
+                                ? "bg-primary/5 ring-primary"
+                                : "ring-foreground/5",
+                            )}
+                          >
+                            <RadioGroupItem
+                              value={role.id}
+                              id={`role-${role.id}`}
+                              className="mt-0.5"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-medium text-foreground">
+                                {role.display_name}
+                              </div>
+                              {role.description && (
+                                <div className="text-xs text-muted-foreground">
+                                  {role.description}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </RadioGroup>
+                  ) : (
+                    <div className="flex items-start gap-2 rounded-2xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
+                      <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                      <span>
+                        {formData.facility_id
+                          ? "系統尚未建立院所端角色（facility_admin / facility_staff），請先聯絡系統管理員初始化角色資料。"
+                          : "系統尚未建立系統端角色（superadmin / admin），請先聯絡系統管理員初始化角色資料。"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {isEditing && (
-          <div className="flex items-center gap-2">
+          <label
+            htmlFor="is_active"
+            className="flex cursor-pointer items-center gap-3 rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5"
+          >
             <Checkbox
               id="is_active"
               checked={formData.is_active}
@@ -331,14 +391,20 @@ function UserFormContent({
                 }))
               }
             />
-            <Label htmlFor="is_active" className="font-normal">
-              啟用帳號
-            </Label>
-          </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-foreground">啟用帳號</div>
+              <div className="text-xs text-muted-foreground">
+                停用後該使用者將無法登入
+              </div>
+            </div>
+          </label>
         )}
 
         {validationError && (
-          <p className="text-sm text-destructive">{validationError}</p>
+          <p className="flex items-center gap-2 rounded-xl bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
+            <AlertCircle className="size-4 shrink-0" />
+            {validationError}
+          </p>
         )}
       </div>
 
@@ -360,6 +426,7 @@ function UserFormContent({
             (!isEditing && staffRoles.length === 0)
           }
         >
+          {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
           {isLoading ? "處理中..." : isEditing ? "儲存" : "新增"}
         </Button>
       </DialogFooter>

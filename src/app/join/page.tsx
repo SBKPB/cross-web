@@ -206,7 +206,7 @@ export default function JoinPage() {
           className="scroll-mt-20 border-t border-border bg-muted/30"
         >
           <div className="container mx-auto px-4 py-16 sm:py-20">
-            <div className="grid items-start gap-10 lg:grid-cols-[1fr_minmax(0,540px)] lg:gap-16">
+            <div className="mx-auto grid max-w-5xl items-start gap-10 lg:grid-cols-[minmax(0,380px)_minmax(0,540px)] lg:justify-center lg:gap-12">
               {/* 左：流程 */}
               <div className="space-y-8 lg:sticky lg:top-28">
                 <div>

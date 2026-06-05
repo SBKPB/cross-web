@@ -1,15 +1,15 @@
-// 訂閱方案（公開定價頁用）
+// 訂閱方案（公開定價頁用）— 三方案 free / standard / pro
 //
-// ⚠️ 價格依使用者提供：basic 3000 / standard 5000 / premium 8000（月費 NT$）。
-// ⚠️ 試用期 90 天為商業承諾：後端 subscription_expires_at 為手動欄位，上架時
-//    營運須將到期日設為「開通日 +90 天」，到期提醒（7/3/1 天）才會正確。
-// 各方案「功能差異」為依產品實際功能排的合理草案，請依真正的商業方案調整。
-// 對齊後端 SubscriptionPlan = trial | basic | standard | premium。
+// 價格（月費，使用者確認）：standard NT$3,000、pro NT$8,000。
+// 試用期 90 天為商業承諾，後端「一鍵試用」會自動把到期日設為開通日 +90 天。
+// 功能對照（featureIds）對齊後端 app/core/plan_features.py 與 src/lib/feature-access.ts，
+// 改一處記得三處同步。
+
+import type { Feature } from "@/lib/feature-access";
+import type { SubscriptionPlan } from "@/types/clinic";
 
 // 試用天數（全站文案統一引用，避免散落各頁不一致）
 export const TRIAL_DAYS = 90;
-
-import type { SubscriptionPlan } from "@/types/clinic";
 
 export interface PricingPlan {
   id: SubscriptionPlan;
@@ -21,6 +21,8 @@ export interface PricingPlan {
   description: string;
   /** 功能條列；可用「包含『X』所有功能」表示繼承 */
   features: string[];
+  /** 對應後端付費功能 ID（與 feature-access 一致），免費方案為空 */
+  featureIds: Feature[];
   cta: { label: string; href: string };
   highlighted?: boolean;
   badge?: string;
@@ -28,62 +30,50 @@ export interface PricingPlan {
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
-    id: "trial",
-    name: "試用",
+    id: "free",
+    name: "免費",
     priceLabel: "免費",
-    pricePeriod: "前 90 天",
-    description: "先完整體驗 90 天，喜歡再續用。",
+    description: "建立院所資訊頁，讓民眾找得到你。",
     features: [
-      "90 天免費全功能試用",
-      "核心預約功能全開放",
-      "專人協助上架設定",
+      "診所資訊頁面",
+      "團隊介紹",
+      "顯示療程價格",
+      "顯示位置與地圖",
+      "顯示聯絡資訊",
     ],
-    cta: { label: "免費開始", href: "/join" },
-    badge: "免費 90 天",
-  },
-  {
-    id: "basic",
-    name: "基本",
-    priceLabel: "NT$3,000",
-    pricePeriod: "/ 月",
-    description: "適合單一據點的小型診所或工作室。",
-    features: [
-      "24 小時線上預約",
-      "排程與班表管理",
-      "人員與服務管理",
-      "LINE 預約提醒",
-      "民眾端曝光",
-    ],
-    cta: { label: "申請加入", href: "/join" },
+    featureIds: [],
+    cta: { label: "免費建立", href: "/join" },
   },
   {
     id: "standard",
     name: "標準",
-    priceLabel: "NT$5,000",
+    priceLabel: "NT$3,000",
     pricePeriod: "/ 月",
-    description: "適合成長中、需要數據與優化的診所。",
+    description: "開通線上預約，讓顧客 24 小時自助預約。",
     features: [
-      "包含「基本」所有功能",
-      "爽約風險分析",
-      "營運數據報表",
-      "進階排程設定",
+      "包含「免費」所有功能",
+      "24 小時線上預約",
+      "LINE / App 預約提醒",
+      "排程與班表管理",
     ],
+    featureIds: ["online_booking", "reminders"],
     cta: { label: "申請加入", href: "/join" },
     highlighted: true,
     badge: "最受歡迎",
   },
   {
-    id: "premium",
-    name: "進階",
+    id: "pro",
+    name: "專業",
     priceLabel: "NT$8,000",
     pricePeriod: "/ 月",
-    description: "適合多據點或高量體的院所。",
+    description: "進一步用數據優化營運、降低爽約。",
     features: [
       "包含「標準」所有功能",
-      "多分店集中管理",
+      "客戶分析報表",
+      "No-show 爽約風險評分",
       "優先客服支援",
-      "客製化需求協助",
     ],
+    featureIds: ["online_booking", "reminders", "analytics", "no_show_risk"],
     cta: { label: "申請加入", href: "/join" },
   },
 ];

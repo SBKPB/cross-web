@@ -10,7 +10,7 @@ import { PricingTable } from "@/components/pricing/pricing-table";
 export const metadata: Metadata = {
   title: "方案與定價",
   description:
-    "Cross 診所方案與定價：基本、標準、進階月費方案，含線上預約、排程班表管理、LINE 提醒與營運數據，皆享 90 天免費試用。",
+    "Cross 診所方案與定價：免費建立院所資訊頁，標準方案開通線上預約與提醒，專業方案再加客戶分析與爽約風險評分，付費方案皆享 90 天免費試用。",
 };
 
 const FAQS = [

@@ -1,11 +1,14 @@
-// 使用者所屬院所概要（含訂閱狀態，供前端 banner 用）
+import type { SubscriptionPlan, SubscriptionStatus } from "@/types/clinic";
+
+// 使用者所屬院所概要（含訂閱狀態，供前端 banner / gating 用）
 export interface FacilitySummary {
   id: string;
   name: string;
-  subscription_plan: "trial" | "basic" | "standard" | "premium";
-  subscription_status: "trial" | "active" | "suspended" | "cancelled";
+  subscription_plan: SubscriptionPlan;
+  subscription_status: SubscriptionStatus;
   subscription_started_at: string | null;
   subscription_expires_at: string | null;
+  trial_used_at: string | null; // 試用領取時間；null = 尚未用過（可一鍵試用）
 }
 
 // 使用者資料

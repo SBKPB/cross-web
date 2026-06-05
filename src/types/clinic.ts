@@ -183,10 +183,10 @@ export interface AnnouncementUpdate {
   is_active?: boolean;
 }
 
-// 訂閱方案
-export type SubscriptionPlan = "trial" | "basic" | "standard" | "premium";
+// 訂閱方案（三方案；對齊後端 app/models/base.py SubscriptionPlan）
+export type SubscriptionPlan = "free" | "standard" | "pro";
 
-// 訂閱狀態
+// 訂閱狀態（trial 是狀態，非方案；試用期間 plan=pro + status=trial）
 export type SubscriptionStatus = "trial" | "active" | "suspended" | "cancelled";
 
 // 醫療單位（後端回傳格式）
@@ -208,6 +208,7 @@ export interface MedicalFacility {
   subscription_started_at: string | null;
   subscription_expires_at: string | null;
   subscription_notes: string | null;
+  trial_used_at: string | null; // 試用領取時間；null = 尚未用過（可一鍵試用）
   created_at: string;
   updated_at: string | null;
 }
@@ -219,6 +220,32 @@ export interface FacilitySubscriptionUpdate {
   subscription_started_at?: string | null;
   subscription_expires_at?: string | null;
   subscription_notes?: string | null;
+}
+
+// 客戶分析（對齊後端 app/schemas/analytics.py AnalyticsRead）
+export interface AnalyticsTrendPoint {
+  period: string; // 分桶起始日 YYYY-MM-DD
+  count: number;
+}
+export interface AnalyticsMethodCount {
+  method: string; // BookingMethod value（phone / walk_in / online / line）
+  count: number;
+}
+export interface FacilityAnalytics {
+  range_days: number;
+  granularity: "day" | "week" | "month";
+  start_date: string;
+  end_date: string;
+  total: number;
+  confirmed: number;
+  completed: number;
+  cancelled: number;
+  no_show: number;
+  no_show_rate: number; // 0..1
+  unique_patients: number;
+  repeat_patient_rate: number; // 0..1
+  trend: AnalyticsTrendPoint[];
+  by_method: AnalyticsMethodCount[];
 }
 
 // 新增醫療單位

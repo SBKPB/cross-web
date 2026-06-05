@@ -23,6 +23,7 @@ import type {
   Announcement,
   AnnouncementCreate,
   AnnouncementUpdate,
+  FacilityAnalytics,
 } from "@/types/clinic";
 
 const BASE_PATH = "/api/v1/medical-facilities";
@@ -73,6 +74,25 @@ export const adminClinicsApi = {
 
   updateSubscription: (id: string, data: FacilitySubscriptionUpdate) =>
     api.patch<MedicalFacility>(`${BASE_PATH}/${id}/subscription`, data),
+
+  // 一鍵試用 90 天（facility_admin 自助；限每院所一次，已用過回 409）
+  startTrial: (id: string) =>
+    api.post<MedicalFacility>(`${BASE_PATH}/${id}/start-trial`),
+
+  // ========== 客戶分析（付費功能：pro / 試用） ==========
+
+  analytics: (
+    id: string,
+    params?: { range?: number; granularity?: "day" | "week" | "month" },
+  ) => {
+    const sp = new URLSearchParams();
+    if (params?.range) sp.append("range", String(params.range));
+    if (params?.granularity) sp.append("granularity", params.granularity);
+    const q = sp.toString();
+    return api.get<FacilityAnalytics>(
+      `${BASE_PATH}/${id}/analytics${q ? `?${q}` : ""}`,
+    );
+  },
 
   // ========== 單位設定 ==========
 

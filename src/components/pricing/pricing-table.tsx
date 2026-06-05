@@ -16,7 +16,7 @@ interface PricingTableProps {
 
 export function PricingTable({ className, ctaHref }: PricingTableProps) {
   return (
-    <div className={cn("grid gap-5 lg:grid-cols-4", className)}>
+    <div className={cn("mx-auto grid max-w-5xl gap-5 lg:grid-cols-3", className)}>
       {PRICING_PLANS.map((plan) => {
         const href = ctaHref ?? plan.cta.href;
         const isHash = href.startsWith("#");

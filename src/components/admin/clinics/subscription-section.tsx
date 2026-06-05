@@ -41,10 +41,9 @@ interface SubscriptionSectionProps {
 }
 
 const PLAN_LABEL: Record<SubscriptionPlan, string> = {
-  trial: "試用",
-  basic: "Basic",
-  standard: "Standard",
-  premium: "Premium",
+  free: "免費",
+  standard: "標準",
+  pro: "專業",
 };
 
 const STATUS_LABEL: Record<SubscriptionStatus, string> = {
@@ -297,10 +296,9 @@ function SubscriptionEditDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="trial">試用</SelectItem>
-                  <SelectItem value="basic">Basic</SelectItem>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="free">免費</SelectItem>
+                  <SelectItem value="standard">標準</SelectItem>
+                  <SelectItem value="pro">專業</SelectItem>
                 </SelectContent>
               </Select>
             </div>

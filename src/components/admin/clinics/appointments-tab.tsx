@@ -8,10 +8,10 @@ import {
   ClockIcon,
   PencilIcon,
   Filter,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
@@ -46,11 +46,11 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
   no_show: "未到診",
 };
 
-const STATUS_COLORS: Record<AppointmentStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  confirmed: "default",
-  completed: "outline",
-  cancelled: "destructive",
-  no_show: "secondary",
+const STATUS_PILL: Record<AppointmentStatus, string> = {
+  confirmed: "bg-primary/10 text-primary",
+  completed: "bg-green-100 text-green-700",
+  cancelled: "bg-muted text-muted-foreground",
+  no_show: "bg-amber-100 text-amber-700",
 };
 
 function formatDateStr(dateStr: string): string {
@@ -293,11 +293,11 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
           </Select>
 
           <div className="ml-auto text-sm text-muted-foreground">
-            共 {totalCount} 筆
+            共 <span className="tabular-nums">{totalCount}</span> 筆
             {statusCounts.confirmed > 0 && (
               <span className="ml-2 text-xs">
                 待處理{" "}
-                <span className="font-medium text-primary">
+                <span className="font-medium text-primary tabular-nums">
                   {statusCounts.confirmed}
                 </span>
               </span>
@@ -344,7 +344,7 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
               type="button"
               onClick={() => setSelectedDay(null)}
               className={cn(
-                "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                "shrink-0 rounded-full px-3 py-1 text-xs font-medium tabular-nums transition-colors",
                 selectedDay === null
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/70",
@@ -360,7 +360,7 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
                   setSelectedDay(group.date === selectedDay ? null : group.date)
                 }
                 className={cn(
-                  "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  "shrink-0 rounded-full px-3 py-1 text-xs font-medium tabular-nums transition-colors",
                   selectedDay === group.date
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/70",
@@ -375,8 +375,8 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
 
       {/* 載入中 */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="size-7 animate-spin text-primary" />
         </div>
       ) : displayGroups.length === 0 ? (
         <AdminEmptyState
@@ -390,12 +390,16 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
             <div key={group.date}>
               {/* 日期標題 */}
               <div className="mb-2 flex items-center gap-2">
-                <div className="text-sm font-semibold">{group.label}</div>
-                <Badge variant="outline" className="text-xs">
+                <div className="text-sm font-semibold text-foreground">
+                  {group.label}
+                </div>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground tabular-nums">
                   {group.appointments.length} 筆
-                </Badge>
+                </span>
                 {group.date === getToday() && (
-                  <Badge className="text-xs">今天</Badge>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    今天
+                  </span>
                 )}
               </div>
 
@@ -408,26 +412,34 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
                     onClick={() => handleViewDetail(apt)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="shrink-0 text-center text-primary">
-                        <div className="text-lg font-bold">
+                      <div className="shrink-0 text-center">
+                        <div className="text-lg font-bold text-primary tabular-nums">
                           {formatTime(apt.appointment_time)}
                         </div>
                       </div>
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
+                        {apt.patient_name.charAt(0)}
+                      </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-foreground">
                             {apt.patient_name}
                           </span>
-                          <Badge variant={STATUS_COLORS[apt.status]}>
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-1 text-xs font-medium",
+                              STATUS_PILL[apt.status],
+                            )}
+                          >
                             {STATUS_LABELS[apt.status]}
-                          </Badge>
+                          </span>
                         </div>
                         <div className="mt-1 text-sm text-muted-foreground">
                           {apt.service_name || "未指定服務"}
                           {apt.staff_name && ` · ${apt.staff_name}`}
                         </div>
                       </div>
-                      <div className="shrink-0 text-sm text-muted-foreground">
+                      <div className="shrink-0 text-sm text-muted-foreground tabular-nums">
                         {apt.patient_phone}
                       </div>
                     </div>
@@ -484,27 +496,32 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">聯絡電話</div>
-                    <div className="font-medium text-foreground">
+                    <div className="font-medium text-foreground tabular-nums">
                       {selectedAppointment.patient_phone}
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">預約日期</div>
-                    <div className="font-medium text-foreground">
+                    <div className="font-medium text-foreground tabular-nums">
                       {formatDate(selectedAppointment.appointment_date)}
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">預約時間</div>
-                    <div className="font-medium text-foreground">
+                    <div className="font-medium text-foreground tabular-nums">
                       {formatTime(selectedAppointment.appointment_time)}
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">狀態</div>
-                    <Badge variant={STATUS_COLORS[selectedAppointment.status]}>
+                    <span
+                      className={cn(
+                        "mt-0.5 inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                        STATUS_PILL[selectedAppointment.status],
+                      )}
+                    >
                       {STATUS_LABELS[selectedAppointment.status]}
-                    </Badge>
+                    </span>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">服務項目</div>

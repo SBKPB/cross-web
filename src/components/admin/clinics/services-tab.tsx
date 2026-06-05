@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { PlusIcon, PencilIcon, TrashIcon, BriefcaseIcon } from "lucide-react";
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  BriefcaseIcon,
+  Clock3,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
+import { cn } from "@/lib/utils";
 import { lumaDialogFooter } from "@/lib/styles/luma";
 import {
   Dialog,
@@ -104,16 +111,21 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="size-7 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">服務項目列表</h2>
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <BriefcaseIcon className="size-5" />
+          </span>
+          <h2 className="font-semibold text-foreground">服務項目列表</h2>
+        </div>
         <Button size="sm" onClick={handleCreate}>
           <PlusIcon className="mr-2 size-4" />
           新增服務
@@ -135,25 +147,32 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
-            <Card key={s.id} className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-semibold text-foreground">
-                    {s.service_name}
-                  </h3>
-                  <p className="mt-1 font-medium text-primary">
-                    {formatPrice(s.price)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {s.duration_minutes} 分鐘
-                  </p>
-                  {s.description && (
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                      {s.description}
-                    </p>
-                  )}
+            <div
+              key={s.id}
+              className="group rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/15"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-1 items-start gap-3">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
+                    {s.service_name.charAt(0)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-semibold text-foreground">
+                      {s.service_name}
+                    </h3>
+                    <span
+                      className={cn(
+                        "mt-1.5 inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                        s.is_active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {s.is_active ? "啟用" : "停用"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex shrink-0 gap-1">
                   <Button
                     variant="ghost"
                     size="icon-sm"
@@ -170,7 +189,23 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
                   </Button>
                 </div>
               </div>
-            </Card>
+
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <p className="font-semibold tabular-nums text-primary">
+                  {formatPrice(s.price)}
+                </p>
+                <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Clock3 className="size-4 shrink-0" />
+                  <span className="tabular-nums">{s.duration_minutes}</span> 分鐘
+                </p>
+              </div>
+
+              {s.description && (
+                <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
+                  {s.description}
+                </p>
+              )}
+            </div>
           ))}
         </div>
       )}

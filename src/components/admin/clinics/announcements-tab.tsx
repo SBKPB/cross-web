@@ -1,14 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Megaphone, Trash2 } from "lucide-react";
+import { CalendarDays, Loader2, Megaphone, Plus, Trash2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
+import { cn } from "@/lib/utils";
 import type { Announcement } from "@/types/clinic";
 
 const MAX_ACTIVE = 3;
@@ -20,6 +19,14 @@ function errMsg(e: unknown): string {
     if (typeof detail === "string") return detail;
   }
   return e instanceof Error ? e.message : "操作失敗";
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 }
 
 export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
@@ -99,35 +106,44 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
   };
 
   return (
-    <Card className="space-y-5 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="flex items-center gap-2 font-semibold text-foreground">
-            <Megaphone className="size-4" />
-            公告
-          </h3>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            民眾端最多顯示 3 則；目前顯示中{" "}
-            <span className={atLimit ? "font-semibold text-amber-600" : ""}>
-              {activeCount} / {MAX_ACTIVE}
-            </span>
-          </p>
+    <div className="space-y-5 rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <Megaphone className="size-5" />
+          </span>
+          <div>
+            <h3 className="font-semibold text-foreground">公告</h3>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              民眾端最多顯示 3 則
+            </p>
+          </div>
         </div>
+        <span
+          className={cn(
+            "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium tabular-nums",
+            atLimit
+              ? "bg-amber-100 text-amber-700"
+              : "bg-primary/10 text-primary",
+          )}
+        >
+          {activeCount} / {MAX_ACTIVE}
+        </span>
       </div>
 
       {error && (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p className="rounded-2xl bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive ring-1 ring-destructive/15">
           {error}
         </p>
       )}
 
       {/* 新增 */}
-      <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-4">
+      <div className="space-y-3 rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="標題"
-          className="h-9"
+          className="h-9 bg-background"
           disabled={atLimit}
         />
         <Textarea
@@ -135,11 +151,12 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
           onChange={(e) => setContent(e.target.value)}
           placeholder="公告內容…"
           rows={2}
+          className="bg-background"
           disabled={atLimit}
         />
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           {atLimit ? (
-            <p className="text-sm text-amber-600">
+            <p className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-700">
               已有 3 則顯示中，請先將一則設為過期再新增。
             </p>
           ) : (
@@ -151,6 +168,11 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
             disabled={busy || atLimit || !title.trim() || !content.trim()}
             onClick={handleCreate}
           >
+            {busy ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Plus className="size-4" />
+            )}
             {busy ? "處理中…" : "新增公告"}
           </Button>
         </div>
@@ -158,35 +180,47 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
 
       {/* 清單 */}
       {loading ? (
-        <p className="text-sm text-muted-foreground">載入中…</p>
+        <div className="flex items-center justify-center py-10">
+          <Loader2 className="size-6 animate-spin text-primary" />
+        </div>
       ) : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">尚無公告。</p>
+        <div className="flex flex-col items-center gap-2 py-10 text-center">
+          <Megaphone className="size-7 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">尚無公告。</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {items.map((a) => (
             <div
               key={a.id}
-              className="flex items-start gap-3 rounded-xl border border-border p-3.5"
+              className="flex items-start gap-3 rounded-2xl p-4 ring-1 ring-foreground/5 transition hover:bg-muted/30"
             >
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                <Megaphone className="size-4" />
+              </span>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {a.title && (
                     <span className="text-sm font-semibold text-foreground">
                       {a.title}
                     </span>
                   )}
-                  <Badge
-                    variant="outline"
-                    className={
+                  <span
+                    className={cn(
+                      "rounded-full px-2.5 py-1 text-xs font-medium",
                       a.is_active
-                        ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                        : "border-border bg-muted text-muted-foreground"
-                    }
+                        ? "bg-green-100 text-green-700"
+                        : "bg-muted text-muted-foreground",
+                    )}
                   >
                     {a.is_active ? "顯示中" : "已過期"}
-                  </Badge>
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+                    <CalendarDays className="size-3.5" />
+                    {formatDate(a.created_at)}
+                  </span>
                 </div>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
+                <p className="mt-1.5 whitespace-pre-wrap text-sm text-muted-foreground">
                   {a.content}
                 </p>
               </div>
@@ -216,6 +250,6 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
           ))}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

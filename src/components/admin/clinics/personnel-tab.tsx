@@ -10,10 +10,10 @@ import {
   UsersIcon,
   EyeIcon,
   EyeOffIcon,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
 import { StaffDetailDialog } from "@/components/admin/clinics/staff-detail-dialog";
 import { lumaCardHover, lumaDialogFooter } from "@/lib/styles/luma";
@@ -157,17 +157,25 @@ export function PersonnelTab({ facilityId }: PersonnelTabProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="size-7 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-foreground">人員列表</h2>
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <UsersIcon className="size-5" />
+          </span>
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-semibold text-foreground">人員列表</h2>
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium tabular-nums text-muted-foreground">
+              {filteredPersonnel.length}
+            </span>
+          </div>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
             <SelectTrigger className="h-8 w-28">
               <SelectValue />
@@ -304,43 +312,43 @@ function PersonnelCard({
     <Card
       key={person.id}
       className={cn(
-        "p-5",
+        "p-5 ring-1 ring-foreground/5",
         hasDetailView && cn("cursor-pointer", lumaCardHover),
       )}
       onClick={hasDetailView ? () => onOpenDetail(person) : undefined}
     >
       <div className="flex items-start gap-3">
         {/* 頭像 */}
-        <div className="size-14 shrink-0 overflow-hidden rounded-2xl bg-muted ring-1 ring-foreground/5">
-          {person.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
+        {person.avatar_url ? (
+          <div className="size-14 shrink-0 overflow-hidden rounded-2xl bg-muted ring-1 ring-foreground/5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={person.avatar_url}
               alt={person.name}
               className="size-full object-cover"
             />
-          ) : (
-            <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
-              {person.name.slice(0, 1)}
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary/10 text-lg font-semibold text-primary">
+            {person.name.slice(0, 1)}
+          </div>
+        )}
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate font-semibold text-foreground">
               {person.name}
             </h3>
-            <Badge variant="outline" className="shrink-0">
+            <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
               {STAFF_ROLES[person.role] || person.role}
-            </Badge>
-            {/* 民眾端可見性圖示 */}
+            </span>
+            {/* 民眾端可見性 pill */}
             <span
               className={cn(
-                "inline-flex shrink-0 items-center",
+                "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium",
                 person.is_public_visible
-                  ? "text-primary"
-                  : "text-muted-foreground/60",
+                  ? "bg-green-100 text-green-700"
+                  : "bg-muted text-muted-foreground",
               )}
               title={
                 person.is_public_visible
@@ -353,6 +361,7 @@ function PersonnelCard({
               ) : (
                 <EyeOffIcon className="size-3.5" />
               )}
+              {person.is_public_visible ? "顯示中" : "隱藏"}
             </span>
           </div>
 
@@ -375,10 +384,14 @@ function PersonnelCard({
 
           {/* 聯絡資訊 */}
           {person.phone && (
-            <p className="mt-1 text-sm text-muted-foreground">{person.phone}</p>
+            <p className="mt-1 text-sm tabular-nums text-muted-foreground">
+              {person.phone}
+            </p>
           )}
           {person.email && (
-            <p className="text-sm text-muted-foreground">{person.email}</p>
+            <p className="truncate text-sm text-muted-foreground">
+              {person.email}
+            </p>
           )}
 
           {/* 服務/休假按鈕 */}
@@ -408,6 +421,7 @@ function PersonnelCard({
             variant="ghost"
             size="icon-sm"
             onClick={stop(() => onEdit(person))}
+            title="編輯"
           >
             <PencilIcon className="size-4" />
           </Button>
@@ -415,6 +429,7 @@ function PersonnelCard({
             variant="ghost"
             size="icon-sm"
             onClick={stop(() => onDelete(person))}
+            title="刪除"
           >
             <TrashIcon className="size-4" />
           </Button>

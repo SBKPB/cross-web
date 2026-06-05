@@ -7,11 +7,13 @@ export type HospitalLevel =
   | "district_hospital" // 地區醫院
   | "clinic"; // 診所
 
-// 服務類型（民眾分流用）
-// healthcare: 健保（一般看診，依科別分流）
-// self_pay:   自費（體檢、預防醫療、不收健保的專科）
-// aesthetic:  美容（微整、雷射、美容療程，含醫美與美容業店家）
-export type FacilityType = "healthcare" | "self_pay" | "aesthetic";
+// 服務型態（民眾分流用）— 純服務軸，不含付款軸
+// 健保 vs 自費屬「付款方式」，由 PaymentType 表達，不放這裡。
+// healthcare: 看診（一般醫療門診，含健保與自費，由 payment_type 區分）
+// aesthetic:  醫美（微整、雷射、電波等醫學美容診所）
+// beauty:     美容（美容、美甲、美睫、紋繡、SPA 等美業店家，非醫療）
+// other:      其他（傳統整復推拿等民俗調理、其他健康相關服務）
+export type FacilityType = "healthcare" | "aesthetic" | "beauty" | "other";
 
 // 人員角色
 export type MemberRole =
@@ -93,11 +95,14 @@ export interface Clinic {
   id: string;
   clinic_name: string;
   hospital_level: HospitalLevel;
-  departments: MedicalDepartment[];
+  // 服務子類別 code（service_category code，看診沿用 18 科別 code、其餘 aes_/bty_/oth_ 前綴）
+  // 顯示時用 service-categories taxonomy 查 code→中文 label
+  departments: string[];
   phone: string | null;
   address: string | null;
   city?: string; // 由 address 解析出的縣市，用於篩選
-  facility_type?: FacilityType; // 服務類型（健保 / 自費 / 美容）
+  facility_type?: FacilityType; // 服務型態（看診 / 醫美 / 美容 / 其他）
+  payment_type?: PaymentType; // 付款方式（健保 / 自費 / 兩者）
   email?: string;
   website?: string;
   description?: string;
@@ -113,9 +118,12 @@ export interface Clinic {
 export interface ClinicFilters {
   search: string;
   hospitalLevel: HospitalLevel | "all";
-  department: MedicalDepartment | "all";
+  // 第二層子類別篩選（service_category code，可多選；空陣列=不限）
+  serviceCategories: string[];
   city: string | "all";
   facilityType: FacilityType | "all";
+  // 付款方式篩選（看診大類下使用）：'all' | 健保 | 自費 | 兩者
+  paymentType: PaymentType | "all";
 }
 
 // ========== 後端 API 型別 (MedicalFacility) ==========
@@ -156,7 +164,7 @@ export interface MedicalFacility {
   name: string;
   phone: string | null;
   address: string | null;
-  medical_department: ApiMedicalDepartment;
+  service_categories: string[]; // 服務子類別 code（多選，須屬於該 facility_type）
   payment_type: PaymentType;
   facility_type: FacilityType;
   business_hours: Record<string, { open: string; close: string; breaks?: BreakTime[] }> | null;
@@ -186,7 +194,7 @@ export interface MedicalFacilityCreate {
   name: string;
   phone?: string;
   address?: string;
-  medical_department: ApiMedicalDepartment;
+  service_categories: string[];
   payment_type: PaymentType;
   facility_type: FacilityType;
   business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
@@ -198,7 +206,7 @@ export interface MedicalFacilityUpdate {
   name?: string;
   phone?: string;
   address?: string;
-  medical_department?: ApiMedicalDepartment;
+  service_categories?: string[];
   payment_type?: PaymentType;
   facility_type?: FacilityType;
   business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;

@@ -31,14 +31,14 @@ export const JOIN_CATEGORIES: JoinCategoryOption[] = [
     value: "beauty",
     label: "美業店家",
     description: "美容、美甲、美睫、紋繡、SPA",
-    facilityType: "aesthetic",
+    facilityType: "beauty",
     icon: "flower",
   },
   {
     value: "other",
     label: "其他",
     description: "其他健康 / 美容相關服務",
-    facilityType: "healthcare",
+    facilityType: "other",
     icon: "store",
   },
 ];

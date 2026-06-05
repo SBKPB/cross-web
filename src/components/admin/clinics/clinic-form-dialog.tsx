@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,16 +25,16 @@ import type {
   MedicalFacility,
   MedicalFacilityCreate,
   MedicalFacilityUpdate,
-  ApiMedicalDepartment,
   PaymentType,
   FacilityType,
   BreakTime,
 } from "@/types/clinic";
 import {
-  API_DEPARTMENT_OPTIONS,
   PAYMENT_TYPE_OPTIONS,
   FACILITY_TYPE_FORM_OPTIONS,
 } from "@/lib/constants/clinic-constants";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
+import { categoriesFor } from "@/lib/api/service-categories";
 import { lumaDialogFooter } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +59,7 @@ interface FormData {
   name: string;
   phone: string;
   address: string;
-  medical_department: ApiMedicalDepartment;
+  service_categories: string[]; // 服務子類別 code（多選，須屬於該 facility_type）
   payment_type: PaymentType;
   facility_type: FacilityType;
   is_active: boolean;
@@ -123,7 +123,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
       name: clinic.name,
       phone: clinic.phone || "",
       address: clinic.address || "",
-      medical_department: clinic.medical_department,
+      service_categories: clinic.service_categories ?? [],
       payment_type: clinic.payment_type,
       facility_type: clinic.facility_type ?? "healthcare",
       is_active: clinic.is_active,
@@ -135,7 +135,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
     name: "",
     phone: "",
     address: "",
-    medical_department: "general_practice",
+    service_categories: [],
     payment_type: "nhi",
     facility_type: "healthcare",
     is_active: true,
@@ -151,9 +151,39 @@ function ClinicFormContent({
   isLoading,
 }: Omit<ClinicFormDialogProps, "open">) {
   const isEditing = !!clinic;
+  const taxonomy = useServiceTaxonomy();
   const [formData, setFormData] = useState<FormData>(() =>
     getInitialFormData(clinic)
   );
+
+  // 記住載入時的付款方式：切回「看診」時還原使用者原本設定（新增情境為 nhi），
+  // 避免「看診→非看診→看診」來回後把既有 both/self_pay 靜默改寫成 nhi
+  const initialPaymentRef = useRef(clinic?.payment_type ?? "nhi");
+
+  // 目前 facility_type 底下可勾選的服務子類別
+  const availableCategories = categoriesFor(taxonomy, formData.facility_type);
+
+  // 切換大類時清空已勾的 service_categories（避免殘留別大類的 code 被後端驗證擋下），
+  // 並把付款方式調整為該大類的合理預設：看診→還原原值、其餘非看診→自費(self_pay)
+  const handleFacilityTypeChange = (value: FacilityType) => {
+    setFormData((prev) => ({
+      ...prev,
+      facility_type: value,
+      service_categories: [],
+      payment_type:
+        value === "healthcare" ? initialPaymentRef.current : "self_pay",
+    }));
+  };
+
+  // 勾選 / 取消勾選單一服務子類別
+  const toggleServiceCategory = (code: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      service_categories: checked
+        ? [...prev.service_categories, code]
+        : prev.service_categories.filter((c) => c !== code),
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,7 +204,7 @@ function ClinicFormContent({
       name: formData.name,
       phone: formData.phone || undefined,
       address: formData.address || undefined,
-      medical_department: formData.medical_department,
+      service_categories: formData.service_categories,
       payment_type: formData.payment_type,
       facility_type: formData.facility_type,
       business_hours: Object.keys(business_hours).length > 0 ? business_hours : undefined,
@@ -282,31 +312,63 @@ function ClinicFormContent({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="medical_department">科別</Label>
-                <Select
-                  value={formData.medical_department}
-                  onValueChange={(value: ApiMedicalDepartment) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      medical_department: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger id="medical_department" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {API_DEPARTMENT_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="facility_type">服務類型（民眾端分流）</Label>
+              <Select
+                value={formData.facility_type}
+                onValueChange={handleFacilityTypeChange}
+              >
+                <SelectTrigger id="facility_type" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FACILITY_TYPE_FORM_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-xs">
+                決定此院所顯示在民眾端的哪一個 tab（看診 / 醫美 / 美容 / 其他）。切換時會清空已勾選的服務子類別。
+              </p>
+            </div>
 
+            {/* 服務子類別（依目前服務類型顯示，可複選） */}
+            <div className="grid gap-2">
+              <Label>服務子類別（可複選）</Label>
+              <div className="grid grid-cols-2 gap-2 rounded-xl p-3 ring-1 ring-foreground/5">
+                {availableCategories.map((category) => {
+                  const checked = formData.service_categories.includes(
+                    category.code,
+                  );
+                  return (
+                    <label
+                      key={category.code}
+                      htmlFor={`cat-${category.code}`}
+                      className="flex cursor-pointer items-center gap-2 text-sm"
+                    >
+                      <Checkbox
+                        id={`cat-${category.code}`}
+                        checked={checked}
+                        onCheckedChange={(value) =>
+                          toggleServiceCategory(category.code, value === true)
+                        }
+                      />
+                      <span className="text-foreground">{category.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formData.service_categories.length === 0 && (
+                <p className="text-muted-foreground text-xs">
+                  尚未勾選任何子類別
+                </p>
+              )}
+            </div>
+
+            {/* 付費類型：僅看診大類需要區分健保/自費；非看診固定自費 */}
+            {formData.facility_type === "healthcare" && (
               <div className="grid gap-2">
                 <Label htmlFor="payment_type">付費類型</Label>
                 <Select
@@ -327,31 +389,7 @@ function ClinicFormContent({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="facility_type">服務類型（民眾端分流）</Label>
-              <Select
-                value={formData.facility_type}
-                onValueChange={(value: FacilityType) =>
-                  setFormData((prev) => ({ ...prev, facility_type: value }))
-                }
-              >
-                <SelectTrigger id="facility_type" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FACILITY_TYPE_FORM_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-muted-foreground text-xs">
-                決定此院所顯示在民眾端的哪一個 tab（健保看診 / 自費門診 / 美容諮詢）
-              </p>
-            </div>
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="phone">電話</Label>

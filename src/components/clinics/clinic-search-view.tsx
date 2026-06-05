@@ -29,9 +29,10 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 const EMPTY_FILTERS: ClinicFilters = {
   search: "",
   hospitalLevel: "all",
-  department: "all",
+  serviceCategories: [],
   city: "all",
   facilityType: "all",
+  paymentType: "all",
 };
 
 export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
@@ -65,15 +66,21 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
         const addrHit = clinic.address?.toLowerCase().includes(q) ?? false;
         if (!nameHit && !addrHit) return false;
       }
+      // 醫療分級僅在「看診/全部」大類適用（與 toolbar 的 showLevelFilter 一致，
+      // 避免非看診大類帶 level 參數時產生看不見、移不掉的隱形篩選）
+      const levelScope =
+        filters.facilityType === "all" || filters.facilityType === "healthcare";
       if (
+        levelScope &&
         filters.hospitalLevel !== "all" &&
         clinic.hospital_level !== filters.hospitalLevel
       ) {
         return false;
       }
+      // 第二層子類別（多選，OR 命中）：空陣列=不限
       if (
-        filters.department !== "all" &&
-        !clinic.departments.includes(filters.department)
+        filters.serviceCategories.length > 0 &&
+        !filters.serviceCategories.some((c) => clinic.departments.includes(c))
       ) {
         return false;
       }
@@ -85,6 +92,17 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
         clinic.facility_type !== filters.facilityType
       ) {
         return false;
+      }
+      // 付款方式僅在「看診」大類適用（與 toolbar 的 showPaymentFilter 一致，
+      // 避免非看診大類帶 payment 參數時產生隱形篩選）。
+      // 健保命中 nhi+both、自費命中 self_pay+both（缺值視為 nhi）
+      if (filters.facilityType === "healthcare" && filters.paymentType !== "all") {
+        const pt = clinic.payment_type ?? "nhi";
+        const hit =
+          filters.paymentType === "nhi"
+            ? pt === "nhi" || pt === "both"
+            : pt === "self_pay" || pt === "both";
+        if (!hit) return false;
       }
       return true;
     });

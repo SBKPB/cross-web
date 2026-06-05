@@ -19,6 +19,7 @@ import type {
   Clinic,
   FacilityType,
   Member,
+  PaymentType,
   Service,
 } from "@/types/clinic";
 import type { WeeklySchedule } from "@/types/schedule";
@@ -98,6 +99,7 @@ function transformClinicData(found: any): Clinic {
     facility_type:
       (found.facility_type as FacilityType | undefined) ??
       deriveFacilityType(members),
+    payment_type: found.payment_type as PaymentType | undefined,
     rating: found.rating ?? undefined,
     review_count: found.review_count ?? undefined,
     business_hours: businessHours,
@@ -190,9 +192,6 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
     clinic.services = services;
   }
 
-  // 健保科別只在健保 / 舊資料顯示
-  const isHealthcareScope =
-    !clinic.facility_type || clinic.facility_type === "healthcare";
   // 門診時刻表：健保、自費（皆有醫師 / 治療師排班）一律顯示（無資料呈現空狀態）；
   // 美容僅在確有排班時才顯示
   const showSchedule =
@@ -209,10 +208,11 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
           {/* ===== 主內容 ===== */}
           <div className="space-y-6">
-            {/* 醫療科別（美容、自費不分科） */}
-            {isHealthcareScope && (
-              <DepartmentBadges departments={clinic.departments} />
-            )}
+            {/* 服務子類別（看診→科別、醫美/美容/其他→服務項目，皆顯示） */}
+            <DepartmentBadges
+              departments={clinic.departments}
+              facilityType={clinic.facility_type}
+            />
 
             {/* 門診時刻表（醫師排班：早/午/晚 × 週一~週日） */}
             {showSchedule && <ScheduleTimetable schedule={schedule} />}

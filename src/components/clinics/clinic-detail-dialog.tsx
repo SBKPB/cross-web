@@ -12,11 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  HOSPITAL_LEVELS,
-  MEDICAL_DEPARTMENTS,
-  API_MEDICAL_DEPARTMENTS,
-} from "@/lib/constants/clinic-constants";
+import { HOSPITAL_LEVELS } from "@/lib/constants/clinic-constants";
+import { categoryLabel } from "@/lib/api/service-categories";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import type { Clinic } from "@/types/clinic";
 
 interface ClinicDetailDialogProps {
@@ -30,6 +28,8 @@ export function ClinicDetailDialog({
   open,
   onOpenChange,
 }: ClinicDetailDialogProps) {
+  // hook 必須在 early return 之前呼叫（Rules of Hooks）
+  const tax = useServiceTaxonomy();
   if (!clinic) return null;
 
   return (
@@ -70,9 +70,7 @@ export function ClinicDetailDialog({
                   variant="outline"
                   className="text-xs px-2 py-1 border-0 bg-accent text-primary"
                 >
-                  {MEDICAL_DEPARTMENTS[dept as keyof typeof MEDICAL_DEPARTMENTS] ??
-                    API_MEDICAL_DEPARTMENTS[dept as keyof typeof API_MEDICAL_DEPARTMENTS] ??
-                    dept}
+                  {categoryLabel(tax, dept)}
                 </Badge>
               ))}
             </div>

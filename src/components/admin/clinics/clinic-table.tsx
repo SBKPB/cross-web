@@ -18,10 +18,9 @@ import {
   lumaTableShell,
 } from "@/lib/styles/luma";
 import type { MedicalFacility } from "@/types/clinic";
-import {
-  API_MEDICAL_DEPARTMENTS,
-  PAYMENT_TYPES,
-} from "@/lib/constants/clinic-constants";
+import { PAYMENT_TYPES } from "@/lib/constants/clinic-constants";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
+import { categoryLabel } from "@/lib/api/service-categories";
 
 interface ClinicTableProps {
   clinics: MedicalFacility[];
@@ -30,6 +29,8 @@ interface ClinicTableProps {
 }
 
 export function ClinicTable({ clinics, onEdit, onDelete }: ClinicTableProps) {
+  const taxonomy = useServiceTaxonomy();
+
   if (clinics.length === 0) {
     return (
       <AdminEmptyState
@@ -46,7 +47,7 @@ export function ClinicTable({ clinics, onEdit, onDelete }: ClinicTableProps) {
         <TableHeader className={lumaTableHeader}>
           <TableRow>
             <TableHead>名稱</TableHead>
-            <TableHead>科別</TableHead>
+            <TableHead>服務子類別</TableHead>
             <TableHead>付費類型</TableHead>
             <TableHead>地址</TableHead>
             <TableHead>電話</TableHead>
@@ -61,7 +62,22 @@ export function ClinicTable({ clinics, onEdit, onDelete }: ClinicTableProps) {
                 {clinic.name}
               </TableCell>
               <TableCell>
-                {API_MEDICAL_DEPARTMENTS[clinic.medical_department]}
+                {clinic.service_categories.length === 0 ? (
+                  <span className="text-muted-foreground">-</span>
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {clinic.service_categories.slice(0, 2).map((code) => (
+                      <Badge key={code} variant="outline">
+                        {categoryLabel(taxonomy, code)}
+                      </Badge>
+                    ))}
+                    {clinic.service_categories.length > 2 && (
+                      <Badge variant="outline">
+                        +{clinic.service_categories.length - 2}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </TableCell>
               <TableCell>{PAYMENT_TYPES[clinic.payment_type]}</TableCell>
               <TableCell className="max-w-[200px] truncate">

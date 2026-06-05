@@ -21,10 +21,11 @@ import { AppointmentsTab } from "@/components/admin/clinics/appointments-tab";
 import { ScheduleTab } from "@/components/admin/clinics/schedule-tab";
 import { SubscriptionSection } from "@/components/admin/clinics/subscription-section";
 import {
-  API_MEDICAL_DEPARTMENTS,
   PAYMENT_TYPES,
   FACILITY_TYPE_LABELS,
 } from "@/lib/constants/clinic-constants";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
+import { categoryLabel } from "@/lib/api/service-categories";
 import { cn } from "@/lib/utils";
 import {
   lumaPageContainer,
@@ -39,6 +40,7 @@ export default function ClinicDetailPage() {
   const params = useParams();
   const router = useRouter();
   const clinicId = params.id as string;
+  const taxonomy = useServiceTaxonomy();
 
   const [clinic, setClinic] = useState<MedicalFacility | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -139,6 +141,14 @@ export default function ClinicDetailPage() {
       .join("、") || "未設定";
   };
 
+  // 服務子類別 code 攤成中文 label（多個以「、」串接）
+  const serviceCategoriesLabel =
+    clinic.service_categories.length > 0
+      ? clinic.service_categories
+          .map((code) => categoryLabel(taxonomy, code))
+          .join("、")
+      : "未設定";
+
   return (
     <div className={lumaPageContainer}>
       {/* Header */}
@@ -146,8 +156,7 @@ export default function ClinicDetailPage() {
         <div className="space-y-1">
           <h1 className={lumaSectionTitle}>{clinic.name}</h1>
           <p className={lumaSectionDesc}>
-            {API_MEDICAL_DEPARTMENTS[clinic.medical_department]} ·{" "}
-            {PAYMENT_TYPES[clinic.payment_type]}
+            {serviceCategoriesLabel} · {PAYMENT_TYPES[clinic.payment_type]}
           </p>
         </div>
         <div className="flex gap-2">
@@ -197,9 +206,9 @@ export default function ClinicDetailPage() {
                 <p className="font-medium text-foreground">{clinic.name}</p>
               </div>
               <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">科別</h3>
+                <h3 className="mb-1 text-sm text-muted-foreground">服務子類別</h3>
                 <p className="font-medium text-foreground">
-                  {API_MEDICAL_DEPARTMENTS[clinic.medical_department]}
+                  {serviceCategoriesLabel}
                 </p>
               </div>
               <div>

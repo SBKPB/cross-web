@@ -16,10 +16,9 @@ import { ClinicFormDialog } from "@/components/admin/clinics";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
 import { useRequireSystemAdmin } from "@/lib/auth/use-require-system-admin";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
-import {
-  API_MEDICAL_DEPARTMENTS,
-  PAYMENT_TYPES,
-} from "@/lib/constants/clinic-constants";
+import { PAYMENT_TYPES } from "@/lib/constants/clinic-constants";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
+import { categoryLabel } from "@/lib/api/service-categories";
 import { cn } from "@/lib/utils";
 import {
   lumaCardHover,
@@ -37,6 +36,7 @@ import type {
 export default function AdminClinicsPage() {
   useRequireSystemAdmin();
   const router = useRouter();
+  const taxonomy = useServiceTaxonomy();
   const [clinics, setClinics] = useState<MedicalFacility[]>([]);
   const [filteredClinics, setFilteredClinics] = useState<MedicalFacility[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,6 +96,14 @@ export default function AdminClinicsPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // 卡片空間有限：最多顯示前 2 個服務子類別 label，其餘以「+N」呈現
+  const formatServiceCategories = (codes: string[]): string => {
+    if (codes.length === 0) return "未設定";
+    const labels = codes.map((code) => categoryLabel(taxonomy, code));
+    if (labels.length <= 2) return labels.join("、");
+    return `${labels.slice(0, 2).join("、")} +${labels.length - 2}`;
   };
 
   return (
@@ -163,7 +171,7 @@ export default function AdminClinicsPage() {
                     {clinic.name}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {API_MEDICAL_DEPARTMENTS[clinic.medical_department]}
+                    {formatServiceCategories(clinic.service_categories)}
                   </p>
                   {clinic.address && (
                     <p className="truncate text-sm text-muted-foreground">

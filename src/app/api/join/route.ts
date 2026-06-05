@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
-  API_MEDICAL_DEPARTMENTS,
-  PAYMENT_TYPES,
-} from "@/lib/constants/clinic-constants";
+  categoryLabel,
+  serviceCategoriesApi,
+} from "@/lib/api/service-categories";
+import { PAYMENT_TYPES } from "@/lib/constants/clinic-constants";
 import {
   JOIN_CATEGORIES,
   JOIN_CATEGORY_LABELS,
@@ -72,6 +73,14 @@ function validate(raw: unknown): ValidationResult {
   }
 
   const category = body.category as JoinCategory;
+
+  // service_categories：只收非空字串，過濾後若為空陣列則視為未填
+  const serviceCategories = Array.isArray(body.service_categories)
+    ? body.service_categories.filter(
+        (c): c is string => typeof c === "string" && c.trim().length > 0,
+      )
+    : [];
+
   const data: JoinApplication = {
     category,
     facility_type: FACILITY_BY_CATEGORY[category],
@@ -86,9 +95,8 @@ function validate(raw: unknown): ValidationResult {
     team_size: isNonEmptyString(body.team_size)
       ? (body.team_size as string).trim()
       : undefined,
-    medical_department: isNonEmptyString(body.medical_department)
-      ? (body.medical_department as JoinApplication["medical_department"])
-      : undefined,
+    service_categories:
+      serviceCategories.length > 0 ? serviceCategories : undefined,
     payment_type: isNonEmptyString(body.payment_type)
       ? (body.payment_type as JoinApplication["payment_type"])
       : undefined,
@@ -103,7 +111,7 @@ function validate(raw: unknown): ValidationResult {
   return { ok: true, data };
 }
 
-function buildNotificationText(data: JoinApplication): string {
+async function buildNotificationText(data: JoinApplication): Promise<string> {
   const lines = [
     "【Cross 新夥伴加入申請】",
     "",
@@ -116,15 +124,18 @@ function buildNotificationText(data: JoinApplication): string {
   ];
   if (data.address) lines.push(`地址：${data.address}`);
   if (data.team_size) lines.push(`規模：${data.team_size}`);
-  if (data.medical_department) {
-    lines.push(
-      `主要科別：${API_MEDICAL_DEPARTMENTS[data.medical_department] ?? data.medical_department}`,
+  if (data.service_categories && data.service_categories.length > 0) {
+    // 以 service-categories taxonomy 把 code 攤成中文 label（Node server 可直接 await）
+    const taxonomy = await serviceCategoriesApi.get();
+    const labels = data.service_categories.map((code) =>
+      categoryLabel(taxonomy, code),
     );
+    lines.push(`主要服務：${labels.join("、")}`);
   }
   if (data.payment_type) {
     lines.push(`付費類型：${PAYMENT_TYPES[data.payment_type] ?? data.payment_type}`);
   }
-  if (data.services) lines.push(`主要服務：${data.services}`);
+  if (data.services) lines.push(`其他服務：${data.services}`);
   if (data.message) lines.push(`備註：${data.message}`);
   return lines.join("\n");
 }
@@ -179,7 +190,7 @@ export async function POST(req: NextRequest) {
   }
 
   const data = result.data;
-  const text = buildNotificationText(data);
+  const text = await buildNotificationText(data);
 
   // server log fallback（永遠記錄，方便沒設定通知管道時也追得到申請）
   console.info("[join] new application", {

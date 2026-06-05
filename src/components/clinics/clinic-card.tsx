@@ -1,4 +1,15 @@
-import { ArrowUpRight, MapPin, Phone, Sparkles, Star, Stethoscope, Wallet } from "lucide-react";
+"use client";
+
+import {
+  ArrowUpRight,
+  Flower2,
+  MapPin,
+  Phone,
+  Sparkles,
+  Star,
+  Stethoscope,
+  Store,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -8,20 +19,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { categoryLabel } from "@/lib/api/service-categories";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import {
-  API_MEDICAL_DEPARTMENTS,
   FACILITY_TYPE_COLORS,
   FACILITY_TYPE_LABELS,
   HOSPITAL_LEVELS,
-  MEDICAL_DEPARTMENTS,
+  PAYMENT_TYPES,
 } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
 import type { Clinic, FacilityType } from "@/types/clinic";
 
 const FACILITY_TYPE_ICONS: Record<FacilityType, typeof Stethoscope> = {
   healthcare: Stethoscope,
-  self_pay: Wallet,
   aesthetic: Sparkles,
+  beauty: Flower2,
+  other: Store,
 };
 
 interface ClinicCardProps {
@@ -31,6 +44,8 @@ interface ClinicCardProps {
 }
 
 export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
+  const tax = useServiceTaxonomy();
+
   const maxDisplayDepartments = 3;
   const displayDepartments = clinic.departments.slice(0, maxDisplayDepartments);
   const remainingCount = clinic.departments.length - maxDisplayDepartments;
@@ -39,7 +54,7 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
     ? FACILITY_TYPE_ICONS[clinic.facility_type]
     : null;
 
-  // 美容 / 自費 不分醫療分級，僅健保（或舊資料）顯示
+  // 醫療分級僅在健保（或舊資料無 facility_type）顯示，其餘大類不分級
   const showHospitalLevel =
     !clinic.facility_type || clinic.facility_type === "healthcare";
 
@@ -66,6 +81,12 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
                 >
                   <TypeIcon />
                   {FACILITY_TYPE_LABELS[clinic.facility_type]}
+                </Badge>
+              )}
+              {/* 付款方式（健保 / 自費 / 健保+自費），取代舊 self_pay 大類語意 */}
+              {clinic.payment_type && (
+                <Badge variant="outline" className="text-muted-foreground">
+                  {PAYMENT_TYPES[clinic.payment_type]}
                 </Badge>
               )}
               {showHospitalLevel && (
@@ -106,14 +127,12 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* 科別標籤（只在健保 / 舊資料顯示，美容、自費不分科） */}
-        {showHospitalLevel && displayDepartments.length > 0 && (
+        {/* 服務子類別標籤（看診 / 醫美 / 美容 / 其他皆顯示，label 取自 taxonomy） */}
+        {displayDepartments.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {displayDepartments.map((dept) => (
               <Badge key={dept} variant="outline" className="text-muted-foreground">
-                {MEDICAL_DEPARTMENTS[dept as keyof typeof MEDICAL_DEPARTMENTS] ??
-                  API_MEDICAL_DEPARTMENTS[dept as keyof typeof API_MEDICAL_DEPARTMENTS] ??
-                  dept}
+                {categoryLabel(tax, dept)}
               </Badge>
             ))}
             {remainingCount > 0 && (

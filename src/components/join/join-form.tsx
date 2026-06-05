@@ -23,8 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { categoriesFor } from "@/lib/api/service-categories";
 import {
-  API_DEPARTMENT_OPTIONS,
   PAYMENT_TYPE_OPTIONS,
   TAIWAN_CITIES,
 } from "@/lib/constants/clinic-constants";
@@ -34,8 +34,9 @@ import {
   TEAM_SIZE_OPTIONS,
   type JoinCategoryOption,
 } from "@/lib/constants/join-constants";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import { cn } from "@/lib/utils";
-import type { ApiMedicalDepartment, PaymentType } from "@/types/clinic";
+import type { PaymentType } from "@/types/clinic";
 import type { JoinApplication, JoinCategory } from "@/types/join";
 
 const CATEGORY_ICONS = {
@@ -54,7 +55,7 @@ interface FormState {
   city: string;
   address: string;
   team_size: string;
-  medical_department: ApiMedicalDepartment;
+  service_categories: string[]; // 主要服務子類別 code（多選）
   payment_type: PaymentType;
   services: string;
   message: string;
@@ -70,7 +71,7 @@ const INITIAL_STATE: FormState = {
   city: "",
   address: "",
   team_size: "",
-  medical_department: "general_practice",
+  service_categories: [],
   payment_type: "nhi",
   services: "",
   message: "",
@@ -143,16 +144,70 @@ function CategoryCard({
   );
 }
 
+/** 服務子類別多選 chip：選中時填滿品牌色 + 勾號 */
+function CategoryChip({
+  label,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  selected: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={selected}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium ring-1 transition-all duration-200",
+        selected
+          ? "bg-primary text-primary-foreground ring-primary shadow-sm"
+          : "bg-card text-foreground ring-foreground/12 hover:ring-primary/40 hover:text-primary",
+      )}
+    >
+      {selected && <Check className="size-3.5" strokeWidth={3} />}
+      {label}
+    </button>
+  );
+}
+
 export function JoinForm() {
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const taxonomy = useServiceTaxonomy();
+
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
   const isClinic = form.category === "clinic";
+
+  // 當前所選大類對應的 facilityType 與其子類別清單
+  const facilityType = JOIN_CATEGORIES.find(
+    (c) => c.value === form.category,
+  )!.facilityType;
+  const categoryOptions = categoriesFor(taxonomy, facilityType);
+
+  // 切換商家類型：清空已選服務子類別、並重設付款方式（避免殘留別類的 code / 付款別）
+  const selectCategory = (value: JoinCategory) =>
+    setForm((prev) => ({
+      ...prev,
+      category: value,
+      service_categories: [],
+      payment_type: "nhi",
+    }));
+
+  // 切換單一服務子類別 code 的選取狀態
+  const toggleServiceCategory = (code: string) =>
+    setForm((prev) => ({
+      ...prev,
+      service_categories: prev.service_categories.includes(code)
+        ? prev.service_categories.filter((c) => c !== code)
+        : [...prev.service_categories, code],
+    }));
 
   const canSubmit =
     form.business_name.trim() &&
@@ -179,12 +234,15 @@ export function JoinForm() {
       team_size: form.team_size || undefined,
       message: form.message.trim() || undefined,
       hp: form.hp || undefined,
-      ...(isClinic
-        ? {
-            medical_department: form.medical_department,
-            payment_type: form.payment_type,
-          }
-        : { services: form.services.trim() || undefined }),
+      // 主分類改為多選 service_categories（四大類皆送）
+      service_categories:
+        form.service_categories.length > 0
+          ? form.service_categories
+          : undefined,
+      // 補充說明自由文字（與多選並存）
+      services: form.services.trim() || undefined,
+      // 付費類型為診所專屬
+      ...(isClinic ? { payment_type: form.payment_type } : {}),
     };
 
     try {
@@ -271,7 +329,7 @@ export function JoinForm() {
                 key={option.value}
                 option={option}
                 selected={form.category === option.value}
-                onSelect={() => update("category", option.value)}
+                onSelect={() => selectCategory(option.value)}
               />
             ))}
           </div>
@@ -368,60 +426,68 @@ export function JoinForm() {
         {/* ③ 服務資訊 */}
         <fieldset className="space-y-4">
           <SectionTitle step={3}>{isClinic ? "診所資訊" : "服務資訊"}</SectionTitle>
-          {isClinic ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="medical_department">主要科別</Label>
-                <Select
-                  value={form.medical_department}
-                  onValueChange={(v: ApiMedicalDepartment) =>
-                    update("medical_department", v)
-                  }
-                >
-                  <SelectTrigger id="medical_department" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {API_DEPARTMENT_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+          {/* 主要服務子類別：多選 chip（依所選大類動態切換清單） */}
+          <div className="grid gap-2">
+            <Label>
+              {isClinic ? "主要科別" : "主要服務項目"}
+              <span className="ml-1 text-xs font-normal text-muted-foreground">
+                可複選
+              </span>
+            </Label>
+            {categoryOptions.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {categoryOptions.map((option) => (
+                  <CategoryChip
+                    key={option.code}
+                    label={option.label}
+                    selected={form.service_categories.includes(option.code)}
+                    onToggle={() => toggleServiceCategory(option.code)}
+                  />
+                ))}
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="payment_type">付費類型</Label>
-                <Select
-                  value={form.payment_type}
-                  onValueChange={(v: PaymentType) => update("payment_type", v)}
-                >
-                  <SelectTrigger id="payment_type" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAYMENT_TYPE_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              <Label htmlFor="services">主要服務項目</Label>
-              <Input
-                id="services"
-                value={form.services}
-                onChange={(e) => update("services", e.target.value)}
-                placeholder={
-                  SERVICE_PLACEHOLDERS[form.category] ?? "請簡述您提供的服務類型"
-                }
-              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                此類型暫無預設項目，請於下方補充說明。
+              </p>
+            )}
+          </div>
+
+          {/* 付費類型：診所專屬 */}
+          {isClinic && (
+            <div className="grid gap-2 sm:max-w-[240px]">
+              <Label htmlFor="payment_type">付費類型</Label>
+              <Select
+                value={form.payment_type}
+                onValueChange={(v: PaymentType) => update("payment_type", v)}
+              >
+                <SelectTrigger id="payment_type" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAYMENT_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
+
+          {/* 補充說明：自由文字（與多選並存） */}
+          <div className="grid gap-2">
+            <Label htmlFor="services">其他服務項目（補充）</Label>
+            <Input
+              id="services"
+              value={form.services}
+              onChange={(e) => update("services", e.target.value)}
+              placeholder={
+                SERVICE_PLACEHOLDERS[form.category] ??
+                "未列於上方的服務可在此補充（選填）"
+              }
+            />
+          </div>
 
           <div className="grid gap-2 sm:max-w-[240px]">
             <Label htmlFor="team_size">團隊規模</Label>

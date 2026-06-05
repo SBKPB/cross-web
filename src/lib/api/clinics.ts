@@ -8,6 +8,7 @@ import type {
   Clinic,
   FacilityType,
   Member,
+  PaymentType,
 } from "@/types/clinic";
 
 // 後端人員資料格式
@@ -24,7 +25,8 @@ interface BackendClinic {
   name: string;  // 後端返回 name，前端使用 clinic_name
   hospital_level?: string;
   facility_type?: FacilityType;
-  medical_department?: string;
+  payment_type?: PaymentType;
+  // departments 攜帶 service_category code（看診沿用 18 科別 code，其餘 aes_/bty_/oth_ 前綴）
   departments?: string[];
   phone: string | null;
   address: string | null;
@@ -72,12 +74,8 @@ const ROLE_NAMES: Record<string, string> = {
 
 // 轉換後端格式為前端格式
 function transformClinic(backendClinic: BackendClinic): Clinic {
-  // 處理科別：優先使用 departments 陣列，否則使用 medical_department
-  const departments = backendClinic.departments?.length
-    ? backendClinic.departments
-    : backendClinic.medical_department
-      ? [backendClinic.medical_department]
-      : [];
+  // departments 攜帶 service_category code（顯示時用 taxonomy 查 code→中文 label）
+  const departments = backendClinic.departments ?? [];
 
   // 轉換人員資料
   const members = backendClinic.members?.map((staff) => ({
@@ -92,12 +90,13 @@ function transformClinic(backendClinic: BackendClinic): Clinic {
     id: backendClinic.id,
     clinic_name: backendClinic.name,
     hospital_level: (backendClinic.hospital_level || "clinic") as Clinic["hospital_level"],
-    departments: departments as Clinic["departments"],
+    departments,
     phone: backendClinic.phone,
     address: backendClinic.address,
     city: parseCityFromAddress(backendClinic.address),
     // 優先用後端回傳的 facility_type；舊資料 fallback 用成員推導
     facility_type: backendClinic.facility_type ?? deriveFacilityType(members),
+    payment_type: backendClinic.payment_type,
     rating: backendClinic.rating ?? undefined,
     review_count: backendClinic.review_count ?? undefined,
     business_hours: transformBusinessHours(backendClinic.business_hours),

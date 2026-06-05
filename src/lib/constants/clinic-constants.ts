@@ -254,39 +254,46 @@ export function parseCityFromAddress(address: string | null | undefined): string
 
 // ========== 服務類型（FacilityType） ==========
 
+// 服務型態大類（純服務軸；健保/自費屬付款軸 PaymentType，不在此）
+// 註：這些是 fallback；單一來源為後端 /api/v1/service-categories（見 lib/api/service-categories.ts）
 export const FACILITY_TYPE_LABELS: Record<FacilityType, string> = {
-  healthcare: "健保看診",
-  self_pay: "自費門診",
-  aesthetic: "美容諮詢",
+  healthcare: "看診",
+  aesthetic: "醫美",
+  beauty: "美容",
+  other: "其他",
 };
 
 // Hero tabs 短標籤
 export const FACILITY_TYPE_SHORT_LABELS: Record<FacilityType, string> = {
-  healthcare: "健保",
-  self_pay: "自費",
-  aesthetic: "美容",
+  healthcare: "看診",
+  aesthetic: "醫美",
+  beauty: "美容",
+  other: "其他",
 };
 
 // 服務類型顏色（用於 badge）
 export const FACILITY_TYPE_COLORS: Record<FacilityType, string> = {
   healthcare: "bg-sky-100 text-sky-700",
-  self_pay: "bg-amber-100 text-amber-700",
   aesthetic: "bg-pink-100 text-pink-700",
+  beauty: "bg-rose-100 text-rose-700",
+  other: "bg-slate-100 text-slate-700",
 };
 
 // 服務類型選項（含「全部」，前台篩選用）
 export const FACILITY_TYPE_OPTIONS = [
   { value: "all", label: "全部類型" },
-  { value: "healthcare", label: "健保看診" },
-  { value: "self_pay", label: "自費門診" },
-  { value: "aesthetic", label: "美容諮詢" },
+  { value: "healthcare", label: "看診" },
+  { value: "aesthetic", label: "醫美" },
+  { value: "beauty", label: "美容" },
+  { value: "other", label: "其他" },
 ] as const;
 
 // 後台表單用（不含「全部」）
 export const FACILITY_TYPE_FORM_OPTIONS: ReadonlyArray<{ value: FacilityType; label: string }> = [
-  { value: "healthcare", label: "健保看診" },
-  { value: "self_pay", label: "自費門診" },
-  { value: "aesthetic", label: "美容諮詢" },
+  { value: "healthcare", label: "看診" },
+  { value: "aesthetic", label: "醫美" },
+  { value: "beauty", label: "美容" },
+  { value: "other", label: "其他" },
 ];
 
 /**
@@ -315,29 +322,35 @@ export type PopularChip = {
   value: string;
 };
 
+// 註：第二層子類別 chip 已改由 /api/v1/service-categories taxonomy 動態提供
+// （見 lib/api/service-categories.ts）。此常數僅保留為 fallback，code 對齊後端。
 export const POPULAR_CHIPS_BY_TYPE: Record<FacilityType, PopularChip[]> = {
   healthcare: [
     { label: "家醫科", kind: "dept", value: "family_medicine" },
     { label: "牙科", kind: "dept", value: "dentistry" },
     { label: "皮膚科", kind: "dept", value: "dermatology" },
-    { label: "耳鼻喉", kind: "dept", value: "otolaryngology" },
-    { label: "小兒科", kind: "dept", value: "pediatrics" },
+    { label: "耳鼻喉科", kind: "dept", value: "ent" },
+    { label: "兒科", kind: "dept", value: "pediatrics" },
     { label: "復健科", kind: "dept", value: "rehabilitation" },
     { label: "眼科", kind: "dept", value: "ophthalmology" },
   ],
   aesthetic: [
-    { label: "微整形", kind: "query", value: "微整" },
-    { label: "雷射", kind: "query", value: "雷射" },
-    { label: "電波", kind: "query", value: "電波" },
-    { label: "肉毒", kind: "query", value: "肉毒" },
-    { label: "玻尿酸", kind: "query", value: "玻尿酸" },
-    { label: "痘痘肌", kind: "query", value: "痘痘" },
+    { label: "微整注射", kind: "dept", value: "aes_injection" },
+    { label: "雷射光療", kind: "dept", value: "aes_laser" },
+    { label: "電波・音波拉提", kind: "dept", value: "aes_lifting" },
+    { label: "體雕・抽脂", kind: "dept", value: "aes_body" },
+    { label: "皮膚治療", kind: "dept", value: "aes_skin" },
+    { label: "植髮", kind: "dept", value: "aes_hair" },
   ],
-  self_pay: [
-    { label: "健康檢查", kind: "query", value: "健檢" },
-    { label: "疫苗接種", kind: "query", value: "疫苗" },
-    { label: "自費門診", kind: "query", value: "自費" },
-    { label: "中醫調理", kind: "dept", value: "chinese_medicine" },
-    { label: "牙齒美白", kind: "query", value: "美白" },
+  beauty: [
+    { label: "臉部護理・做臉", kind: "dept", value: "bty_facial" },
+    { label: "美甲・美睫", kind: "dept", value: "bty_nail_lash" },
+    { label: "紋繡", kind: "dept", value: "bty_pmu" },
+    { label: "SPA・舒壓按摩", kind: "dept", value: "bty_spa" },
+    { label: "除毛", kind: "dept", value: "bty_hair_removal" },
+  ],
+  other: [
+    { label: "傳統整復推拿", kind: "dept", value: "oth_manipulation" },
+    { label: "其他健康服務", kind: "dept", value: "oth_misc" },
   ],
 };

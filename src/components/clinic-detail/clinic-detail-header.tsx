@@ -5,11 +5,12 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Building2,
+  Flower2,
   MapPin,
   Sparkles,
   Star,
   Stethoscope,
-  Wallet,
+  Store,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,14 +18,16 @@ import {
   FACILITY_TYPE_COLORS,
   FACILITY_TYPE_LABELS,
   HOSPITAL_LEVELS,
+  PAYMENT_TYPES,
 } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
 import type { Clinic, FacilityType } from "@/types/clinic";
 
 const FACILITY_TYPE_ICONS: Record<FacilityType, typeof Stethoscope> = {
   healthcare: Stethoscope,
-  self_pay: Wallet,
   aesthetic: Sparkles,
+  beauty: Flower2,
+  other: Store,
 };
 
 interface ClinicDetailHeaderProps {
@@ -107,6 +110,12 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
                   >
                     <TypeIcon />
                     {FACILITY_TYPE_LABELS[clinic.facility_type]}
+                  </Badge>
+                )}
+                {/* 付款方式（健保 / 自費 / 健保+自費），取代舊 self_pay 大類語意 */}
+                {clinic.payment_type && (
+                  <Badge variant="outline" className="bg-card text-muted-foreground">
+                    {PAYMENT_TYPES[clinic.payment_type]}
                   </Badge>
                 )}
                 {showHospitalLevel && (

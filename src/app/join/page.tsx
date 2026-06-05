@@ -57,8 +57,8 @@ const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
   },
   {
     icon: Eye,
-    title: "三分流精準曝光",
-    description: "健保 / 自費 / 醫美分流，被對的客群看見。",
+    title: "分眾精準曝光",
+    description: "健保 / 自費 / 醫美 / 美容分流，被對的客群看見。",
   },
 ];
 
@@ -75,7 +75,7 @@ const FAQS = [
   },
   {
     q: "診所、醫美、美業都能加入嗎？",
-    a: "都可以。Cross 同時收錄健保看診、自費門診與醫美 / 美業，會依類型分流曝光給對應的民眾。",
+    a: "都可以。Cross 同時收錄健保看診、自費門診、醫美與美容 / 美業（及其他健康服務），會依類型分流曝光給對應的民眾。",
   },
   {
     q: "需要更換現有的看診 / 管理系統嗎？",

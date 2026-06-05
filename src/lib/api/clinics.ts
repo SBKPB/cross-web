@@ -26,6 +26,7 @@ interface BackendClinic {
   hospital_level?: string;
   facility_type?: FacilityType;
   payment_type?: PaymentType;
+  logo?: string | null;
   // departments 攜帶 service_category code（看診沿用 18 科別 code，其餘 aes_/bty_/oth_ 前綴）
   departments?: string[];
   phone: string | null;
@@ -97,6 +98,7 @@ function transformClinic(backendClinic: BackendClinic): Clinic {
     // 優先用後端回傳的 facility_type；舊資料 fallback 用成員推導
     facility_type: backendClinic.facility_type ?? deriveFacilityType(members),
     payment_type: backendClinic.payment_type,
+    logo: backendClinic.logo ?? null,
     rating: backendClinic.rating ?? undefined,
     review_count: backendClinic.review_count ?? undefined,
     business_hours: transformBusinessHours(backendClinic.business_hours),

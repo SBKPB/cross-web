@@ -33,8 +33,10 @@ import {
   PAYMENT_TYPE_OPTIONS,
   FACILITY_TYPE_FORM_OPTIONS,
 } from "@/lib/constants/clinic-constants";
+import Image from "next/image";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import { categoriesFor } from "@/lib/api/service-categories";
+import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import { lumaDialogFooter } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 
@@ -159,6 +161,43 @@ function ClinicFormContent({
   // 記住載入時的付款方式：切回「看診」時還原使用者原本設定（新增情境為 nhi），
   // 避免「看診→非看診→看診」來回後把既有 both/self_pay 靜默改寫成 nhi
   const initialPaymentRef = useRef(clinic?.payment_type ?? "nhi");
+
+  // Logo 上傳（獨立即時動作，需院所已存在；新增情境先存檔後才能傳）
+  const [logoUrl, setLogoUrl] = useState<string | null>(
+    clinic?.logo_url ?? null
+  );
+  const [logoBusy, setLogoBusy] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const logoFileRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoFile = async (file: File | null) => {
+    if (!file || !clinic) return;
+    setLogoBusy(true);
+    setLogoError(null);
+    try {
+      const updated = await adminClinicsApi.uploadLogo(clinic.id, file);
+      setLogoUrl(updated.logo_url);
+    } catch (e) {
+      setLogoError(e instanceof Error ? e.message : "上傳失敗");
+    } finally {
+      setLogoBusy(false);
+      if (logoFileRef.current) logoFileRef.current.value = "";
+    }
+  };
+
+  const handleLogoRemove = async () => {
+    if (!clinic) return;
+    setLogoBusy(true);
+    setLogoError(null);
+    try {
+      await adminClinicsApi.deleteLogo(clinic.id);
+      setLogoUrl(null);
+    } catch (e) {
+      setLogoError(e instanceof Error ? e.message : "移除失敗");
+    } finally {
+      setLogoBusy(false);
+    }
+  };
 
   // 目前 facility_type 底下可勾選的服務子類別
   const availableCategories = categoriesFor(taxonomy, formData.facility_type);
@@ -310,6 +349,74 @@ function ClinicFormContent({
                 placeholder="請輸入院所名稱"
                 required
               />
+            </div>
+
+            {/* 院所 Logo */}
+            <div className="grid gap-2">
+              <Label>院所 Logo</Label>
+              {isEditing ? (
+                <div className="flex items-center gap-4">
+                  <div className="size-16 shrink-0 overflow-hidden rounded-2xl ring-1 ring-border">
+                    {logoUrl ? (
+                      <Image
+                        src={logoUrl}
+                        alt="logo"
+                        width={64}
+                        height={64}
+                        className="size-full bg-white object-contain"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex size-full items-center justify-center bg-gradient-to-br from-primary to-sky-500 text-2xl font-bold text-primary-foreground">
+                        {formData.name.charAt(0) || "院"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={logoBusy}
+                        onClick={() => logoFileRef.current?.click()}
+                      >
+                        {logoBusy ? "處理中…" : logoUrl ? "更換" : "上傳"}
+                      </Button>
+                      {logoUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={logoBusy}
+                          onClick={handleLogoRemove}
+                        >
+                          移除
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      建議 512×512 正方形 PNG（≤2MB）；未上傳則用院所名首字頭像
+                    </p>
+                    {logoError && (
+                      <p className="text-xs text-destructive">{logoError}</p>
+                    )}
+                  </div>
+                  <input
+                    ref={logoFileRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleLogoFile(e.target.files?.[0] ?? null)
+                    }
+                  />
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  儲存院所後即可在編輯頁上傳 logo（未上傳會用首字頭像）。
+                </p>
+              )}
             </div>
 
             <div className="grid gap-2">

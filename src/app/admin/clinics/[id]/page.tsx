@@ -8,6 +8,7 @@ import {
   BriefcaseIcon,
   CalendarIcon,
   CalendarDaysIcon,
+  Megaphone,
   TrashIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { PersonnelTab } from "@/components/admin/clinics/personnel-tab";
 import { ServicesTab } from "@/components/admin/clinics/services-tab";
 import { AppointmentsTab } from "@/components/admin/clinics/appointments-tab";
 import { ScheduleTab } from "@/components/admin/clinics/schedule-tab";
+import { AnnouncementsTab } from "@/components/admin/clinics/announcements-tab";
 import { SubscriptionSection } from "@/components/admin/clinics/subscription-section";
 import {
   PAYMENT_TYPES,
@@ -196,6 +198,13 @@ export default function ClinicDetailPage() {
             <CalendarDaysIcon className="size-4" />
             排班/休假
           </TabsTrigger>
+          <TabsTrigger
+            value="announcements"
+            className={cn(lumaTabsTrigger, "gap-2")}
+          >
+            <Megaphone className="size-4" />
+            公告
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -272,6 +281,10 @@ export default function ClinicDetailPage() {
 
         <TabsContent value="schedule">
           <ScheduleTab facilityId={clinicId} />
+        </TabsContent>
+
+        <TabsContent value="announcements">
+          <AnnouncementsTab facilityId={clinicId} />
         </TabsContent>
       </Tabs>
 

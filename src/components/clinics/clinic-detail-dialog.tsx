@@ -60,21 +60,26 @@ export function ClinicDetailDialog({
         </DialogHeader>
 
         <div className="space-y-6 pt-4">
-          {/* 科別 */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground">診療科別</h4>
-            <div className="flex flex-wrap gap-1.5">
-              {clinic.departments.map((dept) => (
-                <Badge
-                  key={dept}
-                  variant="outline"
-                  className="text-xs px-2 py-1 border-0 bg-accent text-primary"
-                >
-                  {categoryLabel(tax, dept)}
-                </Badge>
-              ))}
-            </div>
-          </div>
+          {/* 診療科別：只在看診大類顯示（非看診的子類別與大類重疊，不另列） */}
+          {clinic.facility_type === "healthcare" &&
+            clinic.departments.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-foreground">
+                  診療科別
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {clinic.departments.map((dept) => (
+                    <Badge
+                      key={dept}
+                      variant="outline"
+                      className="text-xs px-2 py-1 border-0 bg-accent text-primary"
+                    >
+                      {categoryLabel(tax, dept)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
 
           {/* 聯絡資訊 */}
           <div className="space-y-3">

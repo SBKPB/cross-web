@@ -103,6 +103,7 @@ export interface Clinic {
   city?: string; // 由 address 解析出的縣市，用於篩選
   facility_type?: FacilityType; // 服務型態（看診 / 醫美 / 美容 / 其他）
   payment_type?: PaymentType; // 付款方式（健保 / 自費 / 兩者）
+  logo?: string | null; // 院所 logo public URL；無則前端用首字頭像 fallback
   email?: string;
   website?: string;
   description?: string;
@@ -152,6 +153,36 @@ export type ApiMedicalDepartment =
 // 付費類型
 export type PaymentType = "nhi" | "self_pay" | "both";
 
+// ========== 診所公告 ==========
+
+export interface Announcement {
+  id: string;
+  title: string | null;
+  content: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string | null;
+}
+
+// 民眾端公告（只含 active 的公開欄位）
+export interface AnnouncementPublic {
+  id: string;
+  title: string | null;
+  content: string;
+  created_at: string;
+}
+
+export interface AnnouncementCreate {
+  title: string;
+  content: string;
+}
+
+export interface AnnouncementUpdate {
+  title?: string;
+  content?: string;
+  is_active?: boolean;
+}
+
 // 訂閱方案
 export type SubscriptionPlan = "trial" | "basic" | "standard" | "premium";
 
@@ -164,6 +195,7 @@ export interface MedicalFacility {
   name: string;
   phone: string | null;
   address: string | null;
+  logo_url: string | null; // 院所 logo public URL（由上傳端點管理）
   service_categories: string[]; // 服務子類別 code（多選，須屬於該 facility_type）
   payment_type: PaymentType;
   facility_type: FacilityType;

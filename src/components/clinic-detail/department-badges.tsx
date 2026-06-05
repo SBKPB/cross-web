@@ -4,7 +4,7 @@ import { Stethoscope } from "lucide-react";
 
 import { SectionCard } from "@/components/clinic-detail/section-card";
 import { Badge } from "@/components/ui/badge";
-import { categoryLabel, facilityTypeLabel } from "@/lib/api/service-categories";
+import { categoryLabel } from "@/lib/api/service-categories";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import { DEPARTMENT_COLORS } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,8 @@ import type { FacilityType } from "@/types/clinic";
 
 interface DepartmentBadgesProps {
   departments: string[];
-  // 大類；用來決定標題（看診→「醫療科別」，醫美/美容/其他→「服務項目」），預設看診
+  // 大類；只有「看診」顯示診療科別。醫美/美容/其他的子類別與大類 badge、
+  // 服務項目重疊，不另立區塊（單一子類別會顯得多餘）。
   facilityType?: FacilityType;
   className?: string;
 }
@@ -24,15 +25,12 @@ export function DepartmentBadges({
 }: DepartmentBadgesProps) {
   const tax = useServiceTaxonomy();
 
+  // 只在看診大類顯示「診療科別」；非看診不顯示（undefined 視為看診）
   if (departments.length === 0) return null;
-
-  // 標題依大類取 taxonomy label（看診/醫美/美容/其他），無 facility_type 時泛化為「服務項目」
-  const title = facilityType
-    ? `${facilityTypeLabel(tax, facilityType)}服務項目`
-    : "服務項目";
+  if (facilityType && facilityType !== "healthcare") return null;
 
   return (
-    <SectionCard icon={Stethoscope} title={title} className={className}>
+    <SectionCard icon={Stethoscope} title="診療科別" className={className}>
       <div className="flex flex-wrap gap-2">
         {departments.map((dept) => (
           <Badge

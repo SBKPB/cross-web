@@ -1,3 +1,4 @@
+export { AnnouncementsSection } from "./announcements-section";
 export { ClinicDetailHeader } from "./clinic-detail-header";
 export { ClinicContactInfo } from "./clinic-contact-info";
 export { DepartmentBadges } from "./department-badges";

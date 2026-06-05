@@ -20,6 +20,9 @@ import type {
   ApiSchedule,
   ApiScheduleCreate,
   ApiScheduleUpdate,
+  Announcement,
+  AnnouncementCreate,
+  AnnouncementUpdate,
 } from "@/types/clinic";
 
 const BASE_PATH = "/api/v1/medical-facilities";
@@ -38,6 +41,33 @@ export const adminClinicsApi = {
     api.patch<MedicalFacility>(`${BASE_PATH}/${id}`, data),
 
   delete: (id: string) => api.delete<void>(`${BASE_PATH}/${id}`),
+
+  // ========== 院所 Logo ==========
+
+  uploadLogo: (id: string, file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return api.post<MedicalFacility>(`${BASE_PATH}/${id}/logo`, fd);
+  },
+
+  deleteLogo: (id: string) =>
+    api.delete<MedicalFacility>(`${BASE_PATH}/${id}/logo`),
+
+  // ========== 公告 ==========
+
+  announcements: {
+    list: (facilityId: string) =>
+      api.get<Announcement[]>(`${BASE_PATH}/${facilityId}/announcements`),
+    create: (facilityId: string, data: AnnouncementCreate) =>
+      api.post<Announcement>(`${BASE_PATH}/${facilityId}/announcements`, data),
+    update: (facilityId: string, id: string, data: AnnouncementUpdate) =>
+      api.patch<Announcement>(
+        `${BASE_PATH}/${facilityId}/announcements/${id}`,
+        data,
+      ),
+    delete: (facilityId: string, id: string) =>
+      api.delete<void>(`${BASE_PATH}/${facilityId}/announcements/${id}`),
+  },
 
   // ========== 訂閱（superadmin only） ==========
 

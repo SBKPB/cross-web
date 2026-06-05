@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import {
+  AnnouncementsSection,
   ClinicDetailHeader,
   ClinicContactInfo,
   DepartmentBadges,
@@ -15,6 +16,7 @@ import {
   parseCityFromAddress,
 } from "@/lib/constants/clinic-constants";
 import type {
+  AnnouncementPublic,
   BusinessHours,
   Clinic,
   FacilityType,
@@ -100,6 +102,7 @@ function transformClinicData(found: any): Clinic {
       (found.facility_type as FacilityType | undefined) ??
       deriveFacilityType(members),
     payment_type: found.payment_type as PaymentType | undefined,
+    logo: found.logo ?? null,
     rating: found.rating ?? undefined,
     review_count: found.review_count ?? undefined,
     business_hours: businessHours,
@@ -122,6 +125,21 @@ async function getServicesFromApi(clinicId: string): Promise<Service[]> {
       duration_minutes: item.duration_minutes ?? 30,
       category: item.category ?? "一般服務",
     }));
+  } catch {
+    return [];
+  }
+}
+
+async function getAnnouncementsFromApi(
+  clinicId: string,
+): Promise<AnnouncementPublic[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/booking/clinics/${clinicId}/announcements`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    return await res.json();
   } catch {
     return [];
   }
@@ -176,11 +194,12 @@ async function getClinicFromApi(clinicId: string): Promise<Clinic | null> {
 export default async function ClinicDetailPage({ params }: ClinicDetailPageProps) {
   const { "clinic-id": clinicId } = await params;
 
-  // 平行取得院所資訊、服務項目與門診排班
-  const [clinic, services, schedule] = await Promise.all([
+  // 平行取得院所資訊、服務項目、門診排班與公告
+  const [clinic, services, schedule, announcements] = await Promise.all([
     getClinicFromApi(clinicId),
     getServicesFromApi(clinicId),
     getScheduleFromApi(clinicId),
+    getAnnouncementsFromApi(clinicId),
   ]);
 
   if (!clinic) {
@@ -208,7 +227,10 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
           {/* ===== 主內容 ===== */}
           <div className="space-y-6">
-            {/* 服務子類別（看診→科別、醫美/美容/其他→服務項目，皆顯示） */}
+            {/* 公告（最多 3 則 active；無公告自動隱藏） */}
+            <AnnouncementsSection announcements={announcements} />
+
+            {/* 診療科別：僅看診大類顯示（元件內自動 gate，非看診回 null） */}
             <DepartmentBadges
               departments={clinic.departments}
               facilityType={clinic.facility_type}

@@ -96,10 +96,23 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
       <div className="container relative mx-auto px-4 sm:px-6">
         <div className="-mt-20 rounded-[1.75rem] bg-card p-5 shadow-xl ring-1 ring-foreground/5 sm:-mt-24 sm:p-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
-            {/* Logo */}
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-primary to-sky-500 text-3xl font-bold text-primary-foreground shadow-lg shadow-primary/25 ring-1 ring-white/20 sm:size-24 sm:text-4xl">
-              {clinic.clinic_name.charAt(0)}
-            </div>
+            {/* Logo：有上傳用圖、否則院所名首字頭像 */}
+            {clinic.logo ? (
+              <div className="size-20 shrink-0 overflow-hidden rounded-[1.25rem] bg-white shadow-lg shadow-primary/15 ring-1 ring-foreground/10 sm:size-24">
+                <Image
+                  src={clinic.logo}
+                  alt={`${clinic.clinic_name} logo`}
+                  width={96}
+                  height={96}
+                  className="size-full object-contain"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="flex size-20 shrink-0 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-primary to-sky-500 text-3xl font-bold text-primary-foreground shadow-lg shadow-primary/25 ring-1 ring-white/20 sm:size-24 sm:text-4xl">
+                {clinic.clinic_name.charAt(0)}
+              </div>
+            )}
 
             {/* 識別資訊 */}
             <div className="min-w-0 flex-1 space-y-3">

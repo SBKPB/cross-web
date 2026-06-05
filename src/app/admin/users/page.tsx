@@ -35,13 +35,12 @@ import { useRequireSystemAdmin } from "@/lib/auth/use-require-system-admin";
 import { isStaffRole } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 import {
-  lumaCardInner,
   lumaPageContainer,
-  lumaSectionDesc,
-  lumaSectionTitle,
   lumaTableHeader,
   lumaTableRowHover,
   lumaTableShell,
+  lumaTabsList,
+  lumaTabsTrigger,
 } from "@/lib/styles/luma";
 import { adminUsersApi } from "@/lib/api/admin/users";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
@@ -196,9 +195,9 @@ export default function AdminUsersPage() {
 
     if (!expiresIso) {
       return (
-        <Badge variant="outline">
+        <span className="inline-flex rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
           {status === "trial" ? "試用中" : "未設定"}
-        </Badge>
+        </span>
       );
     }
 
@@ -208,28 +207,34 @@ export default function AdminUsersPage() {
       (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
     );
 
-    let hint: { label: string; variant: "secondary" | "outline" | "destructive" } | null =
-      null;
+    let hint: { label: string; tone: "warning" | "destructive" } | null = null;
     if (status === "suspended" || status === "cancelled") {
       hint = {
         label: status === "suspended" ? "已暫停" : "已取消",
-        variant: "destructive",
+        tone: "destructive",
       };
     } else if (days < 0) {
-      hint = { label: `已過期 ${-days} 天`, variant: "destructive" };
+      hint = { label: `已過期 ${-days} 天`, tone: "destructive" };
     } else if (days <= 7) {
-      hint = { label: `${days} 天後到期`, variant: "destructive" };
+      hint = { label: `${days} 天後到期`, tone: "destructive" };
     } else if (days <= 30) {
-      hint = { label: `${days} 天後到期`, variant: "outline" };
+      hint = { label: `${days} 天後到期`, tone: "warning" };
     }
 
     return (
-      <div className="space-y-1">
-        <div className="text-sm text-foreground">{dateStr}</div>
+      <div className="space-y-1.5">
+        <div className="text-sm text-foreground tabular-nums">{dateStr}</div>
         {hint && (
-          <Badge variant={hint.variant} className="text-xs">
+          <span
+            className={cn(
+              "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+              hint.tone === "destructive"
+                ? "bg-destructive/10 text-destructive"
+                : "bg-amber-100 text-amber-700",
+            )}
+          >
             {hint.label}
-          </Badge>
+          </span>
         )}
       </div>
     );
@@ -385,9 +390,13 @@ export default function AdminUsersPage() {
   return (
     <div className={lumaPageContainer}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className={lumaSectionTitle}>使用者管理</h1>
-          <p className={lumaSectionDesc}>管理系統使用者帳號、角色與權限</p>
+        <div>
+          <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-foreground before:size-2 before:shrink-0 before:rounded-full before:bg-primary before:content-['']">
+            使用者管理
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            管理系統使用者帳號、角色與權限
+          </p>
         </div>
         {tab === "staff" && (
           <Button onClick={handleOpenCreate}>
@@ -399,14 +408,14 @@ export default function AdminUsersPage() {
 
       {/* 分頁切換：員工 / 一般使用者 */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as UserTab)}>
-        <TabsList>
-          <TabsTrigger value="staff">
+        <TabsList className={lumaTabsList}>
+          <TabsTrigger value="staff" className={lumaTabsTrigger}>
             員工帳號
             <Badge variant="outline" className="ml-2 text-xs">
               {tabCounts.staff}
             </Badge>
           </TabsTrigger>
-          <TabsTrigger value="patient">
+          <TabsTrigger value="patient" className={lumaTabsTrigger}>
             一般使用者
             <Badge variant="outline" className="ml-2 text-xs">
               {tabCounts.patient}
@@ -416,7 +425,7 @@ export default function AdminUsersPage() {
       </Tabs>
 
       {/* 搜尋 */}
-      <div className={cn(lumaCardInner, "p-3")}>
+      <div className="rounded-2xl bg-card p-2 shadow-sm ring-1 ring-foreground/5 transition focus-within:ring-primary/20">
         <div className="relative">
           <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -483,22 +492,37 @@ export default function AdminUsersPage() {
               {filteredUsers.map((user) => (
                 <TableRow key={user.id} className={lumaTableRowHover}>
                   <TableCell className="font-medium text-foreground">
-                    {user.email}
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold uppercase text-primary">
+                        {user.email.charAt(0)}
+                      </span>
+                      <span className="truncate">{user.email}</span>
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.is_active ? "secondary" : "outline"}>
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                        user.is_active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
                       {user.is_active ? "啟用" : "停用"}
-                    </Badge>
+                    </span>
                   </TableCell>
                   {tab === "staff" ? (
                     <>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {(userRolesMap[user.id] || []).length > 0 ? (
                             userRolesMap[user.id].map((role) => (
-                              <Badge key={role.id} variant="outline">
+                              <span
+                                key={role.id}
+                                className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+                              >
                                 {role.display_name}
-                              </Badge>
+                              </span>
                             ))
                           ) : (
                             <span className="text-sm text-muted-foreground">
@@ -529,7 +553,7 @@ export default function AdminUsersPage() {
                       </TableCell>
                       <TableCell>
                         {user.last_login ? (
-                          <span className="text-sm text-foreground">
+                          <span className="text-sm text-foreground tabular-nums">
                             {formatDate(user.last_login)}
                           </span>
                         ) : (
@@ -540,7 +564,7 @@ export default function AdminUsersPage() {
                       </TableCell>
                       <TableCell>
                         {user.member_patients_count > 0 ? (
-                          <span className="text-sm text-foreground">
+                          <span className="text-sm text-foreground tabular-nums">
                             {user.member_patients_count}
                           </span>
                         ) : (
@@ -551,7 +575,9 @@ export default function AdminUsersPage() {
                       </TableCell>
                     </>
                   )}
-                  <TableCell>{formatDate(user.created_at)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground tabular-nums">
+                    {formatDate(user.created_at)}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       {tab === "staff" && user.facility_id && (

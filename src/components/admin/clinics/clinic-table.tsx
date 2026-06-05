@@ -10,13 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
-import {
-  lumaTableHeader,
-  lumaTableRowHover,
-  lumaTableShell,
-} from "@/lib/styles/luma";
+import { cn } from "@/lib/utils";
 import type { MedicalFacility } from "@/types/clinic";
 import { PAYMENT_TYPES } from "@/lib/constants/clinic-constants";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
@@ -42,9 +37,9 @@ export function ClinicTable({ clinics, onEdit, onDelete }: ClinicTableProps) {
   }
 
   return (
-    <div className={lumaTableShell}>
+    <div className="overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-foreground/5">
       <Table>
-        <TableHeader className={lumaTableHeader}>
+        <TableHeader className="bg-muted/40 [&_th]:font-medium [&_th]:text-muted-foreground">
           <TableRow>
             <TableHead>名稱</TableHead>
             <TableHead>服務子類別</TableHead>
@@ -57,24 +52,32 @@ export function ClinicTable({ clinics, onEdit, onDelete }: ClinicTableProps) {
         </TableHeader>
         <TableBody>
           {clinics.map((clinic) => (
-            <TableRow key={clinic.id} className={lumaTableRowHover}>
+            <TableRow key={clinic.id} className="transition hover:bg-muted/30">
               <TableCell className="font-medium text-foreground">
-                {clinic.name}
+                <div className="flex items-center gap-3">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
+                    {clinic.name.charAt(0)}
+                  </span>
+                  <span className="truncate">{clinic.name}</span>
+                </div>
               </TableCell>
               <TableCell>
                 {clinic.service_categories.length === 0 ? (
                   <span className="text-muted-foreground">-</span>
                 ) : (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {clinic.service_categories.slice(0, 2).map((code) => (
-                      <Badge key={code} variant="outline">
+                      <span
+                        key={code}
+                        className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                      >
                         {categoryLabel(taxonomy, code)}
-                      </Badge>
+                      </span>
                     ))}
                     {clinic.service_categories.length > 2 && (
-                      <Badge variant="outline">
+                      <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
                         +{clinic.service_categories.length - 2}
-                      </Badge>
+                      </span>
                     )}
                   </div>
                 )}
@@ -85,9 +88,16 @@ export function ClinicTable({ clinics, onEdit, onDelete }: ClinicTableProps) {
               </TableCell>
               <TableCell>{clinic.phone || "-"}</TableCell>
               <TableCell>
-                <Badge variant={clinic.is_active ? "secondary" : "outline"}>
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-xs font-medium",
+                    clinic.is_active
+                      ? "bg-green-100 text-green-700"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
                   {clinic.is_active ? "啟用" : "停用"}
-                </Badge>
+                </span>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1">

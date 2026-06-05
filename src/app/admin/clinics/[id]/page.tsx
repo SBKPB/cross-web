@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
   BuildingIcon,
@@ -8,11 +9,15 @@ import {
   BriefcaseIcon,
   CalendarIcon,
   CalendarDaysIcon,
+  Clock,
+  Mail,
+  MapPin,
   Megaphone,
+  Pencil,
+  Phone,
   TrashIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import { ClinicFormDialog, ClinicDeleteDialog } from "@/components/admin/clinics";
@@ -29,14 +34,23 @@ import {
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import { categoryLabel } from "@/lib/api/service-categories";
 import { cn } from "@/lib/utils";
-import {
-  lumaPageContainer,
-  lumaSectionDesc,
-  lumaSectionTitle,
-  lumaTabsList,
-  lumaTabsTrigger,
-} from "@/lib/styles/luma";
-import type { MedicalFacility, MedicalFacilityUpdate } from "@/types/clinic";
+import { lumaPageContainer, lumaSectionTitle } from "@/lib/styles/luma";
+import type {
+  MedicalFacility,
+  MedicalFacilityUpdate,
+  SubscriptionStatus,
+} from "@/types/clinic";
+
+// 訂閱狀態 → 徽章呈現（純樣式對照，不含商業邏輯）
+const SUB_STATUS_PILL: Record<
+  SubscriptionStatus,
+  { label: string; cls: string }
+> = {
+  trial: { label: "試用中", cls: "bg-amber-100 text-amber-700" },
+  active: { label: "訂閱啟用", cls: "bg-green-100 text-green-700" },
+  suspended: { label: "已暫停", cls: "bg-destructive/10 text-destructive" },
+  cancelled: { label: "已取消", cls: "bg-muted text-muted-foreground" },
+};
 
 export default function ClinicDetailPage() {
   const params = useParams();
@@ -151,120 +165,179 @@ export default function ClinicDetailPage() {
           .join("、")
       : "未設定";
 
+  const subPill = SUB_STATUS_PILL[clinic.subscription_status];
+
+  const infoFields: { icon: typeof Phone; label: string; value: string }[] = [
+    { icon: Phone, label: "電話", value: clinic.phone || "未設定" },
+    { icon: MapPin, label: "地址", value: clinic.address || "未設定" },
+    {
+      icon: BriefcaseIcon,
+      label: "服務子類別",
+      value: serviceCategoriesLabel,
+    },
+    {
+      icon: Mail,
+      label: "付費類型",
+      value: PAYMENT_TYPES[clinic.payment_type],
+    },
+    {
+      icon: BuildingIcon,
+      label: "服務類型（民眾端）",
+      value: FACILITY_TYPE_LABELS[clinic.facility_type],
+    },
+    {
+      icon: Clock,
+      label: "營業時間",
+      value: formatBusinessHours(clinic.business_hours),
+    },
+  ];
+
   return (
     <div className={lumaPageContainer}>
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className={lumaSectionTitle}>{clinic.name}</h1>
-          <p className={lumaSectionDesc}>
-            {serviceCategoriesLabel} · {PAYMENT_TYPES[clinic.payment_type]}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
-            編輯資訊
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <TrashIcon className="size-4" />
-          </Button>
+      <div className="rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            {clinic.logo_url ? (
+              <Image
+                src={clinic.logo_url}
+                alt={clinic.name}
+                width={56}
+                height={56}
+                className="size-14 shrink-0 rounded-2xl object-cover ring-1 ring-foreground/10"
+              />
+            ) : (
+              <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary/10 text-xl font-semibold text-primary">
+                {clinic.name.charAt(0)}
+              </span>
+            )}
+            <div className="min-w-0 space-y-1.5">
+              <h1 className={lumaSectionTitle}>{clinic.name}</h1>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-xs font-medium",
+                    clinic.is_active
+                      ? "bg-green-100 text-green-700"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {clinic.is_active ? "啟用" : "停用"}
+                </span>
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-xs font-medium",
+                    subPill.cls,
+                  )}
+                >
+                  {subPill.label}
+                </span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  {FACILITY_TYPE_LABELS[clinic.facility_type]}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+              <Pencil className="size-4" />
+              編輯資訊
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              <TrashIcon className="size-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="info" className="space-y-4">
-        <TabsList className={cn(lumaTabsList, "h-auto w-full flex-wrap justify-start")}>
-          <TabsTrigger value="info" className={cn(lumaTabsTrigger, "gap-2")}>
+      <Tabs defaultValue="info" className="space-y-5">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-2xl bg-muted/50 p-1.5">
+          <TabsTrigger
+            value="info"
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+          >
             <BuildingIcon className="size-4" />
             基本資訊
           </TabsTrigger>
-          <TabsTrigger value="appointments" className={cn(lumaTabsTrigger, "gap-2")}>
+          <TabsTrigger
+            value="appointments"
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+          >
             <CalendarIcon className="size-4" />
             預約
           </TabsTrigger>
-          <TabsTrigger value="personnel" className={cn(lumaTabsTrigger, "gap-2")}>
+          <TabsTrigger
+            value="personnel"
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+          >
             <UsersIcon className="size-4" />
             人員
           </TabsTrigger>
-          <TabsTrigger value="services" className={cn(lumaTabsTrigger, "gap-2")}>
+          <TabsTrigger
+            value="services"
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+          >
             <BriefcaseIcon className="size-4" />
             服務項目
           </TabsTrigger>
-          <TabsTrigger value="schedule" className={cn(lumaTabsTrigger, "gap-2")}>
+          <TabsTrigger
+            value="schedule"
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+          >
             <CalendarDaysIcon className="size-4" />
             排班/休假
           </TabsTrigger>
           <TabsTrigger
             value="announcements"
-            className={cn(lumaTabsTrigger, "gap-2")}
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
           >
             <Megaphone className="size-4" />
             公告
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="info">
-          <Card className="p-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">院所名稱</h3>
-                <p className="font-medium text-foreground">{clinic.name}</p>
-              </div>
-              <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">服務子類別</h3>
-                <p className="font-medium text-foreground">
-                  {serviceCategoriesLabel}
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">付費類型</h3>
-                <p className="font-medium text-foreground">
-                  {PAYMENT_TYPES[clinic.payment_type]}
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">服務類型（民眾端）</h3>
-                <p className="font-medium text-foreground">
-                  {FACILITY_TYPE_LABELS[clinic.facility_type]}
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">狀態</h3>
-                <p className="font-medium text-foreground">
-                  {clinic.is_active ? "啟用" : "停用"}
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">電話</h3>
-                <p className="font-medium text-foreground">
-                  {clinic.phone || "未設定"}
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-1 text-sm text-muted-foreground">地址</h3>
-                <p className="font-medium text-foreground">
-                  {clinic.address || "未設定"}
-                </p>
-              </div>
-              <div className="md:col-span-2">
-                <h3 className="mb-1 text-sm text-muted-foreground">營業時間</h3>
-                <p className="font-medium text-foreground">
-                  {formatBusinessHours(clinic.business_hours)}
-                </p>
-              </div>
+        <TabsContent value="info" className="space-y-5">
+          <div className="rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5">
+            <h2 className="mb-5 text-base font-semibold text-foreground">
+              院所資訊
+            </h2>
+            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+              {infoFields.map((field, i) => {
+                const FieldIcon = field.icon;
+                return (
+                  <div
+                    key={field.label}
+                    className={cn(
+                      "flex items-start gap-3",
+                      i === infoFields.length - 1 && "sm:col-span-2",
+                    )}
+                  >
+                    <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <FieldIcon className="size-4" />
+                    </span>
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {field.label}
+                      </p>
+                      <p className="text-sm font-medium text-foreground">
+                        {field.value}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </Card>
-
-          <div className="mt-4">
-            <SubscriptionSection
-              facility={clinic}
-              onUpdated={(updated) => setClinic(updated)}
-            />
           </div>
+
+          <SubscriptionSection
+            facility={clinic}
+            onUpdated={(updated) => setClinic(updated)}
+          />
         </TabsContent>
 
         <TabsContent value="appointments">

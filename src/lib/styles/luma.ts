@@ -20,7 +20,7 @@ export const lumaTableHeader =
 export const lumaTableRowHover = "hover:bg-muted/30 transition";
 
 export const lumaSectionTitle =
-  "text-2xl font-semibold tracking-tight text-foreground";
+  "flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-foreground before:size-2 before:shrink-0 before:rounded-full before:bg-primary before:content-['']";
 
 export const lumaSectionDesc = "text-sm text-muted-foreground";
 

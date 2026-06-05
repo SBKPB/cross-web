@@ -2,15 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { isFacilityUser, isSystemAdmin } from "@/lib/auth/roles";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import { SubscriptionSection } from "@/components/admin/clinics/subscription-section";
-import {
-  lumaPageContainer,
-  lumaSectionDesc,
-  lumaSectionTitle,
-} from "@/lib/styles/luma";
+import { lumaPageContainer } from "@/lib/styles/luma";
 import type { MedicalFacility } from "@/types/clinic";
 
 export default function MySubscriptionPage() {
@@ -56,7 +53,7 @@ export default function MySubscriptionPage() {
   if (authLoading || isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+        <Loader2 className="size-7 animate-spin text-primary" />
       </div>
     );
   }
@@ -64,16 +61,21 @@ export default function MySubscriptionPage() {
   if (error || !facility) {
     return (
       <div className={lumaPageContainer}>
-        <p className="text-sm text-destructive">{error || "找不到訂閱資料"}</p>
+        <div className="flex items-center gap-3 rounded-3xl bg-destructive/10 p-6 text-sm text-destructive ring-1 ring-destructive/20">
+          <AlertTriangle className="size-5 shrink-0" />
+          <span>{error || "找不到訂閱資料"}</span>
+        </div>
       </div>
     );
   }
 
   return (
     <div className={lumaPageContainer}>
-      <div className="space-y-1">
-        <h1 className={lumaSectionTitle}>我的訂閱</h1>
-        <p className={lumaSectionDesc}>
+      <div>
+        <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-foreground before:size-2 before:shrink-0 before:rounded-full before:bg-primary before:content-['']">
+          我的訂閱
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           {facility.name} 的訂閱方案與付款狀態
         </p>
       </div>

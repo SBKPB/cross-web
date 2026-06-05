@@ -74,14 +74,15 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Aurora 後台側欄：白底、品牌藍 active（呼應首頁白 header） */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #334155;          /* slate-700 導覽文字 */
+  --sidebar-primary: #1d4ed8;             /* 品牌藍 */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eff4ff;              /* active 淡藍底 */
+  --sidebar-accent-foreground: #1d4ed8;   /* active 藍字 */
+  --sidebar-border: #e5eaf2;
+  --sidebar-ring: #1d4ed8;
 }
 
 .dark {
@@ -154,3 +155,13 @@
 }
 .animate-accordion-down { animation: accordion-down 0.2s ease-out; }
 .animate-accordion-up { animation: accordion-up 0.2s ease-out; }
+
+/* === Aurora 後台 === */
+/* 內容區頂部 airy 柔光暈（呼應首頁 hero 的明亮空氣感） */
+.admin-canvas {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--primary) 6%, transparent),
+    transparent 320px
+  );
+}

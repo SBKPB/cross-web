@@ -5,9 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Building2,
   CreditCard,
   KeyRound,
+  LayoutDashboard,
   LogOut,
   Settings,
   UserCog,
@@ -30,6 +32,7 @@ interface NavItem {
 }
 
 const SYSTEM_NAV: NavItem[] = [
+  { href: "/admin/dashboard", label: "總覽", icon: LayoutDashboard },
   { href: "/admin/clinics", label: "院所管理", icon: Building2 },
   { href: "/admin/users", label: "使用者管理", icon: UserCog },
   { href: "/admin/settings", label: "系統設定", icon: Settings },
@@ -40,9 +43,19 @@ function getNavItems(user: User | null): NavItem[] {
   if (isFacilityUser(user) && user?.facility_id) {
     return [
       {
+        href: "/admin/dashboard",
+        label: "總覽",
+        icon: LayoutDashboard,
+      },
+      {
         href: `/admin/clinics/${user.facility_id}`,
         label: "我的院所",
         icon: Building2,
+      },
+      {
+        href: "/admin/analytics",
+        label: "客戶分析",
+        icon: BarChart3,
       },
       {
         href: "/admin/subscription",
@@ -69,24 +82,36 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
   const homePath = getAdminHomePath(user);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
+  const displayName =
+    user?.display_name || user?.email?.split("@")[0] || "使用者";
+  const initial = displayName.charAt(0).toUpperCase();
+
   return (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+    <div className="flex h-full w-full min-w-0 flex-col bg-sidebar text-sidebar-foreground">
       <Link
         href={homePath}
         onClick={onNavigate}
-        className="flex h-14 items-center gap-2.5 border-b border-sidebar-border/60 px-5 font-semibold"
+        className="flex h-16 items-center gap-2.5 border-b border-sidebar-border/60 px-5 font-semibold"
       >
         <Image
           src="/cross-icon.png"
           alt="Cross"
-          width={32}
-          height={32}
-          className="size-8 rounded-xl"
+          width={34}
+          height={34}
+          className="size-9 rounded-xl ring-1 ring-primary/10"
         />
-        <span className="text-sm tracking-tight">Cross Console</span>
+        <span className="flex flex-col leading-tight">
+          <span className="text-sm font-semibold tracking-tight">Cross</span>
+          <span className="text-[11px] font-medium text-sidebar-foreground/45">
+            院所管理後台
+          </span>
+        </span>
       </Link>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
+        <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+          選單
+        </p>
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(pathname, item.href);
@@ -96,37 +121,48 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
                 active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                  ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-sm ring-1 ring-primary/10 before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-primary before:content-['']"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
               )}
             >
-              <Icon className="size-4 shrink-0" />
+              <Icon
+                className={cn(
+                  "size-4 shrink-0 transition",
+                  active
+                    ? "text-primary"
+                    : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80",
+                )}
+              />
               <span className="truncate">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto border-t border-sidebar-border/60 p-3">
-        <div className="flex items-center gap-2 rounded-xl px-3 py-2.5">
+      <div className="mt-auto space-y-2 border-t border-sidebar-border/60 p-3">
+        <div className="flex items-center gap-2.5 px-1">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+            {initial}
+          </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-sidebar-foreground/60">
-              登入中
+            <p className="truncate text-sm font-medium text-sidebar-foreground">
+              {displayName}
             </p>
-            <p className="truncate text-sm text-sidebar-foreground">
+            <p className="truncate text-xs text-sidebar-foreground/50">
               {user?.email ?? "—"}
             </p>
           </div>
+        </div>
+        <div className="flex gap-1.5">
           <button
             type="button"
             onClick={() => setPasswordDialogOpen(true)}
-            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-            aria-label="修改密碼"
-            title="修改密碼"
+            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium text-sidebar-foreground/70 ring-1 ring-sidebar-border/70 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
           >
-            <KeyRound className="size-4" />
+            <KeyRound className="size-3.5" />
+            修改密碼
           </button>
           <button
             type="button"
@@ -134,7 +170,7 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
               onNavigate?.();
               logout("/admin/login");
             }}
-            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 ring-1 ring-sidebar-border/70 transition hover:bg-destructive/10 hover:text-destructive"
             aria-label="登出"
             title="登出"
           >
@@ -153,7 +189,7 @@ export function AdminSidebarContent({ onNavigate }: AdminSidebarContentProps) {
 
 export function AdminSidebar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-sidebar-border/60 md:flex">
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 overflow-hidden border-r border-sidebar-border/60 md:flex">
       <AdminSidebarContent />
     </aside>
   );

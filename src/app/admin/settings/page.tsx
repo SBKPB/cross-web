@@ -1,23 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Check, Pencil, Plus, Tag, Trash2, X } from "lucide-react";
-
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  AlertCircle,
+  Check,
+  Loader2,
+  Pencil,
+  Plus,
+  Tag,
+  Trash2,
+  X,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  lumaIconBadge,
-  lumaPageContainer,
-  lumaSectionDesc,
-  lumaSectionTitle,
-} from "@/lib/styles/luma";
+import { cn } from "@/lib/utils";
 import { FACILITY_TYPE_LABELS } from "@/lib/constants/clinic-constants";
 import {
   adminServiceCategoriesApi,
@@ -117,51 +114,68 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className={lumaPageContainer}>
-      <div className="space-y-1">
-        <h1 className={lumaSectionTitle}>系統設定</h1>
-        <p className={lumaSectionDesc}>調整系統參數與偏好設定</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-foreground before:size-2 before:shrink-0 before:rounded-full before:bg-primary before:content-['']">
+          系統設定
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          調整系統參數與偏好設定
+        </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className={lumaIconBadge}>
+      {/* 服務類別管理 */}
+      <section className="rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5">
+        <div className="flex items-start gap-3">
+          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <Tag className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-foreground">
+              服務類別管理
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              管理各服務型態底下的子類別（民眾端篩選與院所建檔的可選項目）。大類（看診
+              / 醫美 / 美容 / 其他）與健保 / 自費付款方式為固定結構，不在此調整。
+            </p>
           </div>
-          <CardTitle>服務類別管理</CardTitle>
-          <CardDescription>
-            管理各服務型態底下的子類別（民眾端篩選與院所建檔的可選項目）。大類（看診
-            / 醫美 / 美容 / 其他）與健保 / 自費付款方式為固定結構，不在此調整。
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-7">
+        </div>
+
+        <div className="mt-6 space-y-6">
           {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p className="flex items-center gap-2 rounded-2xl bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive ring-1 ring-destructive/15">
+              <AlertCircle className="size-4 shrink-0" />
               {error}
             </p>
           )}
           {loading ? (
-            <p className="text-sm text-muted-foreground">載入中…</p>
+            <p className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin text-primary" />
+              載入中…
+            </p>
           ) : (
             FACILITY_ORDER.map((ft) => {
               const items = categories
                 .filter((c) => c.facility_type === ft)
                 .sort((a, b) => a.sort_order - b.sort_order);
               return (
-                <section key={ft} className="space-y-3">
-                  <h3 className="flex items-baseline gap-2 text-sm font-semibold text-foreground">
+                <section
+                  key={ft}
+                  className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5"
+                >
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     {FACILITY_TYPE_LABELS[ft]}
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                       {items.length} 個項目
                     </span>
                   </h3>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     {items.map((c) =>
                       editing?.id === c.id ? (
                         <span
                           key={c.id}
-                          className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-background py-0.5 pl-2 pr-1"
+                          className="inline-flex items-center gap-1 rounded-full bg-card py-0.5 pl-2 pr-1 ring-1 ring-primary/40"
                         >
                           <Input
                             autoFocus
@@ -180,7 +194,7 @@ export default function AdminSettingsPage() {
                             aria-label="儲存"
                             disabled={busyId === c.id}
                             onClick={handleRename}
-                            className="rounded-full p-1 text-primary hover:bg-primary/10 disabled:opacity-50"
+                            className="rounded-full p-1 text-primary transition hover:bg-primary/10 disabled:opacity-50"
                           >
                             <Check className="size-3.5" />
                           </button>
@@ -188,7 +202,7 @@ export default function AdminSettingsPage() {
                             type="button"
                             aria-label="取消"
                             onClick={() => setEditing(null)}
-                            className="rounded-full p-1 text-muted-foreground hover:bg-muted"
+                            className="rounded-full p-1 text-muted-foreground transition hover:bg-muted"
                           >
                             <X className="size-3.5" />
                           </button>
@@ -196,9 +210,11 @@ export default function AdminSettingsPage() {
                       ) : (
                         <span
                           key={c.id}
-                          className="group inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 py-1 pl-3 pr-1.5 text-sm"
+                          className="group inline-flex items-center gap-1 rounded-full bg-card py-1 pl-3 pr-1.5 text-sm shadow-sm ring-1 ring-foreground/5 transition hover:ring-primary/15"
                         >
-                          <span className="text-foreground">{c.label}</span>
+                          <span className="font-medium text-foreground">
+                            {c.label}
+                          </span>
                           <button
                             type="button"
                             aria-label={`重新命名 ${c.label}`}
@@ -229,7 +245,7 @@ export default function AdminSettingsPage() {
                   </div>
 
                   {/* 新增：只填顯示名稱，code 由後端自動產生 */}
-                  <div className="flex items-center gap-2">
+                  <div className="mt-3 flex items-center gap-2">
                     <Input
                       value={drafts[ft] ?? ""}
                       onChange={(e) =>
@@ -239,13 +255,19 @@ export default function AdminSettingsPage() {
                         if (e.key === "Enter") handleAdd(ft);
                       }}
                       placeholder={`新增${FACILITY_TYPE_LABELS[ft]}項目，例如「雷射光療」`}
-                      className="h-9 max-w-xs"
+                      className="h-9 max-w-xs rounded-xl bg-card"
                     />
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                      disabled={busyId === `add-${ft}` || !(drafts[ft] ?? "").trim()}
+                      className={cn(
+                        "rounded-xl",
+                        busyId === `add-${ft}` && "opacity-70",
+                      )}
+                      disabled={
+                        busyId === `add-${ft}` || !(drafts[ft] ?? "").trim()
+                      }
                       onClick={() => handleAdd(ft)}
                     >
                       <Plus className="size-4" />
@@ -256,8 +278,8 @@ export default function AdminSettingsPage() {
               );
             })
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

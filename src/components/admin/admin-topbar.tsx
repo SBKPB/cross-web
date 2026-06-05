@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Menu } from "lucide-react";
+import { Bell, ChevronRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/auth-context";
 import {
@@ -55,8 +55,12 @@ export function AdminTopbar({ onOpenMobileNav }: AdminTopbarProps) {
   const breadcrumbs = buildBreadcrumbs(pathname, user);
   const homePath = getAdminHomePath(user);
 
+  const displayName =
+    user?.display_name || user?.email?.split("@")[0] || "使用者";
+  const initial = displayName.charAt(0).toUpperCase();
+
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-md md:px-6">
       <Button
         variant="ghost"
         size="icon"
@@ -70,18 +74,17 @@ export function AdminTopbar({ onOpenMobileNav }: AdminTopbarProps) {
       <nav className="flex min-w-0 flex-1 items-center gap-2 text-sm">
         <Link
           href={homePath}
-          className="shrink-0 text-muted-foreground transition hover:text-foreground"
+          className="shrink-0 font-medium text-muted-foreground transition hover:text-foreground"
         >
           Console
         </Link>
         {breadcrumbs.map((crumb) => (
-          <span
-            key={crumb.href}
-            className="flex min-w-0 items-center gap-2"
-          >
+          <span key={crumb.href} className="flex min-w-0 items-center gap-2">
             <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/40" />
             {crumb.isLast ? (
-              <span className="truncate text-foreground">{crumb.label}</span>
+              <span className="truncate font-medium text-foreground">
+                {crumb.label}
+              </span>
             ) : (
               <Link
                 href={crumb.href}
@@ -93,6 +96,25 @@ export function AdminTopbar({ onOpenMobileNav }: AdminTopbarProps) {
           </span>
         ))}
       </nav>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="通知"
+          className="relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+        >
+          <Bell className="size-[18px]" />
+          <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
+        </button>
+        <div className="flex items-center gap-2 rounded-full bg-card py-1 pl-1 pr-3 ring-1 ring-foreground/5">
+          <span className="grid size-7 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+            {initial}
+          </span>
+          <span className="hidden max-w-32 truncate text-sm font-medium text-foreground sm:block">
+            {displayName}
+          </span>
+        </div>
+      </div>
     </header>
   );
 }

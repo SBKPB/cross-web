@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ClinicFormDialog } from "@/components/admin/clinics";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
 import { useRequireSystemAdmin } from "@/lib/auth/use-require-system-admin";
@@ -20,13 +19,6 @@ import { PAYMENT_TYPES } from "@/lib/constants/clinic-constants";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import { categoryLabel } from "@/lib/api/service-categories";
 import { cn } from "@/lib/utils";
-import {
-  lumaCardHover,
-  lumaCardInner,
-  lumaPageContainer,
-  lumaSectionDesc,
-  lumaSectionTitle,
-} from "@/lib/styles/luma";
 import type {
   MedicalFacility,
   MedicalFacilityCreate,
@@ -107,11 +99,15 @@ export default function AdminClinicsPage() {
   };
 
   return (
-    <div className={lumaPageContainer}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className={lumaSectionTitle}>院所管理</h1>
-          <p className={lumaSectionDesc}>選擇院所進行設定，或新增院所</p>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-foreground before:size-2 before:shrink-0 before:rounded-full before:bg-primary before:content-['']">
+            院所管理
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            選擇院所進行設定，或新增院所
+          </p>
         </div>
         <Button onClick={() => setFormDialogOpen(true)}>
           <PlusIcon className="mr-2 size-4" />
@@ -119,14 +115,14 @@ export default function AdminClinicsPage() {
         </Button>
       </div>
 
-      <div className={cn(lumaCardInner, "p-3")}>
+      <div className="rounded-3xl bg-card p-2 shadow-sm ring-1 ring-foreground/5">
         <div className="relative">
-          <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="搜尋院所名稱或地址..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-0 bg-transparent pl-9 shadow-none focus-visible:ring-0"
+            className="h-11 border-0 bg-transparent pl-10 shadow-none focus-visible:ring-0"
           />
         </div>
       </div>
@@ -162,10 +158,13 @@ export default function AdminClinicsPage() {
           {filteredClinics.map((clinic) => (
             <Card
               key={clinic.id}
-              className={cn("cursor-pointer p-6", lumaCardHover)}
+              className="cursor-pointer rounded-3xl p-6 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/15"
               onClick={() => handleClinicClick(clinic)}
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-base font-semibold text-primary">
+                  {clinic.name.charAt(0)}
+                </span>
                 <div className="min-w-0 flex-1 space-y-2">
                   <h3 className="truncate text-base font-semibold text-foreground">
                     {clinic.name}
@@ -179,14 +178,19 @@ export default function AdminClinicsPage() {
                     </p>
                   )}
                   <div className="flex flex-wrap gap-2 pt-1">
-                    <Badge variant="outline">
+                    <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
                       {PAYMENT_TYPES[clinic.payment_type]}
-                    </Badge>
-                    <Badge
-                      variant={clinic.is_active ? "secondary" : "outline"}
+                    </span>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-xs font-medium",
+                        clinic.is_active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-muted text-muted-foreground",
+                      )}
                     >
                       {clinic.is_active ? "啟用" : "停用"}
-                    </Badge>
+                    </span>
                   </div>
                 </div>
                 <ChevronRightIcon className="size-5 shrink-0 text-muted-foreground" />

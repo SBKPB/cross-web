@@ -10,6 +10,7 @@ import {
   BusinessHoursSection,
   StickyBookingButton,
   BookingCard,
+  WalkInCard,
 } from "@/components/clinic-detail";
 import {
   deriveFacilityType,
@@ -107,6 +108,7 @@ function transformClinicData(found: any): Clinic {
     review_count: found.review_count ?? undefined,
     business_hours: businessHours,
     members,
+    online_booking_enabled: found.online_booking_enabled ?? true,
   };
 }
 
@@ -252,7 +254,12 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
 
           {/* ===== 側欄（桌機黏性） ===== */}
           <aside className="space-y-6 lg:sticky lg:top-6">
-            <BookingCard clinicId={clinicId} className="hidden lg:block" />
+            {/* 線上預約為付費功能：未開通的院所改顯示現場 / 電話預約 */}
+            {clinic.online_booking_enabled ? (
+              <BookingCard clinicId={clinicId} className="hidden lg:block" />
+            ) : (
+              <WalkInCard phone={clinic.phone} className="hidden lg:block" />
+            )}
             <ClinicContactInfo clinic={clinic} />
             {clinic.business_hours && clinic.business_hours.length > 0 && (
               <BusinessHoursSection businessHours={clinic.business_hours} />
@@ -262,7 +269,11 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
       </div>
 
       {/* 手機底部 sticky 預約 bar（桌機隱藏，改用側欄 CTA 卡片） */}
-      <StickyBookingButton clinicId={clinicId} />
+      <StickyBookingButton
+        clinicId={clinicId}
+        onlineBookingEnabled={clinic.online_booking_enabled}
+        phone={clinic.phone}
+      />
     </div>
   );
 }

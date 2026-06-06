@@ -113,6 +113,7 @@ export interface Clinic {
   services?: Service[];
   business_hours?: BusinessHours[];
   images?: string[];
+  online_booking_enabled?: boolean; // 是否開通線上預約（付費功能）；false 改顯示現場/電話預約
 }
 
 // 篩選條件

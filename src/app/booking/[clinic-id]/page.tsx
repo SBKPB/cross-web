@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { BookingProvider } from "@/components/booking/booking-context";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import { BookingError } from "@/components/booking/booking-error";
@@ -43,6 +43,11 @@ export default async function BookingPage({ params }: BookingPageProps) {
 
   if (!data.clinicConfig) {
     notFound();
+  }
+
+  // 線上預約為付費功能：未開通的院所導回院所頁（顯示現場 / 電話預約）
+  if (data.clinicConfig.online_booking_enabled === false) {
+    redirect(`/clinic/${clinicId}`);
   }
 
   return (

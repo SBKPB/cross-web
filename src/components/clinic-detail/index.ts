@@ -8,4 +8,5 @@ export { BusinessHoursSection } from "./business-hours-section";
 export { ScheduleTimetable } from "./schedule-timetable";
 export { StickyBookingButton } from "./sticky-booking-button";
 export { BookingCard } from "./booking-card";
+export { WalkInCard } from "./walk-in-card";
 export { SectionCard } from "./section-card";

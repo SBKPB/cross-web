@@ -217,10 +217,10 @@ export async function generateMetadata({
   const clinic = await getClinic(clinicId);
   if (!clinic) return { title: "找不到院所" };
 
-  const locality = clinic.city ?? "";
+  const place = `${clinic.city ?? ""}${clinic.address ?? ""}`.trim();
   const title = `${clinic.clinic_name}｜線上預約掛號`;
   const description =
-    `${clinic.clinic_name}（${locality}${clinic.address ?? ""}）線上預約掛號。` +
+    `${clinic.clinic_name}${place ? `（${place}）` : ""}線上預約掛號。` +
     `${clinic.phone ? `電話 ${clinic.phone}。` : ""}` +
     `查看門診時間、團隊與服務項目，免打電話直接線上預約。`;
   const path = `/clinic/${clinicId}`;

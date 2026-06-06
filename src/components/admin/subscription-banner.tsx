@@ -71,11 +71,16 @@ export function SubscriptionBanner() {
     (subscription_status === "active" || subscription_status === "trial")
   ) {
     return (
-      <Banner variant="destructive" icon={AlertTriangle}>
-        <span className="font-semibold">{name}</span> 的
+      <Banner variant="subtle" icon={Clock}>
+        <span className="font-medium text-foreground">{name}</span> 的
         {subscription_status === "trial" ? "免費試用" : "訂閱"}已於{" "}
         {formatDate(subscription_expires_at)} 到期，付費功能已停用。
-        <UpgradeLink label="重新升級" />
+        <Link
+          href="/pricing"
+          className="ml-1 font-medium text-primary underline underline-offset-2 hover:no-underline"
+        >
+          重新升級
+        </Link>
       </Banner>
     );
   }
@@ -172,7 +177,7 @@ function UpgradeLink({ label }: { label: string }) {
 }
 
 interface BannerProps {
-  variant: "warning" | "destructive" | "info";
+  variant: "warning" | "destructive" | "info" | "subtle";
   icon: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
 }
@@ -188,9 +193,16 @@ function Banner({ variant, icon: Icon, children }: BannerProps) {
           "border-destructive/30 bg-destructive/10 text-destructive",
         variant === "info" &&
           "border-primary/20 bg-primary/5 text-foreground",
+        variant === "subtle" &&
+          "border-border/60 bg-muted/40 text-muted-foreground",
       )}
     >
-      <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+      <Icon
+        className={cn(
+          "mt-0.5 size-4 shrink-0",
+          variant === "subtle" ? "text-muted-foreground" : "text-primary",
+        )}
+      />
       <div className="flex-1">{children}</div>
     </div>
   );

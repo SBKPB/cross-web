@@ -79,6 +79,7 @@ interface FormData {
   is_active: boolean;
   business_hours: BusinessHours;
   slot_duration: number;
+  phone_booking_enabled: boolean;
 }
 
 const SLOT_DURATION_OPTIONS = [
@@ -143,6 +144,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
       is_active: clinic.is_active,
       business_hours: parseBusinessHours(clinic.business_hours),
       slot_duration: clinic.slot_duration ?? 30,
+      phone_booking_enabled: clinic.phone_booking_enabled ?? false,
     };
   }
   return {
@@ -155,6 +157,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
     is_active: true,
     business_hours: { ...DEFAULT_BUSINESS_HOURS },
     slot_duration: 30,
+    phone_booking_enabled: false,
   };
 }
 
@@ -260,6 +263,7 @@ function ClinicFormContent({
       facility_type: formData.facility_type,
       business_hours: Object.keys(business_hours).length > 0 ? business_hours : undefined,
       slot_duration: formData.slot_duration,
+      phone_booking_enabled: formData.phone_booking_enabled,
     };
 
     if (isEditing) {
@@ -579,6 +583,34 @@ function ClinicFormContent({
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* 預約設定：未開通線上預約的院所是否顯示電話預約（預設關閉，僅現場預約） */}
+            <div className={cn(sectionCard)}>
+              <label
+                htmlFor="phone_booking_enabled"
+                className="flex cursor-pointer items-start gap-3"
+              >
+                <Checkbox
+                  id="phone_booking_enabled"
+                  checked={formData.phone_booking_enabled}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      phone_booking_enabled: checked === true,
+                    }))
+                  }
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-foreground">
+                    顯示電話預約
+                  </span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    未開通線上預約時，於民眾端顯示「撥打電話預約」；關閉則僅顯示現場預約（預設關閉）。
+                  </span>
+                </span>
+              </label>
             </div>
 
             {isEditing && (

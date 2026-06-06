@@ -1,28 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, Phone } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface StickyBookingButtonProps {
   clinicId: string;
-  /** 是否開通線上預約（付費功能）；false 時改顯示撥打電話 */
-  onlineBookingEnabled?: boolean;
-  phone?: string | null;
   className?: string;
 }
 
+/** 手機底部 sticky 預約 bar（僅開通線上預約的院所顯示） */
 export function StickyBookingButton({
   clinicId,
-  onlineBookingEnabled = true,
-  phone,
   className,
 }: StickyBookingButtonProps) {
-  // 未開通線上預約且無電話 → 不顯示底部 bar
-  if (!onlineBookingEnabled && !phone) return null;
-
   return (
     <div
       className={cn(
@@ -33,21 +26,12 @@ export function StickyBookingButton({
         className,
       )}
     >
-      {onlineBookingEnabled ? (
-        <Button asChild size="lg" className="w-full shadow-lg">
-          <Link href={`/booking/${clinicId}`}>
-            <Calendar className="size-5" />
-            立即預約
-          </Link>
-        </Button>
-      ) : (
-        <Button asChild size="lg" className="w-full shadow-lg">
-          <a href={`tel:${phone}`}>
-            <Phone className="size-5" />
-            撥打電話預約
-          </a>
-        </Button>
-      )}
+      <Button asChild size="lg" className="w-full shadow-lg">
+        <Link href={`/booking/${clinicId}`}>
+          <Calendar className="size-5" />
+          立即預約
+        </Link>
+      </Button>
     </div>
   );
 }

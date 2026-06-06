@@ -109,6 +109,7 @@ function transformClinicData(found: any): Clinic {
     business_hours: businessHours,
     members,
     online_booking_enabled: found.online_booking_enabled ?? true,
+    phone_booking_enabled: found.phone_booking_enabled ?? false,
   };
 }
 
@@ -254,11 +255,14 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
 
           {/* ===== 側欄（桌機黏性） ===== */}
           <aside className="space-y-6 lg:sticky lg:top-6">
-            {/* 線上預約為付費功能：未開通的院所改顯示現場 / 電話預約 */}
+            {/* 線上預約為付費功能：未開通的院所改顯示現場預約（電話由後台勾選才顯示） */}
             {clinic.online_booking_enabled ? (
               <BookingCard clinicId={clinicId} className="hidden lg:block" />
             ) : (
-              <WalkInCard phone={clinic.phone} className="hidden lg:block" />
+              <WalkInCard
+                phone={clinic.phone}
+                phoneBookingEnabled={clinic.phone_booking_enabled}
+              />
             )}
             <ClinicContactInfo clinic={clinic} />
             {clinic.business_hours && clinic.business_hours.length > 0 && (
@@ -268,12 +272,10 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
         </div>
       </div>
 
-      {/* 手機底部 sticky 預約 bar（桌機隱藏，改用側欄 CTA 卡片） */}
-      <StickyBookingButton
-        clinicId={clinicId}
-        onlineBookingEnabled={clinic.online_booking_enabled}
-        phone={clinic.phone}
-      />
+      {/* 手機底部 sticky 預約 bar：僅開通線上預約的院所顯示（免費院所用側欄現場預約卡） */}
+      {clinic.online_booking_enabled && (
+        <StickyBookingButton clinicId={clinicId} />
+      )}
     </div>
   );
 }

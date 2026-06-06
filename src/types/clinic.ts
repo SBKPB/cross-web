@@ -114,6 +114,7 @@ export interface Clinic {
   business_hours?: BusinessHours[];
   images?: string[];
   online_booking_enabled?: boolean; // 是否開通線上預約（付費功能）；false 改顯示現場/電話預約
+  phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（後台勾選，預設關閉）
 }
 
 // 篩選條件
@@ -203,6 +204,7 @@ export interface MedicalFacility {
   business_hours: Record<string, { open: string; close: string; breaks?: BreakTime[] }> | null;
   slot_duration: number; // 預約時段間隔（分鐘）
   is_active: boolean;
+  phone_booking_enabled: boolean; // 未開通線上預約時是否顯示電話預約（後台勾選，預設關閉）
   // 訂閱資訊
   subscription_plan: SubscriptionPlan;
   subscription_status: SubscriptionStatus;
@@ -259,6 +261,7 @@ export interface MedicalFacilityCreate {
   facility_type: FacilityType;
   business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
   slot_duration?: number; // 預約時段間隔（分鐘）
+  phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（預設關閉）
 }
 
 // 更新醫療單位
@@ -272,6 +275,7 @@ export interface MedicalFacilityUpdate {
   business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
   slot_duration?: number; // 預約時段間隔（分鐘）
   is_active?: boolean;
+  phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（預設關閉）
 }
 
 // ========== 職員 API 型別 ==========

@@ -5,11 +5,19 @@ import { cn } from "@/lib/utils";
 
 interface WalkInCardProps {
   phone?: string | null;
+  /** 後台勾選是否提供電話預約（預設關閉）；關閉時只顯示現場預約 */
+  phoneBookingEnabled?: boolean;
   className?: string;
 }
 
-/** 未開通線上預約的院所：桌機側欄改顯示現場 / 電話預約 */
-export function WalkInCard({ phone, className }: WalkInCardProps) {
+/** 未開通線上預約的院所：顯示現場預約；電話預約由後台勾選才顯示 */
+export function WalkInCard({
+  phone,
+  phoneBookingEnabled = false,
+  className,
+}: WalkInCardProps) {
+  const showPhone = phoneBookingEnabled && !!phone;
+
   return (
     <div
       className={cn(
@@ -24,10 +32,12 @@ export function WalkInCard({ phone, className }: WalkInCardProps) {
         <h3 className="text-lg font-bold text-foreground">現場預約</h3>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        本院所目前提供現場 / 電話預約，歡迎來電或臨櫃洽詢。
+        {showPhone
+          ? "本院所目前提供現場 / 電話預約，歡迎來電或臨櫃洽詢。"
+          : "本院所目前提供現場預約，歡迎臨櫃洽詢。"}
       </p>
 
-      {phone && (
+      {showPhone && (
         <Button asChild size="lg" className="mt-5 w-full font-semibold">
           <a href={`tel:${phone}`}>
             <Phone className="size-5" />
@@ -39,7 +49,7 @@ export function WalkInCard({ phone, className }: WalkInCardProps) {
       <div className="mt-4 flex flex-col gap-2 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <MapPinned className="size-3.5" />
-          現場 / 電話即可預約
+          {showPhone ? "現場 / 電話即可預約" : "現場即可預約"}
         </span>
       </div>
     </div>

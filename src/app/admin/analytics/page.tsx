@@ -10,6 +10,7 @@ import {
   Loader2,
   TrendingUp,
   UserCheck,
+  Users,
   XCircle,
 } from "lucide-react";
 
@@ -19,7 +20,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { isFacilityUser } from "@/lib/auth/roles";
 import { canAccessFeature, canStartTrial } from "@/lib/feature-access";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
-import type { FacilityAnalytics } from "@/types/clinic";
+import type { FacilityAnalytics, VisitorCount } from "@/types/clinic";
 
 const RANGES = [
   { days: 7, granularity: "day" as const, label: "近 7 天" },
@@ -42,6 +43,7 @@ export default function AnalyticsPage() {
   const { user } = useAuth();
   const [rangeIdx, setRangeIdx] = useState(1); // 預設近 30 天
   const [data, setData] = useState<FacilityAnalytics | null>(null);
+  const [visitor, setVisitor] = useState<VisitorCount | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,16 +51,21 @@ export default function AnalyticsPage() {
   const accessible = canAccessFeature(user?.facility, "analytics");
 
   const load = useCallback(async () => {
-    if (!facilityId || !accessible) return;
+    if (!facilityId) return;
     setLoading(true);
     setError(null);
     try {
       const r = RANGES[rangeIdx];
+      // 訪客人數：所有方案皆可看（不掛付費 gating）
+      setVisitor(await adminClinicsApi.visitorCount(facilityId, { range: r.days }));
+      // 完整分析：僅開通者抓（free / standard 打了會 403）
       setData(
-        await adminClinicsApi.analytics(facilityId, {
-          range: r.days,
-          granularity: r.granularity,
-        }),
+        accessible
+          ? await adminClinicsApi.analytics(facilityId, {
+              range: r.days,
+              granularity: r.granularity,
+            })
+          : null,
       );
     } catch {
       setError("載入分析資料失敗，請稍後再試");
@@ -82,40 +89,9 @@ export default function AnalyticsPage() {
     );
   }
 
-  // 未開通付費功能 → 升級牆
-  if (!accessible) {
-    return (
-      <PageShell>
-        <Card className="flex flex-col items-center gap-4 p-10 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Lock className="size-7" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-foreground">
-              客戶分析為「專業方案」功能
-            </h2>
-            <p className="mx-auto max-w-md text-sm text-muted-foreground">
-              升級至專業方案即可查看預約量趨勢、未到診率、預約管道佔比與回診率，
-              用數據優化營運。
-            </p>
-          </div>
-          {canStartTrial(user?.facility) ? (
-            <p className="text-sm text-primary">
-              你的院所還沒用過試用 —— 可從上方橫幅「一鍵試用 90 天」立即解鎖全部功能。
-            </p>
-          ) : (
-            <Button asChild>
-              <Link href="/pricing">查看方案</Link>
-            </Button>
-          )}
-        </Card>
-      </PageShell>
-    );
-  }
-
   return (
     <PageShell>
-      {/* 區間切換 */}
+      {/* 區間切換（所有方案共用） */}
       <div className="flex flex-wrap gap-2">
         {RANGES.map((r, i) => (
           <Button
@@ -135,10 +111,66 @@ export default function AnalyticsPage() {
         </div>
       ) : error ? (
         <Card className="p-8 text-center text-sm text-destructive">{error}</Card>
-      ) : data ? (
-        <AnalyticsContent data={data} />
-      ) : null}
+      ) : (
+        <>
+          {/* 訪客人數卡：所有方案都顯示，不上鎖 */}
+          {visitor && <VisitorCard data={visitor} />}
+          {/* 完整分析（pro / 試用）或升級牆 */}
+          {accessible && data ? (
+            <AnalyticsContent data={data} />
+          ) : (
+            <UpgradeWall canTrial={canStartTrial(user?.facility)} />
+          )}
+        </>
+      )}
     </PageShell>
+  );
+}
+
+function VisitorCard({ data }: { data: VisitorCount }) {
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Users className="size-4" />
+          訪客人數
+        </div>
+        <span className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
+          {data.visitor_count}
+        </span>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        近 {data.range_days} 天不重複到訪病患（{data.start_date} ~ {data.end_date}）
+      </p>
+    </Card>
+  );
+}
+
+function UpgradeWall({ canTrial }: { canTrial: boolean }) {
+  return (
+    <Card className="flex flex-col items-center gap-4 p-10 text-center">
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <Lock className="size-7" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-foreground">
+          完整客戶分析為「專業方案」功能
+        </h2>
+        <p className="mx-auto max-w-md text-sm text-muted-foreground">
+          升級至專業方案即可查看預約量趨勢、未到診率、預約管道佔比與回診率，
+          用數據優化營運。
+        </p>
+      </div>
+      {canTrial ? (
+        <p className="text-sm text-primary">
+          你的院所還沒用過試用 —— 可從上方橫幅「一鍵試用 90 天」立即解鎖全部功能。
+        </p>
+      ) : (
+        <Button asChild>
+          <Link href="/pricing">查看方案</Link>
+        </Button>
+      )}
+    </Card>
   );
 }
 

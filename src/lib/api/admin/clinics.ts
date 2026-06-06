@@ -24,6 +24,7 @@ import type {
   AnnouncementCreate,
   AnnouncementUpdate,
   FacilityAnalytics,
+  VisitorCount,
 } from "@/types/clinic";
 
 const BASE_PATH = "/api/v1/medical-facilities";
@@ -93,6 +94,12 @@ export const adminClinicsApi = {
       `${BASE_PATH}/${id}/analytics${q ? `?${q}` : ""}`,
     );
   },
+
+  // 訪客人數（所有方案皆可看；不掛付費 gating）
+  visitorCount: (id: string, params?: { range?: number }) =>
+    api.get<VisitorCount>(
+      `${BASE_PATH}/${id}/analytics/visitor-count?range=${params?.range ?? 30}`,
+    ),
 
   // ========== 單位設定 ==========
 

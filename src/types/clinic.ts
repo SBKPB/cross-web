@@ -250,6 +250,13 @@ export interface FacilityAnalytics {
   trend: AnalyticsTrendPoint[];
   by_method: AnalyticsMethodCount[];
 }
+/** 訪客人數（基本資訊，所有方案皆可看；不重複病患數） */
+export interface VisitorCount {
+  range_days: number;
+  start_date: string;
+  end_date: string;
+  visitor_count: number;
+}
 
 // 新增醫療單位
 export interface MedicalFacilityCreate {

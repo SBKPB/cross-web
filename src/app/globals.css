@@ -62,7 +62,7 @@
   --secondary: #f1f5f9;            /* n-section */
   --secondary-foreground: #334155; /* n-body */
   --muted: #f1f5f9;                /* n-section */
-  --muted-foreground: #64748b;     /* n-secondary */
+  --muted-foreground: #586273;     /* n-secondary（加深：在 bg-muted 上達 WCAG AA ≥4.5:1） */
   --accent: #dbeafe;               /* n-brand-soft */
   --accent-foreground: #1d4ed8;    /* n-brand */
   --destructive: oklch(0.577 0.245 27.325);

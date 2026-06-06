@@ -49,18 +49,21 @@ const PLAN_PILL: Record<SubscriptionPlan, { label: string; cls: string }> = {
   pro: { label: "專業方案", cls: "bg-primary text-primary-foreground" },
 };
 
-// 直覺顯示「目前方案」；trial / suspended / cancelled 顯示該特殊狀態。
-// 到期不另外標示（由每日 cron 直接降回免費，標頭隨之顯示免費方案）。
+// 顯示「目前實際生效方案」：付費/試用到期即視為免費（與即時 gating 一致，
+// 不必等每日 cron 物理降級；DB 方案保留以利續約還原）。
 function getPlanPill(
   plan: SubscriptionPlan,
   status: SubscriptionStatus,
+  expiresAt: string | null,
 ): { label: string; cls: string } {
-  if (status === "trial")
-    return { label: "試用中", cls: "bg-amber-100 text-amber-700" };
   if (status === "suspended")
     return { label: "已暫停", cls: "bg-destructive/10 text-destructive" };
   if (status === "cancelled")
     return { label: "已取消", cls: "bg-muted text-muted-foreground" };
+  const expired = !!expiresAt && new Date(expiresAt).getTime() < Date.now();
+  if (expired) return PLAN_PILL.free; // 到期 → 免費方案
+  if (status === "trial")
+    return { label: "試用中", cls: "bg-amber-100 text-amber-700" };
   return PLAN_PILL[plan];
 }
 
@@ -180,6 +183,7 @@ export default function ClinicDetailPage() {
   const planPill = getPlanPill(
     clinic.subscription_plan,
     clinic.subscription_status,
+    clinic.subscription_expires_at,
   );
 
   const infoFields: { icon: typeof Phone; label: string; value: string }[] = [

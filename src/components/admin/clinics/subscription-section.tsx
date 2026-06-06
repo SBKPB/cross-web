@@ -105,6 +105,15 @@ export function SubscriptionSection({
     daysUntil !== null &&
     daysUntil < 0 &&
     daysUntil >= -3;
+  // 「目前實際生效方案」：付費/試用到期即視為 free（與標頭、即時 gating 一致；
+  // DB 方案保留以利續約還原）
+  const effectivePlan: SubscriptionPlan =
+    (facility.subscription_status === "active" ||
+      facility.subscription_status === "trial") &&
+    daysUntil !== null &&
+    daysUntil < 0
+      ? "free"
+      : facility.subscription_plan;
 
   return (
     <>
@@ -177,7 +186,7 @@ export function SubscriptionSection({
             </div>
             <div className="mt-1.5">
               <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                {PLAN_LABEL[facility.subscription_plan]}
+                {PLAN_LABEL[effectivePlan]}
               </span>
             </div>
           </div>

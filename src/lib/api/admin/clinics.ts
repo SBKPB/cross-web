@@ -11,6 +11,7 @@ import type {
   ApiServiceCreate,
   ApiServiceUpdate,
   ApiAppointment,
+  ApiAppointmentCreate,
   ApiAppointmentUpdate,
   ApiStaffService,
   ApiStaffServiceCreate,
@@ -172,6 +173,10 @@ export const adminClinicsApi = {
   // ========== 預約 ==========
 
   appointments: {
+    // 後台代訂（現場/電話）；不受 online_booking 付費限制
+    create: (facilityId: string, data: ApiAppointmentCreate) =>
+      api.post<ApiAppointment>(`${BASE_PATH}/${facilityId}/appointments`, data),
+
     list: (facilityId: string, params?: { date?: string; start_date?: string; end_date?: string; status?: string }) => {
       const searchParams = new URLSearchParams();
       if (params?.date) searchParams.append("date", params.date);

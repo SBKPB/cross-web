@@ -407,9 +407,24 @@ export interface ApiAppointment {
   appointment_date: string;
   appointment_time: string;
   status: AppointmentStatus;
+  booking_method: "phone" | "walk_in" | "online" | "line";
   notes: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+// 後台代訂（櫃檯為現場/電話客人建立；身分證為識別碼）
+export interface ApiAppointmentCreate {
+  patient_name: string;
+  patient_national_id: string;
+  patient_phone?: string;
+  patient_gender?: "M" | "F";
+  service_id?: string;
+  staff_id: string;
+  appointment_date: string; // YYYY-MM-DD
+  appointment_time: string; // HH:MM
+  booking_method?: "phone" | "walk_in";
+  notes?: string;
 }
 
 export interface ApiAppointmentUpdate {

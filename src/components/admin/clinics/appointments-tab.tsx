@@ -9,6 +9,7 @@ import {
   PencilIcon,
   Filter,
   Loader2,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +35,14 @@ import {
 import { cn } from "@/lib/utils";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import type { ApiAppointment, AppointmentStatus } from "@/types/clinic";
+import { AppointmentCreateDialog } from "./appointment-create-dialog";
+
+const METHOD_LABELS: Record<string, string> = {
+  phone: "電話",
+  walk_in: "現場",
+  online: "線上",
+  line: "LINE",
+};
 
 interface AppointmentsTabProps {
   facilityId: string;
@@ -95,6 +104,9 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
   const [endDate, setEndDate] = useState(() => addMonths(getToday(), 1));
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showFilter, setShowFilter] = useState(false);
+
+  // 新增（代訂）Dialog
+  const [createOpen, setCreateOpen] = useState(false);
 
   // 詳情 Dialog
   const [detailOpen, setDetailOpen] = useState(false);
@@ -292,16 +304,26 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
             </SelectContent>
           </Select>
 
-          <div className="ml-auto text-sm text-muted-foreground">
-            共 <span className="tabular-nums">{totalCount}</span> 筆
-            {statusCounts.confirmed > 0 && (
-              <span className="ml-2 text-xs">
-                待處理{" "}
-                <span className="font-medium text-primary tabular-nums">
-                  {statusCounts.confirmed}
+          <div className="ml-auto flex items-center gap-3">
+            <div className="text-sm text-muted-foreground">
+              共 <span className="tabular-nums">{totalCount}</span> 筆
+              {statusCounts.confirmed > 0 && (
+                <span className="ml-2 text-xs">
+                  待處理{" "}
+                  <span className="font-medium text-primary tabular-nums">
+                    {statusCounts.confirmed}
+                  </span>
                 </span>
-              </span>
-            )}
+              )}
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setCreateOpen(true)}
+              className="h-8 gap-1 text-xs"
+            >
+              <Plus className="size-3.5" />
+              新增預約
+            </Button>
           </div>
         </div>
 
@@ -529,6 +551,13 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
                       {selectedAppointment.service_name || "未指定"}
                     </div>
                   </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">預約方式</div>
+                    <div className="font-medium text-foreground">
+                      {METHOD_LABELS[selectedAppointment.booking_method] ??
+                        selectedAppointment.booking_method}
+                    </div>
+                  </div>
                   {selectedAppointment.staff_name && (
                     <div className="col-span-2">
                       <div className="text-sm text-muted-foreground">指定人員</div>
@@ -605,6 +634,14 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 新增（代訂）Dialog */}
+      <AppointmentCreateDialog
+        facilityId={facilityId}
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={fetchAppointments}
+      />
     </div>
   );
 }

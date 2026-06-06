@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   AnnouncementsSection,
@@ -194,12 +196,106 @@ async function getClinicFromApi(clinicId: string): Promise<Clinic | null> {
   return null;
 }
 
+// 包進 React cache：generateMetadata 與頁面 body 共用同一次請求（即使 fetch no-store）
+const getClinic = cache(getClinicFromApi);
+
+// 繁中星期 → schema.org 英文星期（給 openingHoursSpecification）
+const SCHEMA_DAY: Record<string, string> = {
+  週一: "Monday",
+  週二: "Tuesday",
+  週三: "Wednesday",
+  週四: "Thursday",
+  週五: "Friday",
+  週六: "Saturday",
+  週日: "Sunday",
+};
+
+export async function generateMetadata({
+  params,
+}: ClinicDetailPageProps): Promise<Metadata> {
+  const { "clinic-id": clinicId } = await params;
+  const clinic = await getClinic(clinicId);
+  if (!clinic) return { title: "找不到院所" };
+
+  const locality = clinic.city ?? "";
+  const title = `${clinic.clinic_name}｜線上預約掛號`;
+  const description =
+    `${clinic.clinic_name}（${locality}${clinic.address ?? ""}）線上預約掛號。` +
+    `${clinic.phone ? `電話 ${clinic.phone}。` : ""}` +
+    `查看門診時間、團隊與服務項目，免打電話直接線上預約。`;
+  const path = `/clinic/${clinicId}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "website",
+      siteName: "Cross",
+      url: path,
+      title: `${title} | Cross`,
+      description,
+      images: clinic.logo ? [{ url: clinic.logo }] : undefined,
+    },
+    twitter: {
+      card: "summary",
+      title: `${title} | Cross`,
+      description,
+      images: clinic.logo ? [clinic.logo] : undefined,
+    },
+  };
+}
+
+function buildClinicJsonLd(clinic: Clinic, clinicId: string) {
+  const isBeauty =
+    clinic.facility_type === "beauty" || clinic.facility_type === "aesthetic";
+  const openingHours = (clinic.business_hours ?? [])
+    .filter((h) => SCHEMA_DAY[h.day] && h.open && h.close)
+    .map((h) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: SCHEMA_DAY[h.day],
+      opens: h.open,
+      closes: h.close,
+    }));
+
+  return {
+    "@context": "https://schema.org",
+    "@type": isBeauty ? "HealthAndBeautyBusiness" : "MedicalBusiness",
+    name: clinic.clinic_name,
+    url: `https://cross.twinhao.com/clinic/${clinicId}`,
+    ...(clinic.logo ? { image: clinic.logo, logo: clinic.logo } : {}),
+    ...(clinic.phone ? { telephone: clinic.phone } : {}),
+    ...(clinic.address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: clinic.address,
+            addressCountry: "TW",
+            ...(clinic.city ? { addressLocality: clinic.city } : {}),
+          },
+        }
+      : {}),
+    ...(openingHours.length ? { openingHoursSpecification: openingHours } : {}),
+    ...(clinic.rating != null &&
+    clinic.review_count != null &&
+    clinic.review_count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: clinic.rating,
+            reviewCount: clinic.review_count,
+          },
+        }
+      : {}),
+  };
+}
+
 export default async function ClinicDetailPage({ params }: ClinicDetailPageProps) {
   const { "clinic-id": clinicId } = await params;
 
   // 平行取得院所資訊、服務項目、門診排班與公告
   const [clinic, services, schedule, announcements] = await Promise.all([
-    getClinicFromApi(clinicId),
+    getClinic(clinicId),
     getServicesFromApi(clinicId),
     getScheduleFromApi(clinicId),
     getAnnouncementsFromApi(clinicId),
@@ -220,8 +316,14 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
     schedule !== null &&
     (clinic.facility_type !== "aesthetic" || schedule.entries.length > 0);
 
+  const jsonLd = buildClinicJsonLd(clinic, clinicId);
+
   return (
     <div className="min-h-screen bg-background pb-28 lg:pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero：裝飾性 banner + 院所識別卡 */}
       <ClinicDetailHeader clinic={clinic} />
 

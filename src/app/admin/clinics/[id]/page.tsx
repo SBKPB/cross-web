@@ -38,19 +38,30 @@ import { lumaPageContainer, lumaSectionTitle } from "@/lib/styles/luma";
 import type {
   MedicalFacility,
   MedicalFacilityUpdate,
+  SubscriptionPlan,
   SubscriptionStatus,
 } from "@/types/clinic";
 
-// 訂閱狀態 → 徽章呈現（純樣式對照，不含商業邏輯）
-const SUB_STATUS_PILL: Record<
-  SubscriptionStatus,
-  { label: string; cls: string }
-> = {
-  trial: { label: "試用中", cls: "bg-amber-100 text-amber-700" },
-  active: { label: "訂閱啟用", cls: "bg-green-100 text-green-700" },
-  suspended: { label: "已暫停", cls: "bg-destructive/10 text-destructive" },
-  cancelled: { label: "已取消", cls: "bg-muted text-muted-foreground" },
+// 方案 → 徽章（標頭直覺顯示「目前方案」；完整狀態 / 到期 / 編輯在下方訂閱資訊）
+const PLAN_PILL: Record<SubscriptionPlan, { label: string; cls: string }> = {
+  free: { label: "免費方案", cls: "bg-muted text-muted-foreground" },
+  standard: { label: "標準方案", cls: "bg-primary/10 text-primary" },
+  pro: { label: "專業方案", cls: "bg-primary text-primary-foreground" },
 };
+
+// active → 顯示方案；trial / suspended / cancelled → 顯示該特殊狀態
+function getPlanPill(
+  plan: SubscriptionPlan,
+  status: SubscriptionStatus,
+): { label: string; cls: string } {
+  if (status === "trial")
+    return { label: "試用中", cls: "bg-amber-100 text-amber-700" };
+  if (status === "suspended")
+    return { label: "已暫停", cls: "bg-destructive/10 text-destructive" };
+  if (status === "cancelled")
+    return { label: "已取消", cls: "bg-muted text-muted-foreground" };
+  return PLAN_PILL[plan];
+}
 
 export default function ClinicDetailPage() {
   const params = useParams();
@@ -165,7 +176,10 @@ export default function ClinicDetailPage() {
           .join("、")
       : "未設定";
 
-  const subPill = SUB_STATUS_PILL[clinic.subscription_status];
+  const planPill = getPlanPill(
+    clinic.subscription_plan,
+    clinic.subscription_status,
+  );
 
   const infoFields: { icon: typeof Phone; label: string; value: string }[] = [
     { icon: Phone, label: "電話", value: clinic.phone || "未設定" },
@@ -227,10 +241,10 @@ export default function ClinicDetailPage() {
                 <span
                   className={cn(
                     "rounded-full px-2.5 py-1 text-xs font-medium",
-                    subPill.cls,
+                    planPill.cls,
                   )}
                 >
-                  {subPill.label}
+                  {planPill.label}
                 </span>
                 <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
                   {FACILITY_TYPE_LABELS[clinic.facility_type]}

@@ -34,21 +34,28 @@ const FAQS = [
 
 export function FaqSection() {
   return (
-    <section className="bg-muted border-t border-border py-20">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+    <section className="border-t border-border bg-muted/40 py-20">
+      <div className="container mx-auto max-w-3xl px-4">
+        <div className="mb-12 text-center">
+          <p className="text-sm font-semibold tracking-wide text-primary">FAQ</p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             常見問題
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base">
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             第一次用 Cross？這些問題先看一下
           </p>
         </div>
 
-        <Accordion type="single" collapsible className="bg-card">
+        <Accordion
+          type="single"
+          collapsible
+          className="overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-foreground/5"
+        >
           {FAQS.map((faq, i) => (
             <AccordionItem key={faq.q} value={`item-${i}`}>
-              <AccordionTrigger className="px-6">{faq.q}</AccordionTrigger>
+              <AccordionTrigger className="px-6 text-left">
+                {faq.q}
+              </AccordionTrigger>
               <AccordionContent className="px-6">{faq.a}</AccordionContent>
             </AccordionItem>
           ))}

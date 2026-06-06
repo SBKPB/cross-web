@@ -4,7 +4,7 @@ const STEPS = [
   {
     icon: Search,
     title: "搜尋",
-    desc: "輸入科別或地區，找附近的診所",
+    desc: "輸入科別或地區，找附近的診所與店家",
   },
   {
     icon: MousePointerClick,
@@ -20,31 +20,36 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section className="bg-muted border-y border-border py-20">
+    <section className="border-y border-border bg-muted/40 py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-14">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+        <div className="mb-14 text-center">
+          <p className="text-sm font-semibold tracking-wide text-primary">
+            預約流程
+          </p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             三步完成預約
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base">
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             簡單三步驟，不用再打電話排隊
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
           {STEPS.map((step, i) => (
-            <div key={step.title} className="relative text-center">
-              {/* 編號 */}
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white ring-1 ring-border/60 shadow-sm mb-4">
-                <step.icon className="h-6 w-6 text-primary" />
-              </div>
-              <div className="absolute top-0 right-1/2 translate-x-[54px] -translate-y-1 text-xs font-semibold text-muted-foreground">
+            <div
+              key={step.title}
+              className="group relative rounded-3xl bg-card p-7 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <span className="absolute right-6 top-6 text-4xl font-bold text-primary/10">
                 {String(i + 1).padStart(2, "0")}
-              </div>
-              <h3 className="font-semibold text-foreground text-lg mb-1.5">
+              </span>
+              <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <step.icon className="size-5" />
+              </span>
+              <h3 className="mt-5 text-lg font-semibold text-foreground">
                 {step.title}
               </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-[220px] mx-auto">
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                 {step.desc}
               </p>
             </div>

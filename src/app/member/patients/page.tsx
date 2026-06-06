@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -10,7 +9,6 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -20,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useRequireMember } from "@/lib/auth/use-require-member";
 import { memberPatientApi } from "@/lib/api/member-patient";
 import type { MemberPatientRead } from "@/types/member-patient";
 import { NewPatientDialog } from "@/components/patient/new-patient-dialog";
@@ -31,8 +29,8 @@ import {
 import type { IdentifierType } from "@/types/member-patient";
 
 export default function MemberPatientsPage() {
-  const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  // 守衛：未登入導向登入頁，後台帳號導回後台，不渲染民眾端內容
+  const { ready } = useRequireMember("/member/patients");
   const [patients, setPatients] = useState<MemberPatientRead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -40,13 +38,6 @@ export default function MemberPatientsPage() {
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (!isAuthenticated) {
-      router.replace("/auth?next=/member/patients");
-    }
-  }, [authLoading, isAuthenticated, router]);
 
   const fetchPatients = useCallback(async () => {
     setIsLoading(true);
@@ -61,9 +52,9 @@ export default function MemberPatientsPage() {
   }, []);
 
   useEffect(() => {
-    if (authLoading || !isAuthenticated) return;
+    if (!ready) return;
     fetchPatients();
-  }, [authLoading, isAuthenticated, fetchPatients]);
+  }, [ready, fetchPatients]);
 
   const handleCreated = (newPatient: MemberPatientRead) => {
     setPatients((prev) => [...prev, newPatient]);
@@ -84,7 +75,7 @@ export default function MemberPatientsPage() {
     }
   };
 
-  if (authLoading || !isAuthenticated) {
+  if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
@@ -132,18 +123,24 @@ export default function MemberPatientsPage() {
           </Card>
         ) : (
           patients.map((patient) => (
-            <Card key={patient.id} className="p-5">
-              <div className="flex items-start justify-between gap-3">
+            <Card
+              key={patient.id}
+              className="p-5 ring-1 ring-foreground/5 transition hover:ring-primary/15"
+            >
+              <div className="flex items-start gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-base font-semibold text-primary">
+                  {patient.name.charAt(0)}
+                </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-foreground">
                       {patient.name}
                     </span>
-                    <Badge variant="outline">
+                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                       {RELATION_LABELS[patient.relation] || patient.relation}
-                    </Badge>
+                    </span>
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
+                  <div className="mt-1 text-xs tabular-nums text-muted-foreground">
                     {IDENTIFIER_TYPE_LABELS[patient.identifier_type as IdentifierType]}{" "}
                     ****{patient.identifier_last4}
                     {" · "}
@@ -152,21 +149,20 @@ export default function MemberPatientsPage() {
                     {patient.gender === "M" ? "男" : "女"}
                   </div>
                   {patient.phone && (
-                    <div className="mt-0.5 text-xs text-muted-foreground">
+                    <div className="mt-0.5 text-xs tabular-nums text-muted-foreground">
                       {patient.phone}
                     </div>
                   )}
                 </div>
-                <div className="flex shrink-0 gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => setDeleteTarget(patient)}
-                    title="刪除"
-                  >
-                    <Trash2Icon className="size-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setDeleteTarget(patient)}
+                  title="刪除"
+                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2Icon className="size-4" />
+                </Button>
               </div>
             </Card>
           ))

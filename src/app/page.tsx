@@ -1,3 +1,9 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { AppDownload } from "@/components/home/app-download";
+import { CategoryBrowse } from "@/components/home/category-browse";
 import { FaqSection } from "@/components/home/faq-section";
 import { FeaturesSection } from "@/components/home/features-section";
 import { HomeHero } from "@/components/home/home-hero";
@@ -13,43 +19,47 @@ export const revalidate = 300;
 
 export default async function Home() {
   let popularClinics: Clinic[] = [];
-  let totalClinics = 0;
-  let cityCount = 0;
-  let departmentCount = 0;
 
   try {
-    const [popular, all] = await Promise.all([
-      clinicsApi.getPopularClinics(6),
-      clinicsApi.getClinics(),
-    ]);
-    popularClinics = popular;
-    totalClinics = all.length;
-    cityCount = new Set(all.map((c) => c.city).filter(Boolean)).size;
-    departmentCount = new Set(all.flatMap((c) => c.departments)).size;
+    popularClinics = await clinicsApi.getPopularClinics(6);
   } catch (error) {
     console.error("[Home] Failed to load clinics:", error);
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
       <main className="flex-1">
-        <HomeHero
-          stats={
-            totalClinics > 0
-              ? {
-                  clinicCount: totalClinics,
-                  departmentCount,
-                  cityCount,
-                }
-              : undefined
-          }
-        />
+        <HomeHero />
+        <CategoryBrowse />
         <PopularClinics clinics={popularClinics} />
         <HowItWorks />
         <FeaturesSection />
         <FaqSection />
+
+        {/* 民眾向結尾 CTA：下載 App */}
+        <AppDownload />
+
+        {/* 醫療院所招商（輕量 band，次要） */}
+        <section className="container mx-auto px-4 pb-20">
+          <div className="flex flex-col items-center justify-between gap-4 rounded-3xl border border-border bg-card px-6 py-6 text-center sm:flex-row sm:text-left">
+            <div>
+              <p className="font-semibold text-foreground">
+                你是診所、醫美或美業嗎？
+              </p>
+              <p className="text-sm text-muted-foreground">
+                加入 Cross，線上接受預約、讓更多人找到你。
+              </p>
+            </div>
+            <Button asChild variant="outline" className="group/cta shrink-0">
+              <Link href="/join">
+                夥伴加入
+                <ArrowRight className="size-4 transition-transform group-hover/cta:translate-x-0.5" />
+              </Link>
+            </Button>
+          </div>
+        </section>
       </main>
 
       <SiteFooter />

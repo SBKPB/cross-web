@@ -41,9 +41,10 @@ export function canAccessAdmin(user: User | null): boolean {
 }
 
 export function getAdminHomePath(user: User | null): string {
-  if (isSystemAdmin(user)) return "/admin/clinics";
+  // 系統管理員與院所使用者登入後都先進總覽 Dashboard
+  if (isSystemAdmin(user)) return "/admin/dashboard";
   if (isFacilityUser(user) && user?.facility_id) {
-    return `/admin/clinics/${user.facility_id}`;
+    return "/admin/dashboard";
   }
   return "/";
 }

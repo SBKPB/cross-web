@@ -16,6 +16,7 @@ import {
   GoogleSignInButton,
   AppleSignInButton,
 } from "@/components/auth/social-login-buttons";
+import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { lumaIconBadge } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 
@@ -69,8 +70,8 @@ function AuthContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <AuthSplitLayout variant="consumer">
+      <Card className="w-full max-w-md border-none bg-transparent shadow-none">
         <CardHeader className="items-center text-center">
           <div className={cn(lumaIconBadge, "size-14")}>
             <Building2 className="size-6" />
@@ -124,7 +125,7 @@ function AuthContent() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </AuthSplitLayout>
   );
 }
 

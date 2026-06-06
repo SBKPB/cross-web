@@ -16,7 +16,10 @@ export function PopularClinics({ clinics }: PopularClinicsProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+            <p className="mb-2 text-sm font-semibold tracking-wide text-primary">
+              精選
+            </p>
+            <h2 className="mb-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               熱門推薦
             </h2>
             <p className="text-sm text-muted-foreground">

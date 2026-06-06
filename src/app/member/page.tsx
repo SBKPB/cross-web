@@ -1,14 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, LogOut, Users } from "lucide-react";
+import {
+  CalendarCheck2,
+  CalendarDays,
+  CalendarPlus,
+  ChevronRight,
+  Clock,
+  History,
+  LogOut,
+  Mail,
+  MapPin,
+  Phone,
+  Stethoscope,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth/auth-context";
+import { useRequireMember } from "@/lib/auth/use-require-member";
 import { api } from "@/lib/api/client";
+import { memberPatientApi } from "@/lib/api/member-patient";
 
 interface MemberAppointment {
   id: string;
@@ -37,48 +54,78 @@ const STATUS_VARIANT: Record<
   no_show: "outline",
 };
 
-function formatDate(d: string) {
+const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+
+function formatMonthDay(d: string) {
   const dt = new Date(d + "T00:00:00");
   return `${dt.getMonth() + 1}/${dt.getDate()}`;
+}
+
+function formatWeekday(d: string) {
+  const dt = new Date(d + "T00:00:00");
+  return `週${WEEKDAYS[dt.getDay()]}`;
 }
 
 function formatTime(t: string) {
   return t.substring(0, 5);
 }
 
+function formatMemberSince(iso: string) {
+  const dt = new Date(iso);
+  return `${dt.getFullYear()}/${String(dt.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getInitials(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) return "U";
+  // 中文取末一字（姓名習慣），英文/email 取首字母
+  if (/[一-龥]/.test(trimmed)) return trimmed.slice(-1);
+  return trimmed.slice(0, 1).toUpperCase();
+}
+
 export default function MemberPage() {
-  const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
+  const { user, logout } = useAuth();
+  // 守衛：未登入導向登入頁，後台帳號（管理員 / 院所）導回後台，不渲染民眾端內容
+  const { ready } = useRequireMember("/member");
   const [appointments, setAppointments] = useState<MemberAppointment[]>([]);
+  const [patientCount, setPatientCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!isAuthenticated) {
-      router.replace("/auth?next=/member");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  const fetchAppointments = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await api.get<MemberAppointment[]>(
-        "/api/v1/member/appointments",
-      );
-      setAppointments(data);
+      const [appts, patients] = await Promise.all([
+        api.get<MemberAppointment[]>("/api/v1/member/appointments"),
+        memberPatientApi.list().catch(() => []),
+      ]);
+      setAppointments(appts);
+      setPatientCount(patients.length);
     } catch (err) {
-      console.error("Failed to load appointments:", err);
+      console.error("Failed to load member data:", err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (authLoading || !isAuthenticated) return;
-    fetchAppointments();
-  }, [authLoading, isAuthenticated, fetchAppointments]);
+    if (!ready) return;
+    fetchData();
+  }, [ready, fetchData]);
 
-  if (authLoading || !isAuthenticated) {
+  const { upcoming, history, completedCount } = useMemo(() => {
+    const upcoming = appointments
+      .filter((a) => a.status === "confirmed")
+      .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date));
+    const history = appointments
+      .filter((a) => a.status !== "confirmed")
+      .sort((a, b) => b.appointment_date.localeCompare(a.appointment_date));
+    const completedCount = appointments.filter(
+      (a) => a.status === "completed",
+    ).length;
+    return { upcoming, history, completedCount };
+  }, [appointments]);
+
+  if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
@@ -86,101 +133,315 @@ export default function MemberPage() {
     );
   }
 
+  const displayName = user?.display_name || user?.email?.split("@")[0] || "會員";
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border/60 bg-background/80 px-4 py-5 backdrop-blur sm:px-6">
-        <div className="mx-auto max-w-2xl">
-          <h1 className="text-xl font-bold text-foreground">
-            {user?.display_name || user?.email || "我的帳號"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            管理預約紀錄與看診對象
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-muted/40 pb-12">
+      <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-6">
+        {/* Profile 卡 */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-blue-700 p-6 text-primary-foreground">
+          {/* 裝飾光暈 */}
+          <div className="pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-white/10 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-10 size-56 rounded-full bg-white/5 blur-2xl" />
 
-      <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 sm:px-6">
-        {/* 快捷列 */}
-        <div className="flex gap-3">
-          <Button asChild variant="outline" className="flex-1 gap-2">
-            <Link href="/member/patients">
-              <Users className="size-4" />
-              看診對象管理
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="flex-1 gap-2">
-            <Link href="/">
-              <CalendarDays className="size-4" />
-              預約看診
-            </Link>
-          </Button>
+          <div className="relative flex items-start gap-4">
+            <Avatar className="size-16 shrink-0 ring-2 ring-white/40">
+              <AvatarFallback className="bg-white/20 text-xl font-semibold text-white backdrop-blur">
+                {getInitials(displayName)}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="min-w-0 flex-1 pt-1">
+              <h1 className="truncate text-xl font-bold">{displayName}</h1>
+              <div className="mt-1.5 space-y-1 text-sm text-white/80">
+                {user?.email && (
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="size-3.5 shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </div>
+                )}
+                {user?.phone_number && (
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="size-3.5 shrink-0" />
+                    <span>{user.phone_number}</span>
+                  </div>
+                )}
+              </div>
+              {user?.created_at && (
+                <p className="mt-1.5 text-xs text-white/60">
+                  會員自 {formatMemberSince(user.created_at)}
+                </p>
+              )}
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0 text-white/80 hover:bg-white/15 hover:text-white"
+              onClick={() => logout("/")}
+              title="登出"
+            >
+              <LogOut className="size-4" />
+            </Button>
+          </div>
         </div>
 
-        {/* 預約列表 */}
+        {/* 統計卡 */}
+        <div className="grid grid-cols-3 gap-3">
+          <StatCard
+            icon={<Clock className="size-4" />}
+            label="即將看診"
+            value={isLoading ? null : upcoming.length}
+          />
+          <StatCard
+            icon={<CalendarCheck2 className="size-4" />}
+            label="已完成"
+            value={isLoading ? null : completedCount}
+          />
+          <StatCard
+            icon={<Users className="size-4" />}
+            label="看診對象"
+            value={isLoading ? null : (patientCount ?? 0)}
+          />
+        </div>
+
+        {/* 快捷功能 */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <ActionCard
+            href="/"
+            icon={<CalendarPlus className="size-5" />}
+            title="預約看診"
+            desc="搜尋診所，線上掛號"
+            accent
+          />
+          <ActionCard
+            href="/member/patients"
+            icon={<Users className="size-5" />}
+            title="看診對象管理"
+            desc="管理家人與本人資料"
+          />
+        </div>
+
+        {/* 預約紀錄 */}
         <div>
           <h2 className="mb-3 text-base font-semibold text-foreground">
             預約紀錄
           </h2>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
-            </div>
-          ) : appointments.length === 0 ? (
-            <Card className="flex flex-col items-center gap-3 p-8 text-center">
-              <CalendarDays className="size-10 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                尚無預約紀錄
-              </p>
-              <Button asChild size="sm">
-                <Link href="/">立即預約</Link>
-              </Button>
-            </Card>
-          ) : (
             <div className="space-y-3">
-              {appointments.map((appt) => (
-                <Card key={appt.id} className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="shrink-0 text-center text-primary">
-                      <div className="text-lg font-bold">
-                        {formatDate(appt.appointment_date)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatTime(appt.appointment_time)}
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate font-medium text-foreground">
-                          {appt.facility_name}
-                        </span>
-                        <Badge variant={STATUS_VARIANT[appt.status]}>
-                          {STATUS_LABEL[appt.status]}
-                        </Badge>
-                      </div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
-                        {appt.staff_name && `${appt.staff_name} · `}
-                        {appt.booking_number}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+              <AppointmentSkeleton />
+              <AppointmentSkeleton />
             </div>
+          ) : (
+            <Tabs defaultValue="upcoming">
+              <TabsList className="w-full">
+                <TabsTrigger value="upcoming">
+                  即將看診
+                  {upcoming.length > 0 && (
+                    <span className="ml-1 text-xs opacity-70">
+                      ({upcoming.length})
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="history">
+                  歷史紀錄
+                  {history.length > 0 && (
+                    <span className="ml-1 text-xs opacity-70">
+                      ({history.length})
+                    </span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upcoming" className="mt-4">
+                {upcoming.length === 0 ? (
+                  <EmptyState
+                    icon={<CalendarDays className="size-10" />}
+                    text="目前沒有即將到來的預約"
+                    action={
+                      <Button asChild size="sm">
+                        <Link href="/">立即預約</Link>
+                      </Button>
+                    }
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    {upcoming.map((appt) => (
+                      <AppointmentCard key={appt.id} appt={appt} highlight />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="history" className="mt-4">
+                {history.length === 0 ? (
+                  <EmptyState
+                    icon={<History className="size-10" />}
+                    text="尚無歷史紀錄"
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    {history.map((appt) => (
+                      <AppointmentCard key={appt.id} appt={appt} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
         </div>
-
-        {/* 登出 */}
-        <Button
-          variant="outline"
-          className="w-full gap-2"
-          onClick={() => logout("/")}
-        >
-          <LogOut className="size-4" />
-          登出
-        </Button>
       </div>
     </div>
+  );
+}
+
+/* ---------- 子元件 ---------- */
+
+function StatCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | null;
+}) {
+  return (
+    <Card className="flex flex-col items-center gap-1 p-3 text-center shadow-sm">
+      <span className="text-primary">{icon}</span>
+      {value === null ? (
+        <Skeleton className="h-6 w-6" />
+      ) : (
+        <span className="text-2xl font-bold text-foreground tabular-nums">
+          {value}
+        </span>
+      )}
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </Card>
+  );
+}
+
+function ActionCard({
+  href,
+  icon,
+  title,
+  desc,
+  accent,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  accent?: boolean;
+}) {
+  return (
+    <Link href={href}>
+      <Card className="group flex flex-row items-center gap-3 p-4 text-left transition-colors hover:bg-accent/40 hover:ring-primary/30">
+        <span
+          className={
+            accent
+              ? "flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+              : "flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground"
+          }
+        >
+          {icon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-foreground">{title}</div>
+          <div className="truncate text-xs text-muted-foreground">{desc}</div>
+        </div>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      </Card>
+    </Link>
+  );
+}
+
+function AppointmentCard({
+  appt,
+  highlight,
+}: {
+  appt: MemberAppointment;
+  highlight?: boolean;
+}) {
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="flex items-stretch">
+        {/* 日期區塊 */}
+        <div
+          className={
+            highlight
+              ? "flex w-20 shrink-0 flex-col items-center justify-center bg-primary py-4 text-primary-foreground"
+              : "flex w-20 shrink-0 flex-col items-center justify-center bg-muted py-4 text-muted-foreground"
+          }
+        >
+          <div className="text-lg leading-none font-bold">
+            {formatMonthDay(appt.appointment_date)}
+          </div>
+          <div className="mt-1 text-[11px] opacity-80">
+            {formatWeekday(appt.appointment_date)}
+          </div>
+          <div className="mt-1.5 flex items-center gap-0.5 text-xs font-medium">
+            <Clock className="size-3" />
+            {formatTime(appt.appointment_time)}
+          </div>
+        </div>
+
+        {/* 內容 */}
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-1.5 font-medium text-foreground">
+              <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className="truncate">{appt.facility_name}</span>
+            </div>
+            <Badge variant={STATUS_VARIANT[appt.status]} className="shrink-0">
+              {STATUS_LABEL[appt.status]}
+            </Badge>
+          </div>
+          {appt.staff_name && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Stethoscope className="size-3.5 shrink-0" />
+              {appt.staff_name}
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground">
+            預約編號 {appt.booking_number}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function AppointmentSkeleton() {
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="flex items-stretch">
+        <Skeleton className="h-[88px] w-20 rounded-none" />
+        <div className="flex flex-1 flex-col justify-center gap-2 p-4">
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-1/3" />
+          <Skeleton className="h-3 w-1/2" />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function EmptyState({
+  icon,
+  text,
+  action,
+}: {
+  icon: React.ReactNode;
+  text: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <Card className="flex flex-col items-center gap-3 p-10 text-center">
+      <span className="text-muted-foreground">{icon}</span>
+      <p className="text-sm text-muted-foreground">{text}</p>
+      {action}
+    </Card>
   );
 }

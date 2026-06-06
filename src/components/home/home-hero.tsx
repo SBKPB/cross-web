@@ -1,54 +1,72 @@
-import { HeroIllustration } from "./hero-illustration";
+import { CheckCircle2, Sparkles } from "lucide-react";
+
 import { HomeSearchCard } from "./home-search-card";
 
-interface HomeHeroProps {
-  stats?: {
-    clinicCount: number;
-    departmentCount: number;
-    cityCount: number;
-  };
-}
+// 信任訊號（取代「數量統計」，避免店家數少時露餡）
+// 註：看診・醫美・美容為服務大類；健保/自費屬付款方式，不並列為大類。
+const TRUST = ["平台免費使用", "24 小時線上預約", "看診・醫美・美容"];
 
-export function HomeHero({ stats }: HomeHeroProps) {
+export function HomeHero() {
   return (
-    <section className="relative overflow-hidden bg-linear-to-b from-accent/50 via-background to-background">
-      {/* 裝飾插畫：桌機右側，手機隱藏 */}
-      <div className="pointer-events-none absolute right-0 top-0 hidden lg:block w-[520px] h-[520px] -mr-20 -mt-10 opacity-90">
-        <HeroIllustration />
-      </div>
+    <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-background to-background">
+      {/* 柔和淺色光暈（暖、可信賴、airy） */}
+      <div className="pointer-events-none absolute -top-24 left-[15%] size-[480px] rounded-full bg-sky-200/45 blur-3xl" />
+      <div className="pointer-events-none absolute -top-10 right-[12%] size-[420px] rounded-full bg-primary/15 blur-3xl" />
+      <div className="pointer-events-none absolute top-40 right-[28%] size-[360px] rounded-full bg-teal-200/35 blur-3xl" />
+      {/* 極淡點陣 */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.28]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          maskImage: "linear-gradient(to bottom, black, transparent 70%)",
+          WebkitMaskImage: "linear-gradient(to bottom, black, transparent 70%)",
+        }}
+      />
 
-      <div className="container relative mx-auto px-4 pt-16 sm:pt-24 pb-12">
-        {/* 標題 */}
+      <div className="container relative mx-auto px-4 pt-16 pb-16 text-center sm:pt-24 sm:pb-20">
         <div
-          className="max-w-2xl mb-10 text-center lg:text-left"
+          className="mx-auto max-w-3xl"
           style={{ animation: "fadeInUp 0.5s ease-out both" }}
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
-            健保、美容、自費
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-1.5 text-xs font-medium text-primary shadow-sm ring-1 ring-primary/15">
+            <Sparkles className="size-3.5" />
+            全台醫療・美容線上預約
+          </span>
+          <h1 className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            看診、醫美、美容
             <br />
             <span className="text-primary">一站預約</span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-            搜尋全台合作店家，不論是健保看診、美容諮詢還是自費專科，24 小時都能約
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            搜尋全台合作店家，不論是看診掛號、醫美療程還是美容諮詢，24 小時都能約。
           </p>
         </div>
 
         {/* 搜尋大卡 */}
         <div
-          className="max-w-4xl mx-auto lg:mx-0"
+          className="mx-auto mt-8 max-w-3xl"
           style={{ animation: "fadeInUp 0.5s ease-out 0.1s both" }}
         >
           <HomeSearchCard />
         </div>
 
-        {/* 社會證明小字 */}
-        {stats && stats.clinicCount > 0 && (
-          <div className="mt-8 max-w-4xl mx-auto lg:mx-0 text-center lg:text-left">
-            <p className="text-xs text-muted-foreground">
-              ⭐ 已收錄 {stats.clinicCount} 間診所 · 涵蓋 {stats.departmentCount} 個科別 · 遍及 {stats.cityCount} 個縣市
-            </p>
-          </div>
-        )}
+        {/* 信任 chips */}
+        <div
+          className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
+          style={{ animation: "fadeInUp 0.5s ease-out 0.2s both" }}
+        >
+          {TRUST.map((t) => (
+            <span
+              key={t}
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"
+            >
+              <CheckCircle2 className="size-4 text-primary" />
+              {t}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );

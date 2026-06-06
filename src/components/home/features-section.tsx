@@ -27,25 +27,30 @@ export function FeaturesSection() {
   return (
     <section className="bg-background py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-14">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+        <div className="mb-14 text-center">
+          <p className="text-sm font-semibold tracking-wide text-primary">
+            為什麼選 Cross
+          </p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Cross 有什麼不一樣
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base">
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             把看診的大小事變簡單
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+        <div className="mx-auto grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl p-6 bg-white border border-border transition-colors duration-200 hover:border-primary/50"
+              className="group rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-1 hover:shadow-md hover:ring-primary/15"
             >
-              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center mb-4">
-                <f.icon className="h-5 w-5 text-primary" />
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <f.icon className="size-5" />
               </div>
-              <h3 className="text-foreground font-semibold mb-1.5">{f.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
+              <h3 className="mt-4 font-semibold text-foreground">{f.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                {f.desc}
+              </p>
             </div>
           ))}
         </div>

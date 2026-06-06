@@ -94,13 +94,17 @@ export function SubscriptionSection({
   const daysUntil = getDaysUntil(facility.subscription_expires_at);
   const isExpiringSoon =
     facility.subscription_status === "active" &&
+    facility.subscription_plan !== "free" &&
     daysUntil !== null &&
     daysUntil >= 0 &&
     daysUntil <= 7;
+  // 到期提示只在過期 3 天內顯示（超過就不顯示，且已降回 free 的院所不顯示）
   const isExpired =
     facility.subscription_status === "active" &&
+    facility.subscription_plan !== "free" &&
     daysUntil !== null &&
-    daysUntil < 0;
+    daysUntil < 0 &&
+    daysUntil >= -3;
 
   return (
     <>
@@ -143,29 +147,24 @@ export function SubscriptionSection({
           )}
         </div>
 
-        {/* 警示 banner */}
+        {/* 到期提示：一小塊（過期 3 天內 / 即將到期 7 天內才顯示） */}
         {isExpired && (
-          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-destructive/10 p-3.5 text-sm font-medium text-destructive ring-1 ring-destructive/15">
-            <AlertTriangle className="size-4 shrink-0" />
-            <span>
-              訂閱已於{" "}
+          <div className="mt-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
+              <AlertTriangle className="size-3.5" />
+              已於{" "}
               <span className="tabular-nums">
                 {formatDate(facility.subscription_expires_at)}
               </span>{" "}
-              到期，請盡快續訂
+              到期
             </span>
           </div>
         )}
         {isExpiringSoon && !isExpired && (
-          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-amber-100 p-3.5 text-sm font-medium text-amber-700 ring-1 ring-amber-200">
-            <Clock3 className="size-4 shrink-0" />
-            <span>
-              訂閱將於 <span className="tabular-nums">{daysUntil}</span>{" "}
-              天後（
-              <span className="tabular-nums">
-                {formatDate(facility.subscription_expires_at)}
-              </span>
-              ）到期
+          <div className="mt-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+              <Clock3 className="size-3.5" />
+              <span className="tabular-nums">{daysUntil}</span> 天後到期
             </span>
           </div>
         )}

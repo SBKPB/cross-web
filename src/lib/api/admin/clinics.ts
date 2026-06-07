@@ -21,6 +21,8 @@ import type {
   ApiSchedule,
   ApiScheduleCreate,
   ApiScheduleUpdate,
+  ApiScheduleBatchCreate,
+  ApiScheduleBatchResult,
   Announcement,
   AnnouncementCreate,
   AnnouncementUpdate,
@@ -305,6 +307,13 @@ export const adminClinicsApi = {
     create: (facilityId: string, staffId: string, data: ApiScheduleCreate) =>
       api.post<ApiSchedule>(
         `${BASE_PATH}/${facilityId}/staff/${staffId}/schedules`,
+        data
+      ),
+
+    /** 智慧排班：一次建立多筆（後端去重、可略過休假） */
+    batchCreate: (facilityId: string, data: ApiScheduleBatchCreate) =>
+      api.post<ApiScheduleBatchResult>(
+        `${BASE_PATH}/${facilityId}/schedules/batch`,
         data
       ),
 

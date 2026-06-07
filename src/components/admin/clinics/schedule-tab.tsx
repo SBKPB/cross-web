@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { zhTW } from "date-fns/locale";
 import {
   format,
@@ -15,7 +15,12 @@ import {
   startOfWeek,
   endOfWeek,
 } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Sparkles,
+  XIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -36,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
+import { SmartScheduleDialog } from "@/components/admin/clinics/smart-schedule-dialog";
 import { STAFF_ROLES } from "@/lib/constants/clinic-constants";
 import type { ApiSchedule, ApiStaff, ApiStaffLeave } from "@/types/clinic";
 import type { ScheduleSession } from "@/types/schedule";
@@ -70,6 +76,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [smartOpen, setSmartOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // 休假表單
@@ -82,13 +89,19 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const [shiftStart, setShiftStart] = useState(SESSION_PRESETS.morning.start);
   const [shiftEnd, setShiftEnd] = useState(SESSION_PRESETS.morning.end);
 
-  // 只載入專業人員（可提供服務的人員）
-  const professionalStaff = staff.filter((s) =>
-    ["doctor", "beautician", "therapist"].includes(s.role)
+  // 只載入專業人員（可提供服務的人員）。useMemo 穩定 reference，
+  // 避免每次重繪都換陣列、害智慧排班 dialog 反覆重設。
+  const professionalStaff = useMemo(
+    () =>
+      staff.filter((s) =>
+        ["doctor", "beautician", "therapist"].includes(s.role),
+      ),
+    [staff],
   );
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  // silent=true：背景刷新，不切到整頁 spinner（避免把開著的 dialog 卸載掉）
+  const fetchData = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const start = startOfMonth(currentMonth);
       const end = endOfMonth(currentMonth);
@@ -254,8 +267,12 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-foreground">排班/休假總覽</h2>
+        <Button onClick={() => setSmartOpen(true)} className="gap-2">
+          <Sparkles className="size-4" />
+          智慧排班
+        </Button>
       </div>
 
       <Card className="p-6">
@@ -572,6 +589,15 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <SmartScheduleDialog
+        open={smartOpen}
+        onOpenChange={setSmartOpen}
+        facilityId={facilityId}
+        staff={professionalStaff}
+        viewMonth={currentMonth}
+        onApplied={() => fetchData(true)}
+      />
     </div>
   );
 }

@@ -42,15 +42,9 @@ async function loadTcSubset(text: string): Promise<ArrayBuffer | null> {
     const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&text=${encodeURIComponent(
       text,
     )}`;
+    // 不帶瀏覽器 UA：Google Fonts css2 會回 truetype（Satori 不支援 woff2）
     const css = await (
-      await fetch(url, {
-        headers: {
-          // 舊 UA → Google 回 truetype/opentype（非 woff2）
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.59.10 (KHTML, like Gecko) Version/5.1.9 Safari/534.59.10",
-        },
-        next: { revalidate: 86400 },
-      })
+      await fetch(url, { next: { revalidate: 86400 } })
     ).text();
     const src = css.match(/src:\s*url\(([^)]+)\)\s*format\(['"]?(?:truetype|opentype)['"]?\)/);
     if (!src) return null;
@@ -95,6 +89,7 @@ interface OgImageProps {
 
 export default async function ClinicOgImage({ params }: OgImageProps) {
   const { "clinic-id": id } = await params;
+  try {
   const clinic = await getClinic(id);
 
   const name = clinic?.name ?? "診所線上預約";
@@ -224,9 +219,43 @@ export default async function ClinicOgImage({ params }: OgImageProps) {
     ),
     {
       ...size,
-      fonts: fontData
-        ? [{ name: "Noto Sans TC", data: fontData, style: "normal", weight: 700 }]
-        : [],
+      // 載入失敗時「省略 fonts」讓 next/og 用內建 Latin 字型（傳空陣列會讓
+      // Satori 丟 No fonts are loaded 而 500）；此時 JSX 走 Latin 分支。
+      ...(fontData
+        ? {
+            fonts: [
+              { name: "Noto Sans TC", data: fontData, style: "normal" as const, weight: 700 as const },
+            ],
+          }
+        : {}),
     },
   );
+  } catch {
+    // 任何意外（字型 / 圖片 / 渲染）→ 安全退回 Latin 品牌卡，永不 500
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(135deg,#2563EB,#1E3A8A)",
+            color: "#ffffff",
+            fontFamily: "sans-serif",
+          }}
+        >
+          <div style={{ display: "flex", fontSize: 130, fontWeight: 800, letterSpacing: -3 }}>
+            Cross
+          </div>
+          <div style={{ display: "flex", marginTop: 24, fontSize: 34, color: "rgba(255,255,255,0.85)" }}>
+            Online Clinic Booking
+          </div>
+        </div>
+      ),
+      { ...size },
+    );
+  }
 }

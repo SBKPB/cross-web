@@ -273,7 +273,6 @@ export async function generateMetadata({
       `${clinic.phone ? `電話 ${clinic.phone}。` : ""}` +
       `查看門診時間、醫師團隊與服務項目，免打電話直接線上預約。`;
   const path = `/clinic/${clinicId}`;
-  const ogImage = clinic.logo ?? `${SITE_URL}/opengraph-image`;
 
   return {
     title,
@@ -288,13 +287,12 @@ export async function generateMetadata({
       url: `${SITE_URL}${path}`,
       title: `${title} | Cross`,
       description,
-      images: [{ url: ogImage }],
+      // og:image 由同目錄 opengraph-image.tsx（每間診所專屬動態分享卡）自動提供
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: `${title} | Cross`,
       description,
-      images: [ogImage],
     },
   };
 }

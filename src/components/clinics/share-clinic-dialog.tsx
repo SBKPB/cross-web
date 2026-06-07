@@ -30,7 +30,8 @@ export function ShareClinicDialog({
   open,
   onOpenChange,
 }: ShareClinicDialogProps) {
-  const url = `${SITE_URL}/clinic/${clinicId}`;
+  // 短網址：/c/{UUID 前 8 碼} → 自動轉到完整診所頁（見 app/c/[code]）
+  const url = `${SITE_URL}/c/${clinicId.slice(0, 8)}`;
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);

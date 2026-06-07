@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import { ClinicFormDialog, ClinicDeleteDialog } from "@/components/admin/clinics";
-import { ShareClinicDialog } from "@/components/admin/clinics/share-clinic-dialog";
+import { ShareClinicDialog } from "@/components/clinics/share-clinic-dialog";
 import { PersonnelTab } from "@/components/admin/clinics/personnel-tab";
 import { ServicesTab } from "@/components/admin/clinics/services-tab";
 import { AppointmentsTab } from "@/components/admin/clinics/appointments-tab";

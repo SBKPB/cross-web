@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -7,6 +8,7 @@ import {
   Building2,
   Flower2,
   MapPin,
+  Share2,
   Sparkles,
   Star,
   Stethoscope,
@@ -14,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { ShareClinicDialog } from "@/components/clinics/share-clinic-dialog";
 import {
   FACILITY_TYPE_COLORS,
   FACILITY_TYPE_LABELS,
@@ -41,6 +44,7 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
   const showHospitalLevel =
     !clinic.facility_type || clinic.facility_type === "healthcare";
   const rating = clinic.rating ?? null;
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <section className={cn("relative", className)}>
@@ -80,8 +84,8 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
         <div className="pointer-events-none absolute -bottom-28 -left-16 size-72 rounded-full border border-white/10" />
         <div className="pointer-events-none absolute -bottom-40 -left-6 size-96 rounded-full border border-white/10" />
 
-        {/* 返回 */}
-        <div className="container relative mx-auto px-4 pt-5 sm:px-6">
+        {/* 返回 + 分享 */}
+        <div className="container relative mx-auto flex items-center justify-between px-4 pt-5 sm:px-6">
           <Link
             href="/"
             aria-label="返回首頁"
@@ -89,6 +93,14 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
           >
             <ArrowLeft className="size-5" />
           </Link>
+          <button
+            type="button"
+            onClick={() => setShareOpen(true)}
+            aria-label="分享此頁面"
+            className="inline-flex size-10 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/25"
+          >
+            <Share2 className="size-5" />
+          </button>
         </div>
       </div>
 
@@ -183,6 +195,13 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
           </div>
         </div>
       </div>
+
+      <ShareClinicDialog
+        clinicId={clinic.id}
+        clinicName={clinic.clinic_name}
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+      />
     </section>
   );
 }

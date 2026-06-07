@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { Check, Copy, Download, ExternalLink } from "lucide-react";
+import { Check, Copy, Download, ExternalLink, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +33,13 @@ export function ShareClinicDialog({
   const url = `${SITE_URL}/clinic/${clinicId}`;
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [canNativeShare, setCanNativeShare] = useState(false);
+
+  useEffect(() => {
+    setCanNativeShare(
+      typeof navigator !== "undefined" && typeof navigator.share === "function",
+    );
+  }, []);
 
   // 開啟時產生 QR Code（512px PNG data URL，供預覽與下載）
   useEffect(() => {
@@ -64,6 +71,14 @@ export function ShareClinicDialog({
     }
   };
 
+  const handleNativeShare = async () => {
+    try {
+      await navigator.share({ title: clinicName, text: `${clinicName}｜Cross`, url });
+    } catch {
+      // 使用者取消或裝置不支援 → 忽略
+    }
+  };
+
   const handleDownload = () => {
     if (!qrDataUrl) return;
     const a = document.createElement("a");
@@ -80,7 +95,7 @@ export function ShareClinicDialog({
         <DialogHeader>
           <DialogTitle>分享診所頁面</DialogTitle>
           <DialogDescription>
-            讓您的客戶掃描 QR Code 或點擊連結，直接看到您的 Cross 頁面並線上預約。
+            掃描 QR Code 或複製連結，把這個診所頁面分享出去；對方可直接查看並線上預約。
           </DialogDescription>
         </DialogHeader>
 
@@ -126,8 +141,15 @@ export function ShareClinicDialog({
           </div>
 
           {/* 動作 */}
+          {canNativeShare && (
+            <Button className="w-full gap-2" onClick={handleNativeShare}>
+              <Share2 className="size-4" />
+              分享給朋友
+            </Button>
+          )}
           <div className="flex gap-2">
             <Button
+              variant={canNativeShare ? "outline" : "default"}
               className="flex-1 gap-2"
               onClick={handleDownload}
               disabled={!qrDataUrl}

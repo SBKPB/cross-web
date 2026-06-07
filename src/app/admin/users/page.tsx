@@ -10,6 +10,7 @@ import {
   Trash2Icon,
   CalendarPlus,
   Link2Off,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ import {
   UserRoleDialog,
   UserDeleteDialog,
   UserLineUnbindDialog,
+  ResetPasswordDialog,
 } from "@/components/admin/users";
 import { RenewSubscriptionDialog } from "@/components/admin/clinics/renew-subscription-dialog";
 import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
@@ -96,6 +98,8 @@ export default function AdminUsersPage() {
   const [renewFacility, setRenewFacility] = useState<MedicalFacility | null>(null);
   const [unbindDialogOpen, setUnbindDialogOpen] = useState(false);
   const [unbindUser, setUnbindUser] = useState<AdminUser | null>(null);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetUser, setResetUser] = useState<AdminUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchUsers = async () => {
@@ -291,12 +295,7 @@ export default function AdminUsersPage() {
     if (!editingUser) return;
     setIsSubmitting(true);
     try {
-      // 重設密碼為選填：有填才先呼叫 reset 端點，再更新其餘欄位
-      const { new_password, ...rest } = data as AdminUserUpdate;
-      if (new_password) {
-        await adminUsersApi.resetPassword(editingUser.id, new_password);
-      }
-      await adminUsersApi.update(editingUser.id, rest);
+      await adminUsersApi.update(editingUser.id, data as AdminUserUpdate);
       setFormDialogOpen(false);
       setEditingUser(null);
       await fetchUsers();
@@ -346,6 +345,12 @@ export default function AdminUsersPage() {
       prev.map((f) => (f.id === updated.id ? updated : f)),
     );
     setRenewFacility(null);
+  };
+
+  // ========== 重設密碼（超管代設） ==========
+  const handleOpenReset = (user: AdminUser) => {
+    setResetUser(user);
+    setResetDialogOpen(true);
   };
 
   // ========== 解除 LINE 綁定 ==========
@@ -613,6 +618,17 @@ export default function AdminUsersPage() {
                           <ShieldIcon className="size-4" />
                         </Button>
                       )}
+                      {/* 重設密碼：員工/管理員適用（民眾端多為社群登入，無密碼） */}
+                      {tab === "staff" && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleOpenReset(user)}
+                          title="重設密碼"
+                        >
+                          <KeyRound className="size-4" />
+                        </Button>
+                      )}
                       {/* LINE 綁定僅民眾端會員適用；員工/管理員不綁 LINE，不顯示 */}
                       {tab === "patient" && (
                         <Button
@@ -701,6 +717,15 @@ export default function AdminUsersPage() {
         user={unbindUser}
         onConfirm={handleUnbind}
         isLoading={isSubmitting}
+      />
+
+      <ResetPasswordDialog
+        open={resetDialogOpen}
+        onOpenChange={(open) => {
+          setResetDialogOpen(open);
+          if (!open) setResetUser(null);
+        }}
+        user={resetUser}
       />
     </div>
   );

@@ -159,17 +159,11 @@ function UserFormContent({
     setValidationError(null);
 
     if (isEditing) {
-      // 重設密碼為選填：有填才送（至少 6 碼），由 page 拆出單獨呼叫 reset 端點
-      if (formData.password && formData.password.length < 6) {
-        setValidationError("新密碼至少需 6 碼");
-        return;
-      }
       const data: AdminUserUpdate = {
         email: formData.email,
         is_active: formData.is_active,
         phone_number: formData.phone_number || null,
         facility_id: formData.facility_id || null,
-        new_password: formData.password || undefined,
       };
       await onSubmit(data);
       return;
@@ -260,31 +254,6 @@ function UserFormContent({
                   placeholder="請輸入密碼"
                   required
                   minLength={6}
-                />
-              </div>
-            )}
-
-            {isEditing && (
-              <div className="grid gap-2">
-                <Label htmlFor="reset-password" className="text-sm font-medium">
-                  重設密碼
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    （留空＝不變更；填寫即覆蓋此使用者密碼）
-                  </span>
-                </Label>
-                <Input
-                  id="reset-password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      password: e.target.value,
-                    }))
-                  }
-                  placeholder="輸入新密碼（至少 6 碼）"
-                  minLength={6}
-                  autoComplete="new-password"
                 />
               </div>
             )}

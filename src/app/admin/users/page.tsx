@@ -291,7 +291,12 @@ export default function AdminUsersPage() {
     if (!editingUser) return;
     setIsSubmitting(true);
     try {
-      await adminUsersApi.update(editingUser.id, data as AdminUserUpdate);
+      // 重設密碼為選填：有填才先呼叫 reset 端點，再更新其餘欄位
+      const { new_password, ...rest } = data as AdminUserUpdate;
+      if (new_password) {
+        await adminUsersApi.resetPassword(editingUser.id, new_password);
+      }
+      await adminUsersApi.update(editingUser.id, rest);
       setFormDialogOpen(false);
       setEditingUser(null);
       await fetchUsers();
@@ -608,14 +613,17 @@ export default function AdminUsersPage() {
                           <ShieldIcon className="size-4" />
                         </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleOpenUnbind(user)}
-                        title="解除 LINE 綁定"
-                      >
-                        <Link2Off className="size-4" />
-                      </Button>
+                      {/* LINE 綁定僅民眾端會員適用；員工/管理員不綁 LINE，不顯示 */}
+                      {tab === "patient" && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleOpenUnbind(user)}
+                          title="解除 LINE 綁定"
+                        >
+                          <Link2Off className="size-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon-sm"

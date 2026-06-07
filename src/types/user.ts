@@ -44,4 +44,6 @@ export interface AdminUserUpdate {
   is_active: boolean;
   phone_number: string | null;
   facility_id: string | null;
+  /** 超管代重設密碼（留空＝不變更）；由前端拆出單獨呼叫 reset-password 端點 */
+  new_password?: string;
 }

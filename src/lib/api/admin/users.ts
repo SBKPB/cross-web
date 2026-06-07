@@ -26,6 +26,10 @@ export const adminUsersApi = {
   update: (id: string, data: AdminUserUpdate) =>
     api.patch<AdminUser>(`${USERS_PATH}/${id}`, data),
 
+  /** 系統管理員代為重設指定使用者密碼（不需對方目前密碼） */
+  resetPassword: (id: string, new_password: string) =>
+    api.post<void>(`${USERS_PATH}/${id}/reset-password`, { new_password }),
+
   delete: (id: string) => api.delete<void>(`${USERS_PATH}/${id}`),
 
   // ========== 角色 ==========

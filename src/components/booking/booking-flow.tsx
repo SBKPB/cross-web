@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { CalendarClock } from "lucide-react";
 import { useBooking, useBookingDispatch } from "@/components/booking/booking-context";
 import { useAuth } from "@/lib/auth/auth-context";
 import { bookingApi } from "@/lib/api/booking";
@@ -15,6 +16,7 @@ import type { MemberPatientRead } from "@/types/member-patient";
 
 import { ClinicHeader } from "./clinic-header";
 import { BookingStepper } from "./booking-stepper";
+import { BookingSection } from "./booking-section";
 import { ServiceList } from "./service-list";
 import { DoctorSelector } from "./doctor-selector";
 import { DatePicker } from "./date-picker";
@@ -60,22 +62,27 @@ export function BookingFlow({
 
   const primaryColor = clinicConfig.primary_color;
 
-  // 載入可預約時段
+  const loadSlots = useCallback(() => {
+    if (!selection.service) return;
+    setIsLoadingSlots(true);
+    setSlotsError(false);
+    bookingApi
+      .getAvailableSlots(clinicId, selection.service.id, selection.doctor?.id ?? null)
+      .then(setAvailableDates)
+      .catch((error) => {
+        console.error("Failed to load available slots:", error);
+        setSlotsError(true);
+        setAvailableDates([]);
+      })
+      .finally(() => setIsLoadingSlots(false));
+  }, [clinicId, selection.service, selection.doctor]);
+
+  // 載入可預約時段（loadSlots 已 memoize 於 service / doctor）
   useEffect(() => {
     if (currentStep === 3 && selection.service) {
-      setIsLoadingSlots(true);
-      setSlotsError(false);
-      bookingApi
-        .getAvailableSlots(clinicId, selection.service.id, selection.doctor?.id ?? null)
-        .then(setAvailableDates)
-        .catch((error) => {
-          console.error("Failed to load available slots:", error);
-          setSlotsError(true);
-          setAvailableDates([]);
-        })
-        .finally(() => setIsLoadingSlots(false));
+      loadSlots();
     }
-  }, [clinicId, currentStep, selection.service, selection.doctor]);
+  }, [currentStep, selection.service, loadSlots]);
 
   // 取得選取日期的時段
   const selectedDateSlots = useMemo(() => {
@@ -116,6 +123,19 @@ export function BookingFlow({
         return "下一步";
     }
   }, [currentStep]);
+
+  // sticky 按鈕上方的選取摘要提示
+  const submitHint = useMemo(() => {
+    const parts: string[] = [];
+    if (selection.service) parts.push(selection.service.name);
+    if (selection.doctor?.name && selection.doctor.id !== null) {
+      parts.push(selection.doctor.name);
+    }
+    if (currentStep === 3 && selection.date && selection.timeSlot) {
+      parts.push(`${selection.date} ${selection.timeSlot.time}`);
+    }
+    return parts.length > 0 ? parts.join("・") : undefined;
+  }, [selection, currentStep]);
 
   // 處理下一步
   const handleNext = useCallback(async () => {
@@ -173,12 +193,12 @@ export function BookingFlow({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-28">
+    <div className="flex min-h-screen flex-col bg-background pb-32">
       {/* Clinic Header */}
       <ClinicHeader clinic={clinicConfig} />
 
-      {/* Stepper — sticky 在 header 下方 */}
-      <div className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-lg">
+      {/* Stepper — sticky 在頂部 */}
+      <div className="sticky top-0 z-20 mt-6 border-y border-border/60 bg-background/80 backdrop-blur-lg">
         <BookingStepper
           currentStep={currentStep}
           onStepClick={handleStepClick}
@@ -186,8 +206,8 @@ export function BookingFlow({
         />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 py-6">
+      {/* Content — 置中、桌機固定寬度 */}
+      <div className="mx-auto w-full max-w-2xl flex-1 py-6 sm:py-8">
         {/* Step 1: Select Service */}
         {currentStep === 1 && (
           <ServiceList
@@ -212,79 +232,100 @@ export function BookingFlow({
           />
         )}
 
-        {/* Step 3: Select Date/Time & Form */}
+        {/* Step 3: Select Date/Time、看診對象、備註與同意 */}
         {currentStep === 3 && (
-          <div className="space-y-8">
-            {isLoadingSlots ? (
-              <div className="flex items-center justify-center py-12">
-                <div
-                  className="size-8 animate-spin rounded-full border-4 border-muted border-t-current"
-                  style={{ borderTopColor: primaryColor }}
-                />
-              </div>
-            ) : slotsError ? (
-              <div className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">
-                  無法載入可預約時段，請稍後再試
-                </p>
-                <button
-                  type="button"
-                  className="rounded-full px-5 py-2 text-sm font-medium text-white shadow-sm"
-                  style={{ backgroundColor: primaryColor }}
-                  onClick={() => {
-                    setSlotsError(false);
-                    setIsLoadingSlots(true);
-                    if (selection.service) {
-                      bookingApi
-                        .getAvailableSlots(clinicId, selection.service.id, selection.doctor?.id ?? null)
-                        .then(setAvailableDates)
-                        .catch(() => setSlotsError(true))
-                        .finally(() => setIsLoadingSlots(false));
-                    }
-                  }}
-                >
-                  重新載入
-                </button>
-              </div>
-            ) : (
-              <>
-                <DatePicker
-                  dates={availableDates}
-                  selectedDate={selection.date}
-                  onSelectDate={(date) =>
-                    dispatch({ type: "SET_DATE", payload: date })
-                  }
-                  primaryColor={primaryColor}
-                />
+          <div className="space-y-5 px-4">
+            <div className="space-y-1">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
+                確認預約資訊
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                選擇看診時間與對象，最後確認送出
+              </p>
+            </div>
 
-                {selection.date && (
-                  <TimeSlotGrid
-                    slots={selectedDateSlots}
-                    selectedSlot={selection.timeSlot}
-                    onSelectSlot={(slot) =>
-                      dispatch({ type: "SET_TIME_SLOT", payload: slot })
+            {/* ① 選日期時間 */}
+            <BookingSection
+              index={1}
+              title="選擇日期與時間"
+              primaryColor={primaryColor}
+            >
+              {isLoadingSlots ? (
+                <div className="flex items-center justify-center py-12">
+                  <div
+                    className="size-8 animate-spin rounded-full border-4 border-muted border-t-current"
+                    style={{ borderTopColor: primaryColor }}
+                  />
+                </div>
+              ) : slotsError ? (
+                <div className="flex flex-col items-center gap-3 py-12 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    無法載入可預約時段，請稍後再試
+                  </p>
+                  <button
+                    type="button"
+                    className="rounded-full px-5 py-2 text-sm font-medium text-white shadow-sm"
+                    style={{ backgroundColor: primaryColor }}
+                    onClick={loadSlots}
+                  >
+                    重新載入
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <DatePicker
+                    dates={availableDates}
+                    selectedDate={selection.date}
+                    onSelectDate={(date) =>
+                      dispatch({ type: "SET_DATE", payload: date })
                     }
                     primaryColor={primaryColor}
                   />
-                )}
-              </>
-            )}
 
-            {/* 看診對象選擇 */}
-            <div className="border-t border-border/60 px-4 pt-6">
+                  {selection.date && (
+                    <div className="border-t border-border/60 pt-5">
+                      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <CalendarClock className="size-4 text-muted-foreground" />
+                        選擇時段
+                      </div>
+                      <TimeSlotGrid
+                        slots={selectedDateSlots}
+                        selectedSlot={selection.timeSlot}
+                        onSelectSlot={(slot) =>
+                          dispatch({ type: "SET_TIME_SLOT", payload: slot })
+                        }
+                        primaryColor={primaryColor}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </BookingSection>
+
+            {/* ② 看診對象 */}
+            <BookingSection
+              index={2}
+              title="看診對象"
+              description="選擇本次就診的人員"
+              primaryColor={primaryColor}
+            >
               <PatientSelector
                 selectedId={selectedPatient?.id || null}
                 onSelect={setSelectedPatient}
               />
-            </div>
+            </BookingSection>
 
-            {/* 備註 + 隱私同意 */}
-            <div className="border-t border-border/60 pt-6">
+            {/* ③ 備註與同意 */}
+            <BookingSection
+              index={3}
+              title="備註與同意"
+              primaryColor={primaryColor}
+            >
               <BookingForm primaryColor={primaryColor} />
-            </div>
+            </BookingSection>
 
             {submitError && (
-              <div className="mx-4 rounded-3xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                 {submitError}
               </div>
             )}
@@ -299,6 +340,7 @@ export function BookingFlow({
         disabled={!canProceed}
         isLoading={isSubmitting}
         primaryColor={primaryColor}
+        hint={submitHint}
       />
     </div>
   );

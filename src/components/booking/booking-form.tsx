@@ -18,27 +18,29 @@ export function BookingForm({ primaryColor = "#3b82f6" }: BookingFormProps) {
   };
 
   return (
-    <div className="space-y-6 px-4">
-      <div className="rounded-4xl bg-card p-5 shadow-sm ring-1 ring-foreground/5">
-        <div className="space-y-2">
-          <Label htmlFor="notes">備註（選填）</Label>
-          <Textarea
-            id="notes"
-            placeholder="如有特殊需求請在此說明"
-            value={formData.notes}
-            onChange={(e) => updateFormData({ notes: e.target.value })}
-            rows={3}
-          />
-        </div>
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <Label htmlFor="notes" className="text-sm text-muted-foreground">
+          備註（選填）
+        </Label>
+        <Textarea
+          id="notes"
+          placeholder="如有特殊需求請在此說明"
+          value={formData.notes}
+          onChange={(e) => updateFormData({ notes: e.target.value })}
+          rows={3}
+          className="rounded-2xl"
+        />
       </div>
 
-      <div className="flex items-start gap-2 px-1">
+      <div className="flex items-start gap-2.5 rounded-2xl bg-muted/40 p-4">
         <Checkbox
           id="privacy"
           checked={formData.privacyAccepted}
           onCheckedChange={(checked) =>
             updateFormData({ privacyAccepted: checked === true })
           }
+          className="mt-0.5"
           style={{
             backgroundColor: formData.privacyAccepted ? primaryColor : undefined,
             borderColor: formData.privacyAccepted ? primaryColor : undefined,
@@ -52,7 +54,7 @@ export function BookingForm({ primaryColor = "#3b82f6" }: BookingFormProps) {
           <a
             href="/privacy"
             target="_blank"
-            className="underline underline-offset-2"
+            className="font-medium underline underline-offset-2"
             style={{ color: primaryColor }}
           >
             隱私權政策
@@ -61,7 +63,7 @@ export function BookingForm({ primaryColor = "#3b82f6" }: BookingFormProps) {
           <a
             href="/terms"
             target="_blank"
-            className="underline underline-offset-2"
+            className="font-medium underline underline-offset-2"
             style={{ color: primaryColor }}
           >
             服務條款

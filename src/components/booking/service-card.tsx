@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { ServiceOption } from "@/types/booking";
@@ -25,14 +25,13 @@ export function ServiceCard({
       className={cn(
         "group w-full rounded-3xl bg-card p-5 text-left transition-all",
         "shadow-sm ring-1 ring-foreground/5",
-        "hover:shadow-md hover:-translate-y-0.5",
+        "hover:-translate-y-0.5 hover:shadow-md",
         "active:translate-y-0",
-        isSelected && "shadow-lg ring-2",
+        isSelected && "shadow-md",
       )}
       style={{
-        // 選中時用 primaryColor 做 ring
         boxShadow: isSelected
-          ? `0 0 0 2px ${primaryColor}, 0 10px 15px -3px rgb(0 0 0 / 0.1)`
+          ? `0 0 0 2px ${primaryColor}, 0 10px 15px -3px rgb(0 0 0 / 0.08)`
           : undefined,
       }}
     >
@@ -49,17 +48,12 @@ export function ServiceCard({
         {/* Selection Indicator */}
         <div
           className={cn(
-            "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-            isSelected ? "border-current" : "border-border",
+            "flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+            isSelected ? "border-transparent text-white" : "border-border",
           )}
-          style={{ borderColor: isSelected ? primaryColor : undefined }}
+          style={{ backgroundColor: isSelected ? primaryColor : undefined }}
         >
-          {isSelected && (
-            <div
-              className="size-2.5 rounded-full"
-              style={{ backgroundColor: primaryColor }}
-            />
-          )}
+          {isSelected && <Check className="size-3.5" strokeWidth={3} />}
         </div>
       </div>
 
@@ -69,10 +63,7 @@ export function ServiceCard({
           <span>{service.duration_minutes} 分鐘</span>
         </div>
 
-        <div
-          className="text-base font-semibold"
-          style={{ color: primaryColor }}
-        >
+        <div className="rounded-xl bg-accent px-3 py-1.5 text-sm font-bold tabular-nums text-accent-foreground">
           NT$ {service.price.toLocaleString()}
         </div>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarX2, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { BookableDate } from "@/types/booking";
@@ -54,85 +54,82 @@ export function DatePicker({
   const hasPrev = currentMonthIndex > 0;
   const hasNext = currentMonthIndex < dateGroups.length - 1;
 
+  if (dates.length === 0 || !hasAvailableDates) {
+    return (
+      <div className="flex flex-col items-center gap-2 rounded-2xl bg-muted/40 py-10 text-center">
+        <CalendarX2 className="size-6 text-muted-foreground/60" />
+        <p className="text-sm text-muted-foreground">暫無可預約日期</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="px-4">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        選擇日期
-      </h2>
+    <div className="space-y-4">
+      {/* 月份切換 */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setCurrentMonthIndex((i) => i - 1)}
+          disabled={!hasPrev}
+          className={cn(
+            "flex size-9 items-center justify-center rounded-full transition-colors",
+            hasPrev
+              ? "text-foreground hover:bg-muted"
+              : "cursor-not-allowed text-muted-foreground opacity-30",
+          )}
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <span className="text-base font-semibold text-foreground">
+          {currentGroup?.label}
+        </span>
+        <button
+          type="button"
+          onClick={() => setCurrentMonthIndex((i) => i + 1)}
+          disabled={!hasNext}
+          className={cn(
+            "flex size-9 items-center justify-center rounded-full transition-colors",
+            hasNext
+              ? "text-foreground hover:bg-muted"
+              : "cursor-not-allowed text-muted-foreground opacity-30",
+          )}
+        >
+          <ChevronRight className="size-5" />
+        </button>
+      </div>
 
-      {dates.length === 0 || !hasAvailableDates ? (
-        <div className="rounded-4xl bg-muted py-10 text-center">
-          <p className="text-sm text-muted-foreground">暫無可預約日期</p>
-        </div>
-      ) : (
-        <div className="space-y-4 rounded-4xl bg-card p-4 shadow-sm ring-1 ring-foreground/5">
-          {/* 月份切換 */}
-          <div className="flex items-center justify-between">
+      {/* 日期網格 — 橫向 7 欄，每格顯示 週X / DD */}
+      <div className="grid grid-cols-7 gap-1.5">
+        {currentGroup?.dates.map((dateInfo) => {
+          const isSelected = selectedDate === dateInfo.date;
+          const isDisabled = !dateInfo.isAvailable;
+
+          return (
             <button
+              key={dateInfo.date}
               type="button"
-              onClick={() => setCurrentMonthIndex((i) => i - 1)}
-              disabled={!hasPrev}
+              onClick={() => !isDisabled && onSelectDate(dateInfo.date)}
+              disabled={isDisabled}
               className={cn(
-                "flex size-9 items-center justify-center rounded-full transition-colors",
-                hasPrev
-                  ? "text-foreground hover:bg-muted"
-                  : "cursor-not-allowed text-muted-foreground opacity-30",
+                "flex flex-col items-center rounded-2xl py-2.5 transition-all",
+                isSelected && "scale-[1.03] text-white shadow-md",
+                !isSelected && !isDisabled && "text-foreground hover:bg-muted",
+                isDisabled && "cursor-not-allowed opacity-30",
               )}
+              style={{
+                backgroundColor: isSelected ? primaryColor : undefined,
+              }}
             >
-              <ChevronLeft className="size-5" />
+              <span className="text-xs font-medium">
+                {dateInfo.isToday ? "今天" : `週${dateInfo.dayOfWeek}`}
+              </span>
+              <span className="mt-0.5 text-lg font-bold">
+                {dateInfo.dayNumber}
+              </span>
             </button>
-            <span className="text-base font-semibold text-foreground">
-              {currentGroup?.label}
-            </span>
-            <button
-              type="button"
-              onClick={() => setCurrentMonthIndex((i) => i + 1)}
-              disabled={!hasNext}
-              className={cn(
-                "flex size-9 items-center justify-center rounded-full transition-colors",
-                hasNext
-                  ? "text-foreground hover:bg-muted"
-                  : "cursor-not-allowed text-muted-foreground opacity-30",
-              )}
-            >
-              <ChevronRight className="size-5" />
-            </button>
-          </div>
-
-          {/* 日期網格 — 橫向 7 欄，每格顯示 週X / DD */}
-          <div className="grid grid-cols-7 gap-1.5">
-            {currentGroup?.dates.map((dateInfo) => {
-              const isSelected = selectedDate === dateInfo.date;
-              const isDisabled = !dateInfo.isAvailable;
-
-              return (
-                <button
-                  key={dateInfo.date}
-                  type="button"
-                  onClick={() => !isDisabled && onSelectDate(dateInfo.date)}
-                  disabled={isDisabled}
-                  className={cn(
-                    "flex flex-col items-center rounded-2xl py-2.5 transition-all",
-                    isSelected && "text-white shadow-md scale-[1.03]",
-                    !isSelected && !isDisabled && "text-foreground hover:bg-muted",
-                    isDisabled && "cursor-not-allowed opacity-30",
-                  )}
-                  style={{
-                    backgroundColor: isSelected ? primaryColor : undefined,
-                  }}
-                >
-                  <span className="text-xs font-medium">
-                    {dateInfo.isToday ? "今天" : `週${dateInfo.dayOfWeek}`}
-                  </span>
-                  <span className="mt-0.5 text-lg font-bold">
-                    {dateInfo.dayNumber}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }

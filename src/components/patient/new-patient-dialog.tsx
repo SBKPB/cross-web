@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,43 +27,63 @@ import {
   IDENTIFIER_TYPE_LABELS,
   IDENTIFIER_PLACEHOLDERS,
   IDENTIFIER_ERROR_MESSAGES,
+  RELATION_LABELS,
 } from "@/lib/constants/patient-constants";
 import type { IdentifierType } from "@/types/member-patient";
+
+// 對話框內可選的關係（順序：本人優先）
+const RELATION_OPTIONS = ["self", "spouse", "child", "parent", "other"] as const;
 
 interface NewPatientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: (patient: MemberPatientRead) => void;
+  /** 預設關係（如「為本人預約」引導時帶 self） */
+  defaultRelation?: string;
+  /** 預設姓名（如本人引導時用會員 profile 名稱預填） */
+  defaultName?: string;
 }
 
 export function NewPatientDialog({
   open,
   onOpenChange,
   onCreated,
+  defaultRelation = "other",
+  defaultName = "",
 }: NewPatientDialogProps) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultName);
   const [identifierType, setIdentifierType] =
     useState<IdentifierType>("national_id");
   const [identifierValue, setIdentifierValue] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("");
   const [phone, setPhone] = useState("");
-  const [relation, setRelation] = useState("other");
+  const [relation, setRelation] = useState(defaultRelation);
   const [error, setError] = useState<string | null>(null);
   const [identifierError, setIdentifierError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 每次開啟時以最新的預設值初始化（本人引導：self + 會員姓名）
+  useEffect(() => {
+    if (open) {
+      setName(defaultName);
+      setRelation(defaultRelation);
+    }
+  }, [open, defaultName, defaultRelation]);
+
   const resetForm = () => {
-    setName("");
+    setName(defaultName);
     setIdentifierType("national_id");
     setIdentifierValue("");
     setBirthDate("");
     setGender("");
     setPhone("");
-    setRelation("other");
+    setRelation(defaultRelation);
     setError(null);
     setIdentifierError(null);
   };
+
+  const isSelf = relation === "self";
 
   const handleIdentifierChange = (value: string) => {
     setIdentifierValue(value);
@@ -119,18 +139,36 @@ export function NewPatientDialog({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>新增看診對象</DialogTitle>
+          <DialogTitle>{isSelf ? "新增本人就診資料" : "新增看診對象"}</DialogTitle>
           <DialogDescription>
-            填寫家屬或其他看診人的基本資料
+            {isSelf
+              ? "填寫您本人的就診資料，之後預約會自動帶入"
+              : "填寫家屬或其他看診人的基本資料"}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
+            <div className="rounded-2xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
               {error}
             </div>
           )}
+
+          <div className="grid gap-2">
+            <Label htmlFor="np-relation">與您的關係</Label>
+            <Select value={relation} onValueChange={setRelation}>
+              <SelectTrigger id="np-relation">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RELATION_OPTIONS.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {RELATION_LABELS[value]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="grid gap-2">
             <Label htmlFor="np-name">
@@ -225,35 +263,19 @@ export function NewPatientDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="np-phone">
-                手機號碼 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="np-phone"
-                type="tel"
-                placeholder="0912345678"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                maxLength={15}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="np-relation">關係</Label>
-              <Select value={relation} onValueChange={setRelation}>
-                <SelectTrigger id="np-relation">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="spouse">配偶</SelectItem>
-                  <SelectItem value="child">子女</SelectItem>
-                  <SelectItem value="parent">父母</SelectItem>
-                  <SelectItem value="other">其他</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="np-phone">
+              手機號碼 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="np-phone"
+              type="tel"
+              placeholder="0912345678"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              maxLength={15}
+              required
+            />
           </div>
 
           <DialogFooter className="gap-2 sm:gap-3 sm:justify-end">

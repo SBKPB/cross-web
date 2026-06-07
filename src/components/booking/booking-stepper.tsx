@@ -17,11 +17,12 @@ export function BookingStepper({
   primaryColor = "#3b82f6",
 }: BookingStepperProps) {
   return (
-    <div className="flex items-center justify-center gap-1 px-4 py-4">
+    <div className="mx-auto flex max-w-2xl items-center justify-center gap-1 px-4 py-3.5 sm:gap-2">
       {BOOKING_STEPS.map(({ step, label }, index) => {
         const isCompleted = currentStep > step;
         const isCurrent = currentStep === step;
         const isClickable = onStepClick && step < currentStep;
+        const isActive = isCompleted || isCurrent;
 
         return (
           <div key={step} className="flex items-center">
@@ -31,27 +32,28 @@ export function BookingStepper({
               onClick={() => isClickable && onStepClick(step as 1 | 2 | 3)}
               disabled={!isClickable}
               className={cn(
-                "flex size-9 items-center justify-center rounded-full text-sm font-semibold transition-all",
+                "flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-all",
                 "ring-1 ring-foreground/5",
                 isCompleted && "text-white shadow-sm",
-                isCurrent && "text-white shadow-md scale-110",
-                !isCompleted && !isCurrent && "bg-muted text-muted-foreground",
+                isCurrent && "text-white shadow-md ring-2 ring-offset-2 ring-offset-background",
+                !isActive && "bg-muted text-muted-foreground",
                 isClickable && "cursor-pointer hover:opacity-90",
               )}
               style={{
-                backgroundColor: isCompleted || isCurrent ? primaryColor : undefined,
+                backgroundColor: isActive ? primaryColor : undefined,
+                ...(isCurrent ? { "--tw-ring-color": primaryColor } : {}),
               }}
             >
-              {isCompleted ? <Check className="size-4" /> : step}
+              {isCompleted ? <Check className="size-4" strokeWidth={3} /> : step}
             </button>
 
-            {/* Step Label */}
+            {/* Step Label — 手機只顯示目前步驟 label，桌機全顯示 */}
             <span
               className={cn(
                 "ml-2 text-sm transition-colors",
                 isCurrent
                   ? "font-semibold text-foreground"
-                  : "text-muted-foreground",
+                  : "hidden text-muted-foreground sm:inline",
               )}
             >
               {label}
@@ -61,8 +63,8 @@ export function BookingStepper({
             {index < BOOKING_STEPS.length - 1 && (
               <div
                 className={cn(
-                  "mx-3 h-0.5 w-6 rounded-full transition-colors",
-                  currentStep > step ? "bg-current" : "bg-muted",
+                  "mx-2.5 h-0.5 w-5 rounded-full transition-colors sm:w-8",
+                  currentStep > step ? "" : "bg-muted",
                 )}
                 style={{
                   backgroundColor: currentStep > step ? primaryColor : undefined,

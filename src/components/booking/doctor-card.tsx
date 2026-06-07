@@ -25,14 +25,14 @@ export function DoctorCard({
       onClick={() => onSelect(doctor)}
       className={cn(
         "flex w-28 shrink-0 snap-start flex-col items-center rounded-3xl p-3 transition-all",
-        isSelected ? "bg-card shadow-md ring-1 ring-foreground/5" : "hover:bg-card/60",
+        isSelected
+          ? "bg-card shadow-md ring-1 ring-foreground/5"
+          : "ring-1 ring-transparent hover:bg-card/70 hover:ring-foreground/5",
       )}
     >
       {/* Avatar */}
       <div
-        className={cn(
-          "relative size-16 overflow-hidden rounded-full transition-all",
-        )}
+        className="relative size-16 overflow-hidden rounded-full transition-all"
         style={{
           boxShadow: isSelected ? `0 0 0 3px ${primaryColor}` : undefined,
         }}
@@ -45,7 +45,7 @@ export function DoctorCard({
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center bg-muted text-muted-foreground">
+          <div className="flex size-full items-center justify-center bg-gradient-to-br from-primary/15 to-sky-200/50 text-primary">
             <User className="size-7" />
           </div>
         )}
@@ -53,7 +53,7 @@ export function DoctorCard({
         {/* Selection Check */}
         {isSelected && (
           <div
-            className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full text-white ring-2 ring-background"
+            className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full text-white ring-2 ring-card"
             style={{ backgroundColor: primaryColor }}
           >
             <Check className="size-3" strokeWidth={3} />
@@ -65,13 +65,15 @@ export function DoctorCard({
       <div className="mt-2.5 text-center">
         <p
           className={cn(
-            "text-sm font-medium",
+            "truncate text-sm font-medium",
             isSelected ? "text-foreground" : "text-foreground/80",
           )}
         >
           {doctor.name}
         </p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{doctor.title}</p>
+        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+          {doctor.title}
+        </p>
       </div>
     </button>
   );

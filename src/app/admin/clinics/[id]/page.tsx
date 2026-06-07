@@ -15,12 +15,14 @@ import {
   Megaphone,
   Pencil,
   Phone,
+  Share2,
   TrashIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import { ClinicFormDialog, ClinicDeleteDialog } from "@/components/admin/clinics";
+import { ShareClinicDialog } from "@/components/admin/clinics/share-clinic-dialog";
 import { PersonnelTab } from "@/components/admin/clinics/personnel-tab";
 import { ServicesTab } from "@/components/admin/clinics/services-tab";
 import { AppointmentsTab } from "@/components/admin/clinics/appointments-tab";
@@ -78,6 +80,7 @@ export default function ClinicDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchClinic = useCallback(async () => {
@@ -258,6 +261,10 @@ export default function ClinicDetailPage() {
             </div>
           </div>
           <div className="flex shrink-0 gap-2">
+            <Button onClick={() => setShareDialogOpen(true)}>
+              <Share2 className="size-4" />
+              分享頁面
+            </Button>
             <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
               <Pencil className="size-4" />
               編輯資訊
@@ -399,6 +406,13 @@ export default function ClinicDetailPage() {
         clinic={clinic}
         onConfirm={handleDelete}
         isLoading={isSubmitting}
+      />
+
+      <ShareClinicDialog
+        clinicId={clinic.id}
+        clinicName={clinic.name}
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
       />
     </div>
   );

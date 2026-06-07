@@ -115,6 +115,7 @@ export interface Clinic {
   images?: string[];
   online_booking_enabled?: boolean; // 是否開通線上預約（付費功能）；false 改顯示現場/電話預約
   phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（後台勾選，預設關閉）
+  show_schedule?: boolean; // 是否顯示門診時刻表（診次週班表）；看診預設開、其他預設關
 }
 
 // 篩選條件
@@ -205,6 +206,7 @@ export interface MedicalFacility {
   slot_duration: number; // 預約時段間隔（分鐘）
   is_active: boolean;
   phone_booking_enabled: boolean; // 未開通線上預約時是否顯示電話預約（後台勾選，預設關閉）
+  show_schedule: boolean; // 是否啟用門診時刻表（診次週班表）；看診預設開、其他預設關
   // 訂閱資訊
   subscription_plan: SubscriptionPlan;
   subscription_status: SubscriptionStatus;
@@ -269,6 +271,7 @@ export interface MedicalFacilityCreate {
   business_hours?: Record<string, { open: string; close: string; breaks?: BreakTime[] }>;
   slot_duration?: number; // 預約時段間隔（分鐘）
   phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（預設關閉）
+  show_schedule?: boolean; // 門診時刻表開關（建檔由後端依類型預設，看診開/其他關）
 }
 
 // 更新醫療單位
@@ -283,6 +286,7 @@ export interface MedicalFacilityUpdate {
   slot_duration?: number; // 預約時段間隔（分鐘）
   is_active?: boolean;
   phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（預設關閉）
+  show_schedule?: boolean; // 是否啟用門診時刻表（診次週班表）
 }
 
 // ========== 職員 API 型別 ==========
@@ -506,4 +510,28 @@ export interface ApiScheduleUpdate {
   max_appointments?: number;
   is_available?: boolean;
   notes?: string;
+}
+
+// ========== 批次排班（智慧排班） ==========
+
+export interface ApiScheduleBatchItem {
+  staff_id: string;
+  date: string; // YYYY-MM-DD
+  start_time: string; // "09:00"
+  end_time: string; // "12:00"
+  session_type?: ScheduleSession;
+  max_appointments?: number;
+}
+
+export interface ApiScheduleBatchCreate {
+  items: ApiScheduleBatchItem[];
+  skip_leaves?: boolean;
+}
+
+export interface ApiScheduleBatchResult {
+  created: ApiSchedule[];
+  created_count: number;
+  skipped_existing: number;
+  skipped_leave: number;
+  skipped_invalid: number;
 }

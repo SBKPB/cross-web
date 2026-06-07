@@ -304,13 +304,15 @@ export default function ClinicDetailPage() {
             <BriefcaseIcon className="size-4" />
             服務項目
           </TabsTrigger>
-          <TabsTrigger
-            value="schedule"
-            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
-          >
-            <CalendarDaysIcon className="size-4" />
-            排班/休假
-          </TabsTrigger>
+          {clinic.show_schedule && (
+            <TabsTrigger
+              value="schedule"
+              className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+            >
+              <CalendarDaysIcon className="size-4" />
+              排班/休假
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="announcements"
             className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
@@ -371,9 +373,11 @@ export default function ClinicDetailPage() {
           <ServicesTab facilityId={clinicId} />
         </TabsContent>
 
-        <TabsContent value="schedule">
-          <ScheduleTab facilityId={clinicId} />
-        </TabsContent>
+        {clinic.show_schedule && (
+          <TabsContent value="schedule">
+            <ScheduleTab facilityId={clinicId} />
+          </TabsContent>
+        )}
 
         <TabsContent value="announcements">
           <AnnouncementsTab facilityId={clinicId} />

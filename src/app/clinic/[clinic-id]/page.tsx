@@ -112,6 +112,7 @@ function transformClinicData(found: any): Clinic {
     members,
     online_booking_enabled: found.online_booking_enabled ?? true,
     phone_booking_enabled: found.phone_booking_enabled ?? false,
+    show_schedule: found.show_schedule ?? true,
   };
 }
 
@@ -310,11 +311,9 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
     clinic.services = services;
   }
 
-  // 門診時刻表：健保、自費（皆有醫師 / 治療師排班）一律顯示（無資料呈現空狀態）；
-  // 美容僅在確有排班時才顯示
-  const showSchedule =
-    schedule !== null &&
-    (clinic.facility_type !== "aesthetic" || schedule.entries.length > 0);
+  // 門診時刻表：由院所後台「啟用門診時刻表」開關控制（看診預設開、美容/醫美等預設關，可切換）；
+  // 開啟者有排班資料才顯示（無資料呈現空狀態）
+  const showSchedule = clinic.show_schedule !== false && schedule !== null;
 
   const jsonLd = buildClinicJsonLd(clinic, clinicId);
 

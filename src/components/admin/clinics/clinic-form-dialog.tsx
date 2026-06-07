@@ -80,6 +80,7 @@ interface FormData {
   business_hours: BusinessHours;
   slot_duration: number;
   phone_booking_enabled: boolean;
+  show_schedule: boolean;
 }
 
 const SLOT_DURATION_OPTIONS = [
@@ -145,6 +146,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
       business_hours: parseBusinessHours(clinic.business_hours),
       slot_duration: clinic.slot_duration ?? 30,
       phone_booking_enabled: clinic.phone_booking_enabled ?? false,
+      show_schedule: clinic.show_schedule ?? true,
     };
   }
   return {
@@ -158,6 +160,7 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
     business_hours: { ...DEFAULT_BUSINESS_HOURS },
     slot_duration: 30,
     phone_booking_enabled: false,
+    show_schedule: true,
   };
 }
 
@@ -268,6 +271,8 @@ function ClinicFormContent({
 
     if (isEditing) {
       (data as MedicalFacilityUpdate).is_active = formData.is_active;
+      // 門診時刻表開關：建檔時由後端依類型預設，編輯時才送
+      (data as MedicalFacilityUpdate).show_schedule = formData.show_schedule;
     }
 
     await onSubmit(data);
@@ -608,6 +613,34 @@ function ClinicFormContent({
                   </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
                     未開通線上預約時，於民眾端顯示「撥打電話預約」；關閉則僅顯示現場預約（預設關閉）。
+                  </span>
+                </span>
+              </label>
+            </div>
+
+            {/* 門診時刻表開關：看診院所適用；美容/醫美等可關閉，改以服務 + 營業時間呈現 */}
+            <div className={cn(sectionCard)}>
+              <label
+                htmlFor="show_schedule"
+                className="flex cursor-pointer items-start gap-3"
+              >
+                <Checkbox
+                  id="show_schedule"
+                  checked={formData.show_schedule}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      show_schedule: checked === true,
+                    }))
+                  }
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-foreground">
+                    啟用門診時刻表
+                  </span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    開啟後可在「排班/休假」管理診次週班表，並於民眾端顯示門診時刻表；美容/醫美等以服務預約為主者可關閉（看診預設開、其他預設關）。
                   </span>
                 </span>
               </label>

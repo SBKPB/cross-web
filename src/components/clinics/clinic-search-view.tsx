@@ -107,10 +107,23 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
       return true;
     });
 
+    // 精選置頂（付費曝光）一律排最前，再套用使用者選的排序作為次要鍵。
+    // default 模式下次要鍵維持後端順序（後端已依 featured → created_at desc）。
+    const featuredRank = (c: Clinic) => (c.is_featured ? 0 : 1);
     if (sort === "rating") {
-      result.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
+      result.sort(
+        (a, b) =>
+          featuredRank(a) - featuredRank(b) ||
+          (b.rating ?? -1) - (a.rating ?? -1),
+      );
     } else if (sort === "name") {
-      result.sort((a, b) => a.clinic_name.localeCompare(b.clinic_name, "zh-Hant"));
+      result.sort(
+        (a, b) =>
+          featuredRank(a) - featuredRank(b) ||
+          a.clinic_name.localeCompare(b.clinic_name, "zh-Hant"),
+      );
+    } else {
+      result.sort((a, b) => featuredRank(a) - featuredRank(b));
     }
 
     return result;

@@ -2,6 +2,7 @@
 
 import {
   ArrowUpRight,
+  Crown,
   Flower2,
   MapPin,
   Phone,
@@ -72,6 +73,13 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
           <div className="min-w-0 flex-1 space-y-2">
             {/* 服務類型 / 醫療分級 badges */}
             <div className="flex flex-wrap items-center gap-1.5">
+              {/* 精選置頂（付費曝光）：金色 badge 置於最前，視覺優先 */}
+              {clinic.is_featured && (
+                <Badge className="gap-1 border-0 bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 shadow-sm">
+                  <Crown className="size-3.5" />
+                  精選
+                </Badge>
+              )}
               {clinic.facility_type && TypeIcon && (
                 <Badge
                   className={cn(

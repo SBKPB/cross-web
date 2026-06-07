@@ -18,6 +18,12 @@ import {
   deriveFacilityType,
   parseCityFromAddress,
 } from "@/lib/constants/clinic-constants";
+import {
+  categoryLabel,
+  facilityTypeLabel,
+  serviceCategoriesApi,
+  type ServiceTaxonomy,
+} from "@/lib/api/service-categories";
 import type {
   AnnouncementPublic,
   BusinessHours,
@@ -106,8 +112,12 @@ function transformClinicData(found: any): Clinic {
       deriveFacilityType(members),
     payment_type: found.payment_type as PaymentType | undefined,
     logo: found.logo ?? null,
+    description: found.description ?? undefined,
+    latitude: found.latitude ?? null,
+    longitude: found.longitude ?? null,
     rating: found.rating ?? undefined,
     review_count: found.review_count ?? undefined,
+    is_featured: found.is_featured ?? false,
     business_hours: businessHours,
     members,
     online_booking_enabled: found.online_booking_enabled ?? true,
@@ -200,6 +210,28 @@ async function getClinicFromApi(clinicId: string): Promise<Clinic | null> {
 // 包進 React cache：generateMetadata 與頁面 body 共用同一次請求（即使 fetch no-store）
 const getClinic = cache(getClinicFromApi);
 
+const SITE_URL = "https://cross.twinhao.com";
+
+// 院所服務分類 code → 中文 label（最多取前 3 個，給 SEO 關鍵字 / medicalSpecialty）
+function clinicCategoryLabels(clinic: Clinic, tax: ServiceTaxonomy): string[] {
+  return (clinic.departments ?? [])
+    .map((code) => categoryLabel(tax, code))
+    .filter((l) => l && l !== "other" && l !== "其他")
+    .slice(0, 3);
+}
+
+// 在地關鍵字：城市 + 主科別/服務型態（如「台北市皮膚科」「台中市醫美」）
+function localKeyword(clinic: Clinic, tax: ServiceTaxonomy): string {
+  const city = clinic.city ?? "";
+  const labels = clinicCategoryLabels(clinic, tax);
+  const primary =
+    labels[0] ??
+    (clinic.facility_type
+      ? facilityTypeLabel(tax, clinic.facility_type)
+      : "");
+  return `${city}${primary}`.trim();
+}
+
 // 繁中星期 → schema.org 英文星期（給 openingHoursSpecification）
 const SCHEMA_DAY: Record<string, string> = {
   週一: "Monday",
@@ -215,41 +247,70 @@ export async function generateMetadata({
   params,
 }: ClinicDetailPageProps): Promise<Metadata> {
   const { "clinic-id": clinicId } = await params;
-  const clinic = await getClinic(clinicId);
+  const [clinic, tax] = await Promise.all([
+    getClinic(clinicId),
+    serviceCategoriesApi.get(),
+  ]);
   if (!clinic) return { title: "找不到院所" };
 
+  const isHealthcare = clinic.facility_type === "healthcare";
+  const action = isHealthcare ? "線上預約掛號" : "線上預約";
+  const keyword = localKeyword(clinic, tax); // 城市 + 主科別/服務型態
+  const labels = clinicCategoryLabels(clinic, tax);
   const place = `${clinic.city ?? ""}${clinic.address ?? ""}`.trim();
-  const title = `${clinic.clinic_name}｜線上預約掛號`;
-  const description =
-    `${clinic.clinic_name}${place ? `（${place}）` : ""}線上預約掛號。` +
-    `${clinic.phone ? `電話 ${clinic.phone}。` : ""}` +
-    `查看門診時間、團隊與服務項目，免打電話直接線上預約。`;
+
+  // title 帶入在地關鍵字（城市+主科別），命中「地區+科別」搜尋意圖
+  const title = keyword
+    ? `${clinic.clinic_name}｜${keyword}${action}`
+    : `${clinic.clinic_name}｜${action}`;
+
+  // description 優先用診所自我介紹（差異化內容），否則組合在地資訊
+  const intro = clinic.description?.trim();
+  const description = intro
+    ? intro.slice(0, 150)
+    : `${clinic.clinic_name}${place ? `（${place}）` : ""}${action}。` +
+      `${labels.length ? `服務項目：${labels.join("、")}。` : ""}` +
+      `${clinic.phone ? `電話 ${clinic.phone}。` : ""}` +
+      `查看門診時間、醫師團隊與服務項目，免打電話直接線上預約。`;
   const path = `/clinic/${clinicId}`;
+  const ogImage = clinic.logo ?? `${SITE_URL}/opengraph-image`;
 
   return {
     title,
     description,
+    keywords: [clinic.clinic_name, ...labels, clinic.city ?? "", "線上預約", "掛號"]
+      .filter(Boolean)
+      .join("、"),
     alternates: { canonical: path },
     openGraph: {
       type: "website",
       siteName: "Cross",
-      url: path,
+      url: `${SITE_URL}${path}`,
       title: `${title} | Cross`,
       description,
-      images: clinic.logo ? [{ url: clinic.logo }] : undefined,
+      images: [{ url: ogImage }],
     },
     twitter: {
       card: "summary",
       title: `${title} | Cross`,
       description,
-      images: clinic.logo ? [clinic.logo] : undefined,
+      images: [ogImage],
     },
   };
 }
 
-function buildClinicJsonLd(clinic: Clinic, clinicId: string) {
+function buildClinicJsonLd(
+  clinic: Clinic,
+  clinicId: string,
+  tax: ServiceTaxonomy,
+) {
   const isBeauty =
     clinic.facility_type === "beauty" || clinic.facility_type === "aesthetic";
+  // 看診用更精確的 MedicalClinic（MedicalBusiness + LocalBusiness 子型別）；
+  // 醫美/美容維持 HealthAndBeautyBusiness。
+  const businessType = isBeauty ? "HealthAndBeautyBusiness" : "MedicalClinic";
+  const url = `${SITE_URL}/clinic/${clinicId}`;
+
   const openingHours = (clinic.business_hours ?? [])
     .filter((h) => SCHEMA_DAY[h.day] && h.open && h.close)
     .map((h) => ({
@@ -259,11 +320,26 @@ function buildClinicJsonLd(clinic: Clinic, clinicId: string) {
       closes: h.close,
     }));
 
-  return {
-    "@context": "https://schema.org",
-    "@type": isBeauty ? "HealthAndBeautyBusiness" : "MedicalBusiness",
+  const specialties = clinicCategoryLabels(clinic, tax);
+
+  // 醫師團隊 → Physician（強化醫療 E-E-A-T）
+  const physicians = (clinic.members ?? [])
+    .filter((m) => m.role === "doctor")
+    .map((m) => ({
+      "@type": "Physician",
+      name: m.name,
+      ...(m.specialties?.length
+        ? { medicalSpecialty: m.specialties.join("、") }
+        : {}),
+      worksFor: { "@id": url },
+    }));
+
+  const business = {
+    "@type": businessType,
+    "@id": url,
     name: clinic.clinic_name,
-    url: `https://cross.twinhao.com/clinic/${clinicId}`,
+    url,
+    ...(clinic.description ? { description: clinic.description } : {}),
     ...(clinic.logo ? { image: clinic.logo, logo: clinic.logo } : {}),
     ...(clinic.phone ? { telephone: clinic.phone } : {}),
     ...(clinic.address
@@ -276,6 +352,20 @@ function buildClinicJsonLd(clinic: Clinic, clinicId: string) {
           },
         }
       : {}),
+    ...(clinic.latitude != null && clinic.longitude != null
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: clinic.latitude,
+            longitude: clinic.longitude,
+          },
+        }
+      : {}),
+    ...(clinic.city ? { areaServed: clinic.city } : {}),
+    ...(!isBeauty && specialties.length
+      ? { medicalSpecialty: specialties }
+      : {}),
+    ...(physicians.length ? { employee: physicians } : {}),
     ...(openingHours.length ? { openingHoursSpecification: openingHours } : {}),
     ...(clinic.rating != null &&
     clinic.review_count != null &&
@@ -289,17 +379,38 @@ function buildClinicJsonLd(clinic: Clinic, clinicId: string) {
         }
       : {}),
   };
+
+  // 麵包屑：首頁 > 診所搜尋 > 診所名（爭取麵包屑 rich result）
+  const breadcrumb = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "首頁", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "診所搜尋",
+        item: `${SITE_URL}/search`,
+      },
+      { "@type": "ListItem", position: 3, name: clinic.clinic_name, item: url },
+    ],
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [business, breadcrumb],
+  };
 }
 
 export default async function ClinicDetailPage({ params }: ClinicDetailPageProps) {
   const { "clinic-id": clinicId } = await params;
 
-  // 平行取得院所資訊、服務項目、門診排班與公告
-  const [clinic, services, schedule, announcements] = await Promise.all([
+  // 平行取得院所資訊、服務項目、門診排班、公告與服務分類字彙
+  const [clinic, services, schedule, announcements, tax] = await Promise.all([
     getClinic(clinicId),
     getServicesFromApi(clinicId),
     getScheduleFromApi(clinicId),
     getAnnouncementsFromApi(clinicId),
+    serviceCategoriesApi.get(),
   ]);
 
   if (!clinic) {
@@ -315,7 +426,7 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
   // 開啟者有排班資料才顯示（無資料呈現空狀態）
   const showSchedule = clinic.show_schedule !== false && schedule !== null;
 
-  const jsonLd = buildClinicJsonLd(clinic, clinicId);
+  const jsonLd = buildClinicJsonLd(clinic, clinicId, tax);
 
   return (
     <div className="min-h-screen bg-background pb-28 lg:pb-16">

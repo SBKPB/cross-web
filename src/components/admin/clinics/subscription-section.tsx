@@ -6,12 +6,14 @@ import {
   CalendarPlus,
   Clock3,
   CreditCard,
+  Crown,
   Loader2,
   Pencil,
 } from "lucide-react";
 import { RenewSubscriptionDialog } from "@/components/admin/clinics/renew-subscription-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -92,6 +94,11 @@ export function SubscriptionSection({
   const [renewOpen, setRenewOpen] = useState(false);
 
   const daysUntil = getDaysUntil(facility.subscription_expires_at);
+  // 精選是否生效中：勾選且（無到期日或尚未過期）
+  const featuredActive =
+    facility.is_featured &&
+    (!facility.featured_until ||
+      new Date(facility.featured_until).getTime() > Date.now());
   const isExpiringSoon =
     facility.subscription_status === "active" &&
     facility.subscription_plan !== "free" &&
@@ -223,6 +230,28 @@ export function SubscriptionSection({
           </div>
           <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5 sm:col-span-2">
             <div className="text-xs font-medium text-muted-foreground">
+              精選置頂（站內曝光）
+            </div>
+            <div className="mt-1.5 flex items-center gap-2">
+              {featuredActive ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                  <Crown className="size-3.5" />
+                  精選中
+                  {facility.featured_until && (
+                    <span className="tabular-nums">
+                      · 至 {formatDate(facility.featured_until)}
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <span className="inline-flex rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  未開啟
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5 sm:col-span-2">
+            <div className="text-xs font-medium text-muted-foreground">
               付款記錄 / 備註
             </div>
             <div className="mt-1.5 whitespace-pre-wrap text-sm text-foreground">
@@ -294,8 +323,15 @@ function SubscriptionEditDialog({
     isoToDateInput(facility.subscription_expires_at),
   );
   const [notes, setNotes] = useState(facility.subscription_notes || "");
+  const [featured, setFeatured] = useState(facility.is_featured);
+  const [featuredUntil, setFeaturedUntil] = useState(
+    isoToDateInput(facility.featured_until),
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 精選置頂需 PRO（或試用）；非 PRO 時禁用勾選並提示
+  const planEligibleForFeatured = plan === "pro";
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -307,12 +343,21 @@ function SubscriptionEditDialog({
         subscription_started_at: dateInputToIso(startedAt),
         subscription_expires_at: dateInputToIso(expiresAt, true),
         subscription_notes: notes || null,
+        is_featured: featured,
+        featured_until: featured
+          ? dateInputToIso(featuredUntil, true)
+          : null,
       });
       onUpdated(updated);
       onOpenChange(false);
     } catch (err) {
       console.error(err);
-      setError("儲存失敗，請稍後再試");
+      // 後端 409：精選需 PRO 資格
+      const msg =
+        err instanceof Error && err.message.includes("PRO")
+          ? "精選置頂需 PRO 方案，請先將方案設為「專業」"
+          : "儲存失敗，請稍後再試";
+      setError(msg);
     } finally {
       setIsSaving(false);
     }
@@ -416,6 +461,50 @@ function SubscriptionEditDialog({
               placeholder="例：4 月份月費 NT$1500，2026/04/15 銀行轉帳收款"
               rows={4}
             />
+          </div>
+
+          {/* 精選置頂（站內搜尋曝光，PRO 功能） */}
+          <div className="grid gap-3 rounded-2xl bg-amber-50/60 p-4 ring-1 ring-amber-200/60">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="is_featured"
+                checked={featured}
+                disabled={!planEligibleForFeatured}
+                onCheckedChange={(v) => setFeatured(v === true)}
+                className="mt-0.5"
+              />
+              <div className="grid gap-1">
+                <Label
+                  htmlFor="is_featured"
+                  className="flex items-center gap-1.5 text-sm font-medium"
+                >
+                  <Crown className="size-4 text-amber-500" />
+                  精選置頂（站內搜尋 / 列表曝光）
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {planEligibleForFeatured
+                    ? "開啟後此院所會置頂於民眾端搜尋與列表，並顯示「精選」標記。"
+                    : "需「專業（PRO）」方案才能開啟；請先將上方方案設為專業。"}
+                </p>
+              </div>
+            </div>
+            {featured && planEligibleForFeatured && (
+              <div className="grid gap-2">
+                <Label htmlFor="featured_until" className="text-sm font-medium">
+                  精選到期日
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    （留空＝不過期；到期由系統自動下架）
+                  </span>
+                </Label>
+                <Input
+                  id="featured_until"
+                  type="date"
+                  className="tabular-nums"
+                  value={featuredUntil}
+                  onChange={(e) => setFeaturedUntil(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           {error && (

@@ -107,8 +107,11 @@ export interface Clinic {
   email?: string;
   website?: string;
   description?: string;
+  latitude?: number | null; // 緯度（本地 SEO geo）
+  longitude?: number | null; // 經度（本地 SEO geo）
   rating?: number;
   review_count?: number;
+  is_featured?: boolean; // 精選置頂（站內曝光）；true 時前端置頂並顯示「精選」badge
   members?: Member[]; // 統一的人員列表
   services?: Service[];
   business_hours?: BusinessHours[];
@@ -198,6 +201,9 @@ export interface MedicalFacility {
   name: string;
   phone: string | null;
   address: string | null;
+  description: string | null; // 診所自我介紹（SEO 差異化內容）
+  latitude: number | null; // 緯度（本地 SEO geo）
+  longitude: number | null; // 經度（本地 SEO geo）
   logo_url: string | null; // 院所 logo public URL（由上傳端點管理）
   service_categories: string[]; // 服務子類別 code（多選，須屬於該 facility_type）
   payment_type: PaymentType;
@@ -214,6 +220,9 @@ export interface MedicalFacility {
   subscription_expires_at: string | null;
   subscription_notes: string | null;
   trial_used_at: string | null; // 試用領取時間；null = 尚未用過（可一鍵試用）
+  // 精選置頂（PRO 解鎖 + 後台逐間開關/到期）
+  is_featured: boolean;
+  featured_until: string | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -225,6 +234,9 @@ export interface FacilitySubscriptionUpdate {
   subscription_started_at?: string | null;
   subscription_expires_at?: string | null;
   subscription_notes?: string | null;
+  // 精選置頂（需 PRO 解鎖；後端會驗證資格）
+  is_featured?: boolean;
+  featured_until?: string | null;
 }
 
 // 客戶分析（對齊後端 app/schemas/analytics.py AnalyticsRead）
@@ -265,6 +277,9 @@ export interface MedicalFacilityCreate {
   name: string;
   phone?: string;
   address?: string;
+  description?: string; // 診所自我介紹（SEO 差異化內容）
+  latitude?: number | null; // 緯度（本地 SEO geo）
+  longitude?: number | null; // 經度（本地 SEO geo）
   service_categories: string[];
   payment_type: PaymentType;
   facility_type: FacilityType;
@@ -279,6 +294,9 @@ export interface MedicalFacilityUpdate {
   name?: string;
   phone?: string;
   address?: string;
+  description?: string; // 診所自我介紹（SEO 差異化內容）
+  latitude?: number | null; // 緯度（本地 SEO geo）
+  longitude?: number | null; // 經度（本地 SEO geo）
   service_categories?: string[];
   payment_type?: PaymentType;
   facility_type?: FacilityType;

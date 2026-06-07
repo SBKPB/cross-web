@@ -13,8 +13,9 @@ const LINK_GROUPS: { title: string; links: FooterLink[] }[] = [
     title: "民眾端",
     links: [
       { label: "找診所", href: "/search" },
+      { label: "各縣市診所", href: "/area" },
+      { label: "各科別診所", href: "/specialty" },
       { label: "我的預約", href: "/member" },
-      { label: "會員登入", href: "/auth" },
     ],
   },
   {

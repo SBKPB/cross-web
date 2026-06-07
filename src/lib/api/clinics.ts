@@ -31,10 +31,14 @@ interface BackendClinic {
   departments?: string[];
   phone: string | null;
   address: string | null;
+  description?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   rating?: number | null;
   review_count?: number | null;
   business_hours?: Record<string, { open: string; close: string }> | null;
   members?: BackendStaff[];
+  is_featured?: boolean;
 }
 
 // 星期對照表
@@ -99,8 +103,12 @@ function transformClinic(backendClinic: BackendClinic): Clinic {
     facility_type: backendClinic.facility_type ?? deriveFacilityType(members),
     payment_type: backendClinic.payment_type,
     logo: backendClinic.logo ?? null,
+    description: backendClinic.description ?? undefined,
+    latitude: backendClinic.latitude ?? null,
+    longitude: backendClinic.longitude ?? null,
     rating: backendClinic.rating ?? undefined,
     review_count: backendClinic.review_count ?? undefined,
+    is_featured: backendClinic.is_featured ?? false,
     business_hours: transformBusinessHours(backendClinic.business_hours),
     members: members,
   };

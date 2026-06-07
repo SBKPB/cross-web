@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -73,6 +74,9 @@ interface FormData {
   name: string;
   phone: string;
   address: string;
+  description: string; // 診所自我介紹（SEO 差異化內容）
+  latitude: string; // 緯度（input 用字串，送出時轉 number）
+  longitude: string; // 經度
   service_categories: string[]; // 服務子類別 code（多選，須屬於該 facility_type）
   payment_type: PaymentType;
   facility_type: FacilityType;
@@ -139,6 +143,9 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
       name: clinic.name,
       phone: clinic.phone || "",
       address: clinic.address || "",
+      description: clinic.description || "",
+      latitude: clinic.latitude != null ? String(clinic.latitude) : "",
+      longitude: clinic.longitude != null ? String(clinic.longitude) : "",
       service_categories: clinic.service_categories ?? [],
       payment_type: clinic.payment_type,
       facility_type: clinic.facility_type ?? "healthcare",
@@ -153,6 +160,9 @@ function getInitialFormData(clinic: MedicalFacility | null | undefined): FormDat
     name: "",
     phone: "",
     address: "",
+    description: "",
+    latitude: "",
+    longitude: "",
     service_categories: [],
     payment_type: "nhi",
     facility_type: "healthcare",
@@ -257,10 +267,17 @@ function ClinicFormContent({
       }
     }
 
+    // geo：空字串視為未填（null）；非數字也忽略
+    const lat = formData.latitude.trim() ? Number(formData.latitude) : null;
+    const lng = formData.longitude.trim() ? Number(formData.longitude) : null;
+
     const data: MedicalFacilityCreate | MedicalFacilityUpdate = {
       name: formData.name,
       phone: formData.phone || undefined,
       address: formData.address || undefined,
+      description: formData.description || undefined,
+      latitude: lat != null && !Number.isNaN(lat) ? lat : null,
+      longitude: lng != null && !Number.isNaN(lng) ? lng : null,
       service_categories: formData.service_categories,
       payment_type: formData.payment_type,
       facility_type: formData.facility_type,
@@ -407,6 +424,69 @@ function ClinicFormContent({
                   }
                   placeholder="請輸入地址"
                 />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="description">
+                  診所簡介
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    （Google 搜尋摘要與診所頁顯示；建議 60–150 字，突出特色與專長）
+                  </span>
+                </Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  placeholder="例：本院深耕信義區 20 年，專精過敏免疫與兒童氣喘照護，提供…"
+                  rows={3}
+                  maxLength={2000}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label className="flex items-center gap-1.5">
+                  地理座標（本地 SEO / 地圖定位）
+                  <span className="text-xs font-normal text-muted-foreground">
+                    （選填；可在 Google 地圖右鍵「這是哪裡」複製）
+                  </span>
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="any"
+                    inputMode="decimal"
+                    value={formData.latitude}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        latitude: e.target.value,
+                      }))
+                    }
+                    placeholder="緯度 例：25.0330"
+                    className="tabular-nums"
+                  />
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="any"
+                    inputMode="decimal"
+                    value={formData.longitude}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        longitude: e.target.value,
+                      }))
+                    }
+                    placeholder="經度 例：121.5654"
+                    className="tabular-nums"
+                  />
+                </div>
               </div>
             </div>
 

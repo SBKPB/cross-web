@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { clinicsApi } from "@/lib/api/clinics";
 
@@ -21,7 +21,8 @@ export default async function ClinicShortLinkPage({ params }: ShortLinkPageProps
     targetId = null;
   }
 
-  // redirect() 會丟出控制流例外，必須在 try/catch 之外呼叫
-  if (targetId) redirect(`/clinic/${targetId}`);
+  // 短網址為長期結構 → 用 308 永久轉址，讓 Google 完整傳遞權重給診所頁。
+  // permanentRedirect() 會丟出控制流例外，必須在 try/catch 之外呼叫。
+  if (targetId) permanentRedirect(`/clinic/${targetId}`);
   notFound();
 }

@@ -4,12 +4,14 @@ import { useMemo, useState } from "react";
 import { User, Users } from "lucide-react";
 
 import { SectionCard } from "@/components/clinic-detail/section-card";
+import { DoctorDetailDialog } from "@/components/clinic-detail/doctor-detail-dialog";
 import { MEMBER_ROLES } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
-import type { Member, MemberRole } from "@/types/clinic";
+import type { ClinicDoctorDetail, Member, MemberRole } from "@/types/clinic";
 
 interface DoctorTeamSectionProps {
   members: Member[];
+  details?: ClinicDoctorDetail[];
   className?: string;
 }
 
@@ -21,8 +23,26 @@ const ROLE_GROUPS: { key: "all" | MemberRole; label: string; roles: MemberRole[]
   { key: "admin", label: "行政", roles: ["receptionist", "admin"] },
 ];
 
-export function DoctorTeamSection({ members, className }: DoctorTeamSectionProps) {
+export function DoctorTeamSection({
+  members,
+  details,
+  className,
+}: DoctorTeamSectionProps) {
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [selected, setSelected] = useState<Member | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // id → 完整詳情（學歷/經歷/科別…），點擊卡片時帶入
+  const detailMap = useMemo(() => {
+    const map = new Map<string, ClinicDoctorDetail>();
+    for (const d of details ?? []) map.set(d.id, d);
+    return map;
+  }, [details]);
+
+  const openDetail = (member: Member) => {
+    setSelected(member);
+    setDialogOpen(true);
+  };
 
   const availableTabs = useMemo(
     () =>
@@ -78,9 +98,12 @@ export function DoctorTeamSection({ members, className }: DoctorTeamSectionProps
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
         {filteredMembers.map((member) => (
-          <div
+          <button
             key={member.id}
-            className="flex flex-col items-center rounded-2xl bg-muted/40 p-4 text-center ring-1 ring-transparent transition-all hover:bg-accent/40 hover:ring-primary/15"
+            type="button"
+            onClick={() => openDetail(member)}
+            aria-label={`查看 ${member.name} 詳細資料`}
+            className="flex cursor-pointer flex-col items-center rounded-2xl bg-muted/40 p-4 text-center ring-1 ring-transparent transition-all hover:-translate-y-0.5 hover:bg-accent/40 hover:shadow-sm hover:ring-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div className="relative size-16 overflow-hidden rounded-full shadow-sm ring-2 ring-card">
               {member.avatar ? (
@@ -108,9 +131,16 @@ export function DoctorTeamSection({ members, className }: DoctorTeamSectionProps
                 {member.specialties.slice(0, 2).join("、")}
               </p>
             )}
-          </div>
+          </button>
         ))}
       </div>
+
+      <DoctorDetailDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        member={selected}
+        detail={selected ? detailMap.get(selected.id) : undefined}
+      />
     </SectionCard>
   );
 }

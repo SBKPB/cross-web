@@ -28,6 +28,7 @@ import type {
   AnnouncementPublic,
   BusinessHours,
   Clinic,
+  ClinicDoctorDetail,
   FacilityType,
   Member,
   PaymentType,
@@ -124,6 +125,46 @@ function transformClinicData(found: any): Clinic {
     phone_booking_enabled: found.phone_booking_enabled ?? false,
     show_schedule: found.show_schedule ?? true,
   };
+}
+
+async function getDoctorsFromApi(
+  clinicId: string,
+): Promise<ClinicDoctorDetail[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/booking/clinics/${clinicId}/doctors`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    const raw = await res.json();
+    return raw.map(
+      (d: {
+        id: string;
+        name: string;
+        department?: string;
+        avatar_url?: string | null;
+        main_specialties?: string[];
+        role?: string;
+        education?: string[];
+        experience?: string[];
+        license_type?: string | null;
+      }): ClinicDoctorDetail => ({
+        id: d.id,
+        name: d.name,
+        role: d.role ?? "doctor",
+        // 後端 department 預設值為「醫師」佔位，視為未填
+        department:
+          d.department && d.department !== "醫師" ? d.department : undefined,
+        avatar: d.avatar_url ?? undefined,
+        specialties: d.main_specialties ?? [],
+        education: d.education ?? [],
+        experience: d.experience ?? [],
+        license_type: d.license_type ?? undefined,
+      }),
+    );
+  } catch {
+    return [];
+  }
 }
 
 async function getServicesFromApi(clinicId: string): Promise<Service[]> {
@@ -402,14 +443,16 @@ function buildClinicJsonLd(
 export default async function ClinicDetailPage({ params }: ClinicDetailPageProps) {
   const { "clinic-id": clinicId } = await params;
 
-  // 平行取得院所資訊、服務項目、門診排班、公告與服務分類字彙
-  const [clinic, services, schedule, announcements, tax] = await Promise.all([
-    getClinic(clinicId),
-    getServicesFromApi(clinicId),
-    getScheduleFromApi(clinicId),
-    getAnnouncementsFromApi(clinicId),
-    serviceCategoriesApi.get(),
-  ]);
+  // 平行取得院所資訊、服務項目、門診排班、公告、醫師詳情與服務分類字彙
+  const [clinic, services, schedule, announcements, doctorDetails, tax] =
+    await Promise.all([
+      getClinic(clinicId),
+      getServicesFromApi(clinicId),
+      getScheduleFromApi(clinicId),
+      getAnnouncementsFromApi(clinicId),
+      getDoctorsFromApi(clinicId),
+      serviceCategoriesApi.get(),
+    ]);
 
   if (!clinic) {
     notFound();
@@ -452,9 +495,12 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
             {/* 門診時刻表（醫師排班：早/午/晚 × 週一~週日） */}
             {showSchedule && <ScheduleTimetable schedule={schedule} />}
 
-            {/* 團隊成員 */}
+            {/* 團隊成員（點擊顯示詳情） */}
             {clinic.members && clinic.members.length > 0 && (
-              <DoctorTeamSection members={clinic.members} />
+              <DoctorTeamSection
+                members={clinic.members}
+                details={doctorDetails}
+              />
             )}
 
             {/* 服務項目 */}

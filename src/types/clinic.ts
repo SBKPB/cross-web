@@ -65,6 +65,19 @@ export interface Member {
   experience_years?: number; // 年資
 }
 
+// 醫師/團隊成員完整資料（公開詳情用；對應後端 DoctorRead）
+export interface ClinicDoctorDetail {
+  id: string;
+  name: string;
+  role: string; // doctor / beautician / therapist
+  department?: string; // 科別（中文，如「家醫科」）；後端無則省略
+  avatar?: string;
+  specialties: string[]; // 專長
+  education: string[]; // 學歷
+  experience: string[]; // 經歷
+  license_type?: string; // 證照類別
+}
+
 // 服務項目
 export interface Service {
   id: string;

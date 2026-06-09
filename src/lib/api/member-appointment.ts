@@ -15,10 +15,19 @@ export interface MemberAppointment {
 const PREFIX = "/api/v1/member";
 
 export const memberAppointmentApi = {
-  /** 查詢會員所有預約（跨院所，可選狀態篩選） */
-  list: (status?: AppointmentStatus): Promise<MemberAppointment[]> =>
+  /**
+   * 查詢會員所有預約（跨院所，可選狀態篩選）。
+   * @param days 回溯天數（後端上限 365，預設 90）；查單筆詳情時帶大值避免超窗找不到。
+   */
+  list: (
+    status?: AppointmentStatus,
+    days?: number,
+  ): Promise<MemberAppointment[]> =>
     api.get<MemberAppointment[]>(`${PREFIX}/appointments`, {
-      params: status ? { status } : undefined,
+      params: {
+        ...(status ? { status } : {}),
+        ...(days ? { days: String(days) } : {}),
+      },
     }),
 
   /** 會員自助取消預約（僅 confirmed 可取消）；成功回 204 */

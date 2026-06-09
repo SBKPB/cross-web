@@ -18,7 +18,7 @@ export default function MemberFavoritesPage() {
   const router = useRouter();
   // 守衛：未登入導向登入頁，後台帳號導回後台
   const { ready } = useRequireMember("/member/favorites");
-  const { isFavorite } = useFavorites(ready);
+  const { isFavorite, ready: favoritesReady } = useFavorites(ready);
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,10 +39,11 @@ export default function MemberFavoritesPage() {
     fetchFavorites();
   }, [ready, fetchFavorites]);
 
-  // 取消收藏後即時從清單移除（依模組級收藏狀態過濾）
+  // clinics 已是後端回傳的收藏清單；模組快取就緒前直接顯示，避免快取載入空窗誤判為空。
+  // 就緒後才以收藏狀態過濾，以保留「取消收藏即時從清單移除」的樂觀行為。
   const visibleClinics = useMemo(
-    () => clinics.filter((c) => isFavorite(c.id)),
-    [clinics, isFavorite],
+    () => (favoritesReady ? clinics.filter((c) => isFavorite(c.id)) : clinics),
+    [clinics, isFavorite, favoritesReady],
   );
 
   if (!ready) {

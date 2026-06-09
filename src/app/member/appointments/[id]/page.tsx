@@ -88,7 +88,8 @@ export default function MemberAppointmentDetailPage({
   const fetchAppt = useCallback(async () => {
     setIsLoading(true);
     try {
-      const list = await memberAppointmentApi.list();
+      // 帶最大回溯天數（365），避免超過預設 90 天的舊預約查不到詳情
+      const list = await memberAppointmentApi.list(undefined, 365);
       const found = list.find((a) => a.id === id) ?? null;
       setAppt(found);
       setNotFound(found === null);

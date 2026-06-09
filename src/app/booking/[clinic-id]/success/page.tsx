@@ -42,12 +42,12 @@ export default function SuccessPage({ params }: SuccessPageProps) {
   }, [bookingId]);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-muted/40 pb-24">
       {/* Header */}
-      <div className="bg-white px-4 py-3">
+      <div className="bg-card px-4 py-3">
         <Link
           href={`/clinic/${clinicId}`}
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           返回診所
@@ -57,13 +57,13 @@ export default function SuccessPage({ params }: SuccessPageProps) {
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <div
-            className="size-8 animate-spin rounded-full border-4 border-slate-200 border-t-current"
+            className="size-8 animate-spin rounded-full border-4 border-border border-t-current"
             style={{ borderTopColor: primaryColor }}
           />
         </div>
       ) : error || !booking ? (
         <div className="flex flex-col items-center gap-3 py-20 text-center">
-          <p className="text-sm text-slate-500">無法載入預約資訊</p>
+          <p className="text-sm text-muted-foreground">無法載入預約資訊</p>
           <Button asChild variant="outline" size="sm">
             <Link href={`/clinic/${clinicId}`}>返回診所首頁</Link>
           </Button>
@@ -86,7 +86,7 @@ export default function SuccessPage({ params }: SuccessPageProps) {
       )}
 
       {/* Actions */}
-      <div className="fixed inset-x-0 bottom-0 space-y-2 border-t bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div className="fixed inset-x-0 bottom-0 space-y-2 border-t border-border bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <Button
           asChild
           variant="outline"

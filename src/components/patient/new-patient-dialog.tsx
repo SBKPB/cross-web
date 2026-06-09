@@ -42,6 +42,10 @@ interface NewPatientDialogProps {
   defaultRelation?: string;
   /** 預設姓名（如本人引導時用會員 profile 名稱預填） */
   defaultName?: string;
+  /** 帶入此值即進入「編輯」模式；證件類型與末4碼唯讀不可改 */
+  editPatient?: MemberPatientRead | null;
+  /** 編輯成功的回呼（與 onCreated 並存，編輯模式優先） */
+  onUpdated?: (patient: MemberPatientRead) => void;
 }
 
 export function NewPatientDialog({
@@ -50,7 +54,10 @@ export function NewPatientDialog({
   onCreated,
   defaultRelation = "other",
   defaultName = "",
+  editPatient = null,
+  onUpdated,
 }: NewPatientDialogProps) {
+  const isEdit = !!editPatient;
   const [name, setName] = useState(defaultName);
   const [identifierType, setIdentifierType] =
     useState<IdentifierType>("national_id");
@@ -63,13 +70,24 @@ export function NewPatientDialog({
   const [identifierError, setIdentifierError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 每次開啟時以最新的預設值初始化（本人引導：self + 會員姓名）
+  // 每次開啟時初始化：編輯模式帶入既有資料、新增模式用預設值
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    if (editPatient) {
+      setName(editPatient.name);
+      setIdentifierType(editPatient.identifier_type);
+      setIdentifierValue("");
+      setBirthDate(editPatient.birth_date);
+      setGender(editPatient.gender);
+      setPhone(editPatient.phone ?? "");
+      setRelation(editPatient.relation);
+      setError(null);
+      setIdentifierError(null);
+    } else {
       setName(defaultName);
       setRelation(defaultRelation);
     }
-  }, [open, defaultName, defaultRelation]);
+  }, [open, editPatient, defaultName, defaultRelation]);
 
   const resetForm = () => {
     setName(defaultName);
@@ -102,27 +120,39 @@ export function NewPatientDialog({
     e.preventDefault();
     setError(null);
 
-    if (!validateIdentifier(identifierType, identifierValue)) {
+    // 編輯模式不改證件，跳過證件驗證
+    if (!isEdit && !validateIdentifier(identifierType, identifierValue)) {
       setIdentifierError(IDENTIFIER_ERROR_MESSAGES[identifierType]);
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const created = await memberPatientApi.create({
-        name,
-        identifier_type: identifierType,
-        identifier_value: identifierValue,
-        birth_date: birthDate,
-        gender,
-        phone,
-        relation,
-      });
-      resetForm();
-      onCreated(created);
+      if (isEdit && editPatient) {
+        // 證件類型與末4碼唯讀：僅更新可變欄位
+        const updated = await memberPatientApi.update(editPatient.id, {
+          name,
+          birth_date: birthDate,
+          gender,
+          phone,
+          relation,
+        });
+        onUpdated?.(updated);
+      } else {
+        const created = await memberPatientApi.create({
+          name,
+          identifier_type: identifierType,
+          identifier_value: identifierValue,
+          birth_date: birthDate,
+          gender,
+          phone,
+          relation,
+        });
+        resetForm();
+        onCreated(created);
+      }
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "建立失敗，請稍後再試";
+      const msg = err instanceof Error ? err.message : "儲存失敗，請稍後再試";
       setError(msg.includes("已經是") ? "此身分識別碼已存在" : msg);
     } finally {
       setIsSubmitting(false);
@@ -139,11 +169,19 @@ export function NewPatientDialog({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isSelf ? "新增本人就診資料" : "新增看診對象"}</DialogTitle>
+          <DialogTitle>
+            {isEdit
+              ? "編輯看診對象"
+              : isSelf
+                ? "新增本人就診資料"
+                : "新增看診對象"}
+          </DialogTitle>
           <DialogDescription>
-            {isSelf
-              ? "填寫您本人的就診資料，之後預約會自動帶入"
-              : "填寫家屬或其他看診人的基本資料"}
+            {isEdit
+              ? "證件類型與號碼不可修改，如需更改請刪除後重新新增"
+              : isSelf
+                ? "填寫您本人的就診資料，之後預約會自動帶入"
+                : "填寫家屬或其他看診人的基本資料"}
           </DialogDescription>
         </DialogHeader>
 
@@ -184,42 +222,54 @@ export function NewPatientDialog({
 
           <div className="grid gap-2">
             <Label>
-              身分識別碼 <span className="text-destructive">*</span>
+              身分識別碼 {!isEdit && <span className="text-destructive">*</span>}
             </Label>
-            <div className="grid grid-cols-[140px_1fr] gap-2">
-              <Select
-                value={identifierType}
-                onValueChange={(v) => {
-                  setIdentifierType(v as IdentifierType);
-                  setIdentifierError(null);
-                }}
-              >
-                <SelectTrigger id="np-id-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(
-                    Object.entries(IDENTIFIER_TYPE_LABELS) as [
-                      IdentifierType,
-                      string,
-                    ][]
-                  ).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {isEdit && editPatient ? (
+              // 編輯模式：證件類型 + 末4碼唯讀（不可改）
               <Input
-                id="np-id-value"
-                value={identifierValue}
-                onChange={(e) => handleIdentifierChange(e.target.value)}
-                placeholder={IDENTIFIER_PLACEHOLDERS[identifierType]}
-                required
+                value={`${IDENTIFIER_TYPE_LABELS[editPatient.identifier_type]} ****${editPatient.identifier_last4}`}
+                readOnly
+                disabled
+                className="tabular-nums"
               />
-            </div>
-            {identifierError && (
-              <p className="text-xs text-destructive">{identifierError}</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-[140px_1fr] gap-2">
+                  <Select
+                    value={identifierType}
+                    onValueChange={(v) => {
+                      setIdentifierType(v as IdentifierType);
+                      setIdentifierError(null);
+                    }}
+                  >
+                    <SelectTrigger id="np-id-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(
+                        Object.entries(IDENTIFIER_TYPE_LABELS) as [
+                          IdentifierType,
+                          string,
+                        ][]
+                      ).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    id="np-id-value"
+                    value={identifierValue}
+                    onChange={(e) => handleIdentifierChange(e.target.value)}
+                    placeholder={IDENTIFIER_PLACEHOLDERS[identifierType]}
+                    required
+                  />
+                </div>
+                {identifierError && (
+                  <p className="text-xs text-destructive">{identifierError}</p>
+                )}
+              </>
             )}
           </div>
 
@@ -292,13 +342,19 @@ export function NewPatientDialog({
               disabled={
                 isSubmitting ||
                 !name.trim() ||
-                !identifierValue.trim() ||
+                (!isEdit && !identifierValue.trim()) ||
                 !birthDate ||
                 !gender ||
                 !phone.trim()
               }
             >
-              {isSubmitting ? "建立中..." : "新增"}
+              {isSubmitting
+                ? isEdit
+                  ? "儲存中..."
+                  : "建立中..."
+                : isEdit
+                  ? "儲存"
+                  : "新增"}
             </Button>
           </DialogFooter>
         </form>

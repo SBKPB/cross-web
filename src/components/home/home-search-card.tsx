@@ -195,7 +195,7 @@ export function HomeSearchCard() {
             >
               <SelectValue placeholder="選擇縣市" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-border text-foreground max-h-[300px]">
+            <SelectContent className="max-h-[300px]">
               {CITY_OPTIONS.map((opt) => (
                 <SelectItem
                   key={opt.value}
@@ -224,7 +224,7 @@ export function HomeSearchCard() {
             >
               <SelectValue placeholder="選擇項目" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-border text-foreground max-h-[300px]">
+            <SelectContent className="max-h-[300px]">
               <SelectItem
                 value="all"
                 className="focus:bg-accent focus:text-primary"
@@ -263,7 +263,7 @@ export function HomeSearchCard() {
               >
                 <SelectValue placeholder="付款方式" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-border text-foreground max-h-[300px]">
+              <SelectContent className="max-h-[300px]">
                 {PAYMENT_FILTER_OPTIONS.map((opt) => (
                   <SelectItem
                     key={opt.value}

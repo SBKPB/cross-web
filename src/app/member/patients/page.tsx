@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  PencilIcon,
   PlusIcon,
   Trash2Icon,
   UserCheck,
@@ -34,6 +35,7 @@ export default function MemberPatientsPage() {
   const [patients, setPatients] = useState<MemberPatientRead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<MemberPatientRead | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MemberPatientRead | null>(
     null,
   );
@@ -59,6 +61,13 @@ export default function MemberPatientsPage() {
   const handleCreated = (newPatient: MemberPatientRead) => {
     setPatients((prev) => [...prev, newPatient]);
     setCreateOpen(false);
+  };
+
+  const handleUpdated = (updated: MemberPatientRead) => {
+    setPatients((prev) =>
+      prev.map((p) => (p.id === updated.id ? updated : p)),
+    );
+    setEditTarget(null);
   };
 
   const handleDelete = async () => {
@@ -154,15 +163,26 @@ export default function MemberPatientsPage() {
                     </div>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => setDeleteTarget(patient)}
-                  title="刪除"
-                  className="shrink-0 text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2Icon className="size-4" />
-                </Button>
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setEditTarget(patient)}
+                    title="編輯"
+                    className="text-muted-foreground hover:text-primary"
+                  >
+                    <PencilIcon className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setDeleteTarget(patient)}
+                    title="刪除"
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2Icon className="size-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))
@@ -172,6 +192,17 @@ export default function MemberPatientsPage() {
       <NewPatientDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
+        onCreated={handleCreated}
+      />
+
+      {/* 編輯看診對象（共用對話框的 edit 模式；證件唯讀） */}
+      <NewPatientDialog
+        open={!!editTarget}
+        onOpenChange={(o) => {
+          if (!o) setEditTarget(null);
+        }}
+        editPatient={editTarget}
+        onUpdated={handleUpdated}
         onCreated={handleCreated}
       />
 

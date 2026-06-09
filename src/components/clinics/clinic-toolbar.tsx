@@ -70,7 +70,8 @@ const TRIGGER_CLASS = cn(
   "data-[placeholder]:text-muted-foreground",
 );
 
-const CONTENT_CLASS = "bg-white border-border text-foreground";
+// 留空交給 SelectContent 預設（bg-popover/text-popover-foreground），深色模式才正確
+const CONTENT_CLASS = "";
 const ITEM_CLASS = "focus:bg-accent focus:text-primary";
 
 export function ClinicToolbar({
@@ -237,7 +238,7 @@ export function ClinicToolbar({
             }
             className={cn(
               "h-11 rounded-xl border-transparent bg-secondary/70 pl-11 pr-4 text-base shadow-none",
-              "transition-colors hover:bg-secondary focus-visible:bg-white",
+              "transition-colors hover:bg-secondary focus-visible:bg-background",
             )}
           />
         </div>

@@ -10,3 +10,4 @@ export { StickyBookingButton } from "./sticky-booking-button";
 export { BookingCard } from "./booking-card";
 export { WalkInCard } from "./walk-in-card";
 export { SectionCard } from "./section-card";
+export { RecordView } from "./record-view";

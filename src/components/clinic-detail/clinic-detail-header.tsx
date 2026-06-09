@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { FavoriteButton } from "@/components/clinics/favorite-button";
 import { ShareClinicDialog } from "@/components/clinics/share-clinic-dialog";
 import {
   FACILITY_TYPE_COLORS,
@@ -93,14 +94,22 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
           >
             <ArrowLeft className="size-5" />
           </Link>
-          <button
-            type="button"
-            onClick={() => setShareOpen(true)}
-            aria-label="分享此頁面"
-            className="inline-flex size-10 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/25"
-          >
-            <Share2 className="size-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <FavoriteButton
+              clinicId={clinic.id}
+              nextPath={`/clinic/${clinic.id}`}
+              variant="light"
+              className="size-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShareOpen(true)}
+              aria-label="分享此頁面"
+              className="inline-flex size-10 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/25"
+            >
+              <Share2 className="size-5" />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -8,7 +8,7 @@ import {
   CalendarPlus,
   ChevronRight,
   Clock,
-  History,
+  Heart,
   LogOut,
   Mail,
   MapPin,
@@ -24,18 +24,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useRequireMember } from "@/lib/auth/use-require-member";
-import { api } from "@/lib/api/client";
+import {
+  memberAppointmentApi,
+  type MemberAppointment,
+} from "@/lib/api/member-appointment";
 import { memberPatientApi } from "@/lib/api/member-patient";
-
-interface MemberAppointment {
-  id: string;
-  facility_name: string;
-  staff_name: string | null;
-  appointment_date: string;
-  appointment_time: string;
-  status: "confirmed" | "completed" | "cancelled" | "no_show";
-  booking_number: string;
-}
+import { RecentlyViewedRail } from "@/components/member/recently-viewed-rail";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const STATUS_LABEL: Record<string, string> = {
   confirmed: "已預約",
@@ -95,7 +90,7 @@ export default function MemberPage() {
     setIsLoading(true);
     try {
       const [appts, patients] = await Promise.all([
-        api.get<MemberAppointment[]>("/api/v1/member/appointments"),
+        memberAppointmentApi.list(),
         memberPatientApi.list().catch(() => []),
       ]);
       setAppointments(appts);
@@ -112,17 +107,25 @@ export default function MemberPage() {
     fetchData();
   }, [ready, fetchData]);
 
-  const { upcoming, history, completedCount } = useMemo(() => {
-    const upcoming = appointments
-      .filter((a) => a.status === "confirmed")
-      .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date));
-    const history = appointments
-      .filter((a) => a.status !== "confirmed")
-      .sort((a, b) => b.appointment_date.localeCompare(a.appointment_date));
-    const completedCount = appointments.filter(
-      (a) => a.status === "completed",
-    ).length;
-    return { upcoming, history, completedCount };
+  const { all, confirmed, completed, cancelled } = useMemo(() => {
+    const byDateDesc = (a: MemberAppointment, b: MemberAppointment) =>
+      b.appointment_date.localeCompare(a.appointment_date);
+    const byDateAsc = (a: MemberAppointment, b: MemberAppointment) =>
+      a.appointment_date.localeCompare(b.appointment_date);
+    return {
+      all: [...appointments].sort(byDateDesc),
+      // 已預約（即將看診）依日期由近到遠，方便最快就診的排最前
+      confirmed: appointments
+        .filter((a) => a.status === "confirmed")
+        .sort(byDateAsc),
+      completed: appointments
+        .filter((a) => a.status === "completed")
+        .sort(byDateDesc),
+      // 已取消含未到診（皆屬「未完成就診」的歷史）
+      cancelled: appointments
+        .filter((a) => a.status === "cancelled" || a.status === "no_show")
+        .sort(byDateDesc),
+    };
   }, [appointments]);
 
   if (!ready) {
@@ -191,12 +194,12 @@ export default function MemberPage() {
           <StatCard
             icon={<Clock className="size-4" />}
             label="即將看診"
-            value={isLoading ? null : upcoming.length}
+            value={isLoading ? null : confirmed.length}
           />
           <StatCard
             icon={<CalendarCheck2 className="size-4" />}
             label="已完成"
-            value={isLoading ? null : completedCount}
+            value={isLoading ? null : completed.length}
           />
           <StatCard
             icon={<Users className="size-4" />}
@@ -220,7 +223,27 @@ export default function MemberPage() {
             title="看診對象管理"
             desc="管理家人與本人資料"
           />
+          <ActionCard
+            href="/member/favorites"
+            icon={<Heart className="size-5" />}
+            title="我的收藏"
+            desc="收藏的診所一覽"
+          />
         </div>
+
+        {/* 外觀設定（主題切換：亮 / 暗 / 跟隨系統） */}
+        <Card className="flex flex-row items-center justify-between gap-3 p-4">
+          <div className="min-w-0">
+            <div className="font-medium text-foreground">外觀主題</div>
+            <div className="text-xs text-muted-foreground">
+              切換亮色、暗色或跟隨系統
+            </div>
+          </div>
+          <ThemeToggle className="shrink-0" />
+        </Card>
+
+        {/* 最近瀏覽 */}
+        <RecentlyViewedRail ready={ready} />
 
         {/* 預約紀錄 */}
         <div>
@@ -234,59 +257,62 @@ export default function MemberPage() {
               <AppointmentSkeleton />
             </div>
           ) : (
-            <Tabs defaultValue="upcoming">
+            <Tabs defaultValue="confirmed">
               <TabsList className="w-full">
-                <TabsTrigger value="upcoming">
-                  即將看診
-                  {upcoming.length > 0 && (
+                <TabsTrigger value="all">
+                  全部
+                  {all.length > 0 && (
                     <span className="ml-1 text-xs opacity-70">
-                      ({upcoming.length})
+                      ({all.length})
                     </span>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="history">
-                  歷史紀錄
-                  {history.length > 0 && (
+                <TabsTrigger value="confirmed">
+                  已預約
+                  {confirmed.length > 0 && (
                     <span className="ml-1 text-xs opacity-70">
-                      ({history.length})
+                      ({confirmed.length})
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  已完成
+                  {completed.length > 0 && (
+                    <span className="ml-1 text-xs opacity-70">
+                      ({completed.length})
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="cancelled">
+                  已取消
+                  {cancelled.length > 0 && (
+                    <span className="ml-1 text-xs opacity-70">
+                      ({cancelled.length})
                     </span>
                   )}
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="upcoming" className="mt-4">
-                {upcoming.length === 0 ? (
-                  <EmptyState
-                    icon={<CalendarDays className="size-10" />}
-                    text="目前沒有即將到來的預約"
-                    action={
-                      <Button asChild size="sm">
-                        <Link href="/">立即預約</Link>
-                      </Button>
-                    }
-                  />
-                ) : (
-                  <div className="space-y-3">
-                    {upcoming.map((appt) => (
-                      <AppointmentCard key={appt.id} appt={appt} highlight />
-                    ))}
-                  </div>
-                )}
+              <TabsContent value="all" className="mt-4">
+                <AppointmentGroup
+                  items={all}
+                  emptyText="尚無預約紀錄"
+                  showEmptyCta
+                />
               </TabsContent>
-
-              <TabsContent value="history" className="mt-4">
-                {history.length === 0 ? (
-                  <EmptyState
-                    icon={<History className="size-10" />}
-                    text="尚無歷史紀錄"
-                  />
-                ) : (
-                  <div className="space-y-3">
-                    {history.map((appt) => (
-                      <AppointmentCard key={appt.id} appt={appt} />
-                    ))}
-                  </div>
-                )}
+              <TabsContent value="confirmed" className="mt-4">
+                <AppointmentGroup
+                  items={confirmed}
+                  emptyText="目前沒有即將到來的預約"
+                  showEmptyCta
+                  highlight
+                />
+              </TabsContent>
+              <TabsContent value="completed" className="mt-4">
+                <AppointmentGroup items={completed} emptyText="尚無已完成的預約" />
+              </TabsContent>
+              <TabsContent value="cancelled" className="mt-4">
+                <AppointmentGroup items={cancelled} emptyText="尚無已取消的預約" />
               </TabsContent>
             </Tabs>
           )}
@@ -357,6 +383,46 @@ function ActionCard({
   );
 }
 
+/** 依分頁渲染一組預約卡片，空時顯示空狀態 */
+function AppointmentGroup({
+  items,
+  emptyText,
+  showEmptyCta,
+  highlight,
+}: {
+  items: MemberAppointment[];
+  emptyText: string;
+  showEmptyCta?: boolean;
+  highlight?: boolean;
+}) {
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={<CalendarDays className="size-10" />}
+        text={emptyText}
+        action={
+          showEmptyCta ? (
+            <Button asChild size="sm">
+              <Link href="/">立即預約</Link>
+            </Button>
+          ) : undefined
+        }
+      />
+    );
+  }
+  return (
+    <div className="space-y-3">
+      {items.map((appt) => (
+        <AppointmentCard
+          key={appt.id}
+          appt={appt}
+          highlight={highlight && appt.status === "confirmed"}
+        />
+      ))}
+    </div>
+  );
+}
+
 function AppointmentCard({
   appt,
   highlight,
@@ -365,51 +431,56 @@ function AppointmentCard({
   highlight?: boolean;
 }) {
   return (
-    <Card className="overflow-hidden p-0">
-      <div className="flex items-stretch">
-        {/* 日期區塊 */}
-        <div
-          className={
-            highlight
-              ? "flex w-20 shrink-0 flex-col items-center justify-center bg-primary py-4 text-primary-foreground"
-              : "flex w-20 shrink-0 flex-col items-center justify-center bg-muted py-4 text-muted-foreground"
-          }
-        >
-          <div className="text-lg leading-none font-bold">
-            {formatMonthDay(appt.appointment_date)}
+    <Link href={`/member/appointments/${appt.id}`} className="block">
+      <Card className="group overflow-hidden p-0 transition-shadow hover:shadow-md">
+        <div className="flex items-stretch">
+          {/* 日期區塊 */}
+          <div
+            className={
+              highlight
+                ? "flex w-20 shrink-0 flex-col items-center justify-center bg-primary py-4 text-primary-foreground"
+                : "flex w-20 shrink-0 flex-col items-center justify-center bg-muted py-4 text-muted-foreground"
+            }
+          >
+            <div className="text-lg leading-none font-bold">
+              {formatMonthDay(appt.appointment_date)}
+            </div>
+            <div className="mt-1 text-[11px] opacity-80">
+              {formatWeekday(appt.appointment_date)}
+            </div>
+            <div className="mt-1.5 flex items-center gap-0.5 text-xs font-medium">
+              <Clock className="size-3" />
+              {formatTime(appt.appointment_time)}
+            </div>
           </div>
-          <div className="mt-1 text-[11px] opacity-80">
-            {formatWeekday(appt.appointment_date)}
-          </div>
-          <div className="mt-1.5 flex items-center gap-0.5 text-xs font-medium">
-            <Clock className="size-3" />
-            {formatTime(appt.appointment_time)}
-          </div>
-        </div>
 
-        {/* 內容 */}
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-1.5 font-medium text-foreground">
-              <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="truncate">{appt.facility_name}</span>
+          {/* 內容 */}
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-1.5 font-medium text-foreground">
+                <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
+                <span className="truncate">{appt.facility_name}</span>
+              </div>
+              <Badge variant={STATUS_VARIANT[appt.status]} className="shrink-0">
+                {STATUS_LABEL[appt.status]}
+              </Badge>
             </div>
-            <Badge variant={STATUS_VARIANT[appt.status]} className="shrink-0">
-              {STATUS_LABEL[appt.status]}
-            </Badge>
-          </div>
-          {appt.staff_name && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Stethoscope className="size-3.5 shrink-0" />
-              {appt.staff_name}
+            {appt.staff_name && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Stethoscope className="size-3.5 shrink-0" />
+                {appt.staff_name}
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs text-muted-foreground">
+                預約編號 {appt.booking_number}
+              </div>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
             </div>
-          )}
-          <div className="text-xs text-muted-foreground">
-            預約編號 {appt.booking_number}
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 }
 

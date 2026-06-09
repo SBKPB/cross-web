@@ -160,7 +160,7 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-border text-foreground">
+          <SelectContent>
             {SORT_OPTIONS.map((opt) => (
               <SelectItem
                 key={opt.value}

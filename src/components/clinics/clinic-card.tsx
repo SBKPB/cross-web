@@ -20,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FavoriteButton } from "@/components/clinics/favorite-button";
 import { categoryLabel } from "@/lib/api/service-categories";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import {
@@ -68,6 +69,13 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
         className,
       )}
     >
+      {/* 收藏愛心（右上角） */}
+      <FavoriteButton
+        clinicId={clinic.id}
+        nextPath={`/clinic/${clinic.id}`}
+        className="absolute top-3 right-3 z-10"
+      />
+
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-2">

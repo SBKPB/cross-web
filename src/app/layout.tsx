@@ -96,7 +96,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-Hant-TW" data-scroll-behavior="smooth">
+    <html
+      lang="zh-Hant-TW"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body
         className={`${inter.variable} ${notoSansTC.variable} antialiased`}
       >

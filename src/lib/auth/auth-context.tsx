@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 import { memberApi } from "@/lib/api/member";
 import { onTokenExpired } from "@/lib/auth/auth-events";
+import { resetFavoritesCache } from "@/lib/hooks/use-favorites";
 import { SessionExpiredDialog } from "@/components/auth/session-expired-dialog";
 import type { User } from "@/types/auth";
 
@@ -84,6 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   }, [refreshUser]);
+
+  // 使用者身分變動（登入 / 登出 / 換帳號）即重置模組級收藏快取，
+  // 避免上一位使用者的收藏狀態殘留到下一位（跨帳號資料外洩）。
+  useEffect(() => {
+    resetFavoritesCache();
+  }, [user?.id]);
 
   const login = async (email: string, password: string): Promise<User> => {
     // 清除過期訊息

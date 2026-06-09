@@ -19,8 +19,8 @@ interface BackendStaff {
   main_specialties?: string[];
 }
 
-// 後端診所資料格式
-interface BackendClinic {
+// 後端診所資料格式（對齊後端 ClinicListItem schema）
+export interface BackendClinic {
   id: string;
   name: string;  // 後端返回 name，前端使用 clinic_name
   hospital_level?: string;
@@ -39,6 +39,9 @@ interface BackendClinic {
   business_hours?: Record<string, { open: string; close: string }> | null;
   members?: BackendStaff[];
   is_featured?: boolean;
+  online_booking_enabled?: boolean;
+  phone_booking_enabled?: boolean;
+  show_schedule?: boolean;
 }
 
 // 星期對照表
@@ -77,8 +80,8 @@ const ROLE_NAMES: Record<string, string> = {
   therapist: "治療師",
 };
 
-// 轉換後端格式為前端格式
-function transformClinic(backendClinic: BackendClinic): Clinic {
+// 轉換後端格式為前端格式（收藏 / 最近瀏覽等也共用此映射）
+export function transformClinic(backendClinic: BackendClinic): Clinic {
   // departments 攜帶 service_category code（顯示時用 taxonomy 查 code→中文 label）
   const departments = backendClinic.departments ?? [];
 
@@ -111,6 +114,9 @@ function transformClinic(backendClinic: BackendClinic): Clinic {
     is_featured: backendClinic.is_featured ?? false,
     business_hours: transformBusinessHours(backendClinic.business_hours),
     members: members,
+    online_booking_enabled: backendClinic.online_booking_enabled,
+    phone_booking_enabled: backendClinic.phone_booking_enabled,
+    show_schedule: backendClinic.show_schedule,
   };
 }
 

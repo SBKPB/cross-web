@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/home/auth-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   return (
@@ -42,6 +43,7 @@ export function SiteHeader() {
           >
             <Link href="/join">夥伴加入</Link>
           </Button>
+          <ThemeToggle />
           <AuthButton />
         </nav>
       </div>

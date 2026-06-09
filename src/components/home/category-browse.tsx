@@ -24,28 +24,28 @@ const CATEGORIES: {
     title: "看診",
     desc: "家醫、內科、皮膚科等各科別掛號（健保 / 自費）",
     icon: Stethoscope,
-    accent: "bg-sky-100 text-sky-600",
+    accent: "bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300",
   },
   {
     type: "aesthetic",
     title: "醫美",
     desc: "微整、雷射、電波等醫學美容",
     icon: Sparkles,
-    accent: "bg-pink-100 text-pink-600",
+    accent: "bg-pink-100 text-pink-600 dark:bg-pink-500/15 dark:text-pink-300",
   },
   {
     type: "beauty",
     title: "美容",
     desc: "美容、美甲、美睫、紋繡、SPA",
     icon: Flower2,
-    accent: "bg-rose-100 text-rose-600",
+    accent: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300",
   },
   {
     type: "other",
     title: "其他",
     desc: "傳統整復推拿等其他健康服務",
     icon: Store,
-    accent: "bg-slate-100 text-slate-600",
+    accent: "bg-muted text-muted-foreground",
   },
 ];
 

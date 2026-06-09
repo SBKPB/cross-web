@@ -13,6 +13,7 @@ import {
   StickyBookingButton,
   BookingCard,
   WalkInCard,
+  RecordView,
 } from "@/components/clinic-detail";
 import {
   deriveFacilityType,
@@ -475,6 +476,9 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {/* 記錄一次瀏覽（登入會員，跨裝置同步；純副作用） */}
+      <RecordView clinicId={clinicId} />
+
       {/* Hero：裝飾性 banner + 院所識別卡 */}
       <ClinicDetailHeader clinic={clinic} />
 

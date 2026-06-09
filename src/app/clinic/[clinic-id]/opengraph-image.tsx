@@ -59,8 +59,12 @@ async function logoDataUrl(logo: string | null): Promise<string | null> {
   try {
     const r = await fetch(logo);
     if (!r.ok) return null;
+    const ct = (r.headers.get("content-type") || "").toLowerCase();
+    // Satori（next/og）僅可靠支援 PNG / JPEG / GIF；AVIF / WebP / SVG 會在 streaming
+    // 渲染階段拋錯 → 整張 OG 圖 500（且逃出本檔 try/catch）。診所 logo 目前以 AVIF
+    // 提供，故不支援的格式一律退回 null，改用品牌十字記號，確保 OG 圖永不 500。
+    if (!/image\/(png|jpe?g|gif)/.test(ct)) return null;
     const buf = await r.arrayBuffer();
-    const ct = r.headers.get("content-type") || "image/png";
     return `data:${ct};base64,${Buffer.from(buf).toString("base64")}`;
   } catch {
     return null;
@@ -97,7 +101,9 @@ export default async function ClinicOgImage({ params }: OgImageProps) {
   const subtitle = `${city ? `${city}・` : ""}線上預約掛號`;
 
   const [fontData, logo] = await Promise.all([
-    loadTcSubset(`${name}${subtitle}線上預約掛號診所`),
+    // 子集需含「實際會渲染」的所有字元：診所名/副標（中文）+ 頁尾品牌字（Latin
+    // 「Cross」「cross.twinhao.com」）。否則 Latin 字在純中文子集下無字形 → 渲染失敗。
+    loadTcSubset(`${name}${subtitle}線上預約掛號診所 Cross cross.twinhao.com`),
     logoDataUrl(clinic?.logo ?? null),
   ]);
 

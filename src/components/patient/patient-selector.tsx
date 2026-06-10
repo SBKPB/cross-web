@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   IDENTIFIER_TYPE_LABELS,
+  MAX_PATIENTS,
   RELATION_LABELS,
 } from "@/lib/constants/patient-constants";
 import type { IdentifierType } from "@/types/member-patient";
@@ -78,6 +79,9 @@ export function PatientSelector({
       fetchPatients();
     }
   }, [authLoading, isAuthenticated, fetchPatients]);
+
+  // 看診人上限控管（與 iOS / Android 一致，最多 MAX_PATIENTS 位）
+  const canAddPatient = patients.length < MAX_PATIENTS;
 
   // 本人優先排在最前
   const sortedPatients = useMemo(() => {
@@ -228,17 +232,27 @@ export function PatientSelector({
               </span>
               看診對象
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-full"
-              onClick={() => openDialog("other")}
-            >
-              <PlusIcon className="size-3.5" />
-              新增
-            </Button>
+            {/* 已達上限時隱藏新增入口 */}
+            {canAddPatient && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => openDialog("other")}
+              >
+                <PlusIcon className="size-3.5" />
+                新增
+              </Button>
+            )}
           </div>
+
+          {/* 看診人達上限提示 */}
+          {!canAddPatient && (
+            <p className="mb-3 rounded-2xl bg-muted/60 px-4 py-2.5 text-center text-xs text-muted-foreground">
+              最多可建立 {MAX_PATIENTS} 位看診人，如需新增請先刪除其他看診人
+            </p>
+          )}
 
           <RadioGroup
             value={selectedId || ""}

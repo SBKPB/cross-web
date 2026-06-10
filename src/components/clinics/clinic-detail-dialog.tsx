@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { HOSPITAL_LEVELS } from "@/lib/constants/clinic-constants";
 import { categoryLabel } from "@/lib/api/service-categories";
+import { getServicePriceBadge } from "@/lib/service-price";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
 import type { Clinic } from "@/types/clinic";
 
@@ -155,14 +156,28 @@ export function ClinicDetailDialog({
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-foreground">服務項目</h4>
               <div className="space-y-1.5">
-                {clinic.services.slice(0, 4).map((service) => (
-                  <div key={service.id} className="flex items-center justify-between text-sm">
-                    <span className="text-foreground">{service.name}</span>
-                    <span className="font-medium text-primary">
-                      NT$ {service.price.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+                {clinic.services.slice(0, 4).map((service) => {
+                  // 價格 badge 統一規則（依 payment_type gating，三端一致）
+                  const priceBadge = getServicePriceBadge(
+                    service.price,
+                    clinic.payment_type,
+                  );
+                  return (
+                    <div key={service.id} className="flex items-center justify-between text-sm">
+                      <span className="text-foreground">{service.name}</span>
+                      {priceBadge &&
+                        (priceBadge.kind === "price" ? (
+                          <span className="font-medium text-primary">
+                            {priceBadge.label}
+                          </span>
+                        ) : (
+                          <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+                            {priceBadge.label}
+                          </span>
+                        ))}
+                    </div>
+                  );
+                })}
                 {clinic.services.length > 4 && (
                   <p className="text-xs text-muted-foreground">
                     還有 {clinic.services.length - 4} 項服務...

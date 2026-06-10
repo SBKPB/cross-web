@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ApiError } from "@/lib/api/client";
 import { memberPatientApi } from "@/lib/api/member-patient";
 import type { MemberPatientRead } from "@/types/member-patient";
 import { validateIdentifier } from "@/lib/validation/tw-identifier";
@@ -152,7 +153,14 @@ export function NewPatientDialog({
         onCreated(created);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "儲存失敗，請稍後再試";
+      // 優先讀後端回傳的繁中錯誤訊息（ApiError.data.detail，如「最多只能新增 10 位看診對象」），
+      // 避免顯示英文 "API Error: 400 ..."；網路錯誤則讀 data.message
+      let msg = "儲存失敗，請稍後再試";
+      if (err instanceof ApiError) {
+        const data = err.data as { detail?: unknown; message?: unknown } | null;
+        const detail = data?.detail ?? data?.message;
+        if (typeof detail === "string") msg = detail;
+      }
       setError(msg.includes("已經是") ? "此身分識別碼已存在" : msg);
     } finally {
       setIsSubmitting(false);

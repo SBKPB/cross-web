@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Sparkles } from "lucide-react";
 
 import type { ServiceOption } from "@/types/booking";
+import type { PaymentType } from "@/types/clinic";
 
 import { ServiceCard } from "./service-card";
 
@@ -12,6 +13,8 @@ interface ServiceListProps {
   selectedService: ServiceOption | null;
   onSelectService: (service: ServiceOption) => void;
   primaryColor?: string;
+  /** 院所付款方式（健保 / 自費 / 兩者）；傳給 ServiceCard 做健保 badge gating */
+  paymentType?: PaymentType;
 }
 
 export function ServiceList({
@@ -19,6 +22,7 @@ export function ServiceList({
   selectedService,
   onSelectService,
   primaryColor,
+  paymentType,
 }: ServiceListProps) {
   const groupedServices = useMemo(() => {
     const groups: Record<string, ServiceOption[]> = {};
@@ -71,6 +75,7 @@ export function ServiceList({
                 isSelected={selectedService?.id === service.id}
                 onSelect={onSelectService}
                 primaryColor={primaryColor}
+                paymentType={paymentType}
               />
             ))}
           </div>

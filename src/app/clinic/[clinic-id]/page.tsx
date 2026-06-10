@@ -509,7 +509,10 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
 
             {/* 服務項目 */}
             {clinic.services && clinic.services.length > 0 && (
-              <ServicePreviewList services={clinic.services} />
+              <ServicePreviewList
+                services={clinic.services}
+                paymentType={clinic.payment_type}
+              />
             )}
           </div>
 

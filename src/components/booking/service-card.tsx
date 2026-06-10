@@ -2,14 +2,18 @@
 
 import { Check, Clock } from "lucide-react";
 
+import { getServicePriceBadge } from "@/lib/service-price";
 import { cn } from "@/lib/utils";
 import type { ServiceOption } from "@/types/booking";
+import type { PaymentType } from "@/types/clinic";
 
 interface ServiceCardProps {
   service: ServiceOption;
   isSelected: boolean;
   onSelect: (service: ServiceOption) => void;
   primaryColor?: string;
+  /** 院所付款方式（健保 / 自費 / 兩者）；0 元服務是否標「健保給付」依此 gating */
+  paymentType?: PaymentType;
 }
 
 export function ServiceCard({
@@ -17,7 +21,11 @@ export function ServiceCard({
   isSelected,
   onSelect,
   primaryColor = "#3b82f6",
+  paymentType,
 }: ServiceCardProps) {
+  // 價格 badge 統一規則（依 payment_type gating，三端一致）
+  const priceBadge = getServicePriceBadge(service.price, paymentType);
+
   return (
     <button
       type="button"
@@ -63,9 +71,16 @@ export function ServiceCard({
           <span>{service.duration_minutes} 分鐘</span>
         </div>
 
-        <div className="rounded-xl bg-accent px-3 py-1.5 text-sm font-bold tabular-nums text-accent-foreground">
-          NT$ {service.price.toLocaleString()}
-        </div>
+        {priceBadge &&
+          (priceBadge.kind === "price" ? (
+            <div className="rounded-xl bg-accent px-3 py-1.5 text-sm font-bold tabular-nums text-accent-foreground">
+              {priceBadge.label}
+            </div>
+          ) : (
+            <div className="rounded-xl bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+              {priceBadge.label}
+            </div>
+          ))}
       </div>
     </button>
   );

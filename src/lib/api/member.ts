@@ -21,4 +21,7 @@ export const memberApi = {
       id_token: idToken,
       user_name: userName || undefined,
     }),
+
+  /** 刪除會員帳號（204；看診人與預約紀錄一併刪除，無法復原） */
+  deleteAccount: () => api.delete<void>(`${MEMBER_PREFIX}/me`),
 };

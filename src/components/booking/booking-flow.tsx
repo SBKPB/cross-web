@@ -12,6 +12,7 @@ import type {
   DoctorOption,
   BookableDate,
 } from "@/types/booking";
+import type { PaymentType } from "@/types/clinic";
 import type { MemberPatientRead } from "@/types/member-patient";
 
 import { ClinicHeader } from "./clinic-header";
@@ -30,6 +31,8 @@ interface BookingFlowProps {
   clinicConfig: ClinicConfig;
   services: ServiceOption[];
   doctors: DoctorOption[];
+  /** 院所付款方式（健保 / 自費 / 兩者）；服務的健保 badge 依此 gating */
+  paymentType?: PaymentType;
 }
 
 export function BookingFlow({
@@ -37,6 +40,7 @@ export function BookingFlow({
   clinicConfig,
   services,
   doctors,
+  paymentType,
 }: BookingFlowProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -217,6 +221,7 @@ export function BookingFlow({
               dispatch({ type: "SET_SERVICE", payload: service })
             }
             primaryColor={primaryColor}
+            paymentType={paymentType}
           />
         )}
 

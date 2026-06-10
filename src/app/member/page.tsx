@@ -14,6 +14,7 @@ import {
   MapPin,
   Phone,
   Stethoscope,
+  Trash2,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,18 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useRequireMember } from "@/lib/auth/use-require-member";
+import { memberApi } from "@/lib/api/member";
 import {
   memberAppointmentApi,
   type MemberAppointment,
@@ -85,6 +96,9 @@ export default function MemberPage() {
   const [appointments, setAppointments] = useState<MemberAppointment[]>([]);
   const [patientCount, setPatientCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState("");
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -127,6 +141,22 @@ export default function MemberPage() {
         .sort(byDateDesc),
     };
   }, [appointments]);
+
+  // 確認刪除帳號：成功後沿用登出邏輯清除登入狀態並導回首頁
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    setDeleteAccountError("");
+    try {
+      await memberApi.deleteAccount();
+      setDeleteDialogOpen(false);
+      logout("/");
+    } catch (err) {
+      console.error("Failed to delete account:", err);
+      setDeleteAccountError("刪除失敗，請稍後再試");
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
 
   if (!ready) {
     return (
@@ -317,7 +347,61 @@ export default function MemberPage() {
             </Tabs>
           )}
         </div>
+
+        {/* 帳號（危險操作） */}
+        <Card className="flex flex-row items-center justify-between gap-3 p-4">
+          <div className="min-w-0">
+            <div className="font-medium text-foreground">刪除帳號</div>
+            <div className="text-xs text-muted-foreground">
+              永久刪除會員資料、看診人與預約紀錄
+            </div>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="shrink-0"
+            onClick={() => {
+              setDeleteAccountError("");
+              setDeleteDialogOpen(true);
+            }}
+          >
+            <Trash2 className="size-4" />
+            刪除帳號
+          </Button>
+        </Card>
       </div>
+
+      {/* 刪除帳號確認 */}
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(o) => {
+          if (!isDeletingAccount) setDeleteDialogOpen(o);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確定要刪除帳號嗎？</AlertDialogTitle>
+            <AlertDialogDescription>
+              將永久刪除您的會員資料、所有看診人與預約紀錄，此操作無法復原。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteAccountError && (
+            <p className="text-sm text-destructive">{deleteAccountError}</p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingAccount}>
+              取消
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+            >
+              {isDeletingAccount ? "刪除中..." : "刪除帳號"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

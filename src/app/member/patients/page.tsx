@@ -25,6 +25,7 @@ import type { MemberPatientRead } from "@/types/member-patient";
 import { NewPatientDialog } from "@/components/patient/new-patient-dialog";
 import {
   IDENTIFIER_TYPE_LABELS,
+  MAX_PATIENTS,
   RELATION_LABELS,
 } from "@/lib/constants/patient-constants";
 import type { IdentifierType } from "@/types/member-patient";
@@ -84,6 +85,9 @@ export default function MemberPatientsPage() {
     }
   };
 
+  // 看診人上限控管（與 iOS / Android 一致，最多 MAX_PATIENTS 位）
+  const canAddPatient = patients.length < MAX_PATIENTS;
+
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -107,14 +111,23 @@ export default function MemberPatientsPage() {
             </Link>
             <h1 className="text-lg font-bold text-foreground">看診對象管理</h1>
           </div>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <PlusIcon className="mr-1.5 size-3.5" />
-            新增
-          </Button>
+          {/* 已達上限時隱藏新增入口 */}
+          {!isLoading && canAddPatient && (
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <PlusIcon className="mr-1.5 size-3.5" />
+              新增
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="mx-auto max-w-2xl space-y-3 px-4 py-6 sm:px-6">
+        {/* 看診人達上限提示 */}
+        {!isLoading && !canAddPatient && (
+          <p className="rounded-2xl bg-muted/60 px-4 py-3 text-center text-xs text-muted-foreground">
+            最多可建立 {MAX_PATIENTS} 位看診人，如需新增請先刪除其他看診人
+          </p>
+        )}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />

@@ -1,5 +1,8 @@
 import type { IdentifierType } from "@/types/member-patient";
 
+/** 每個會員可建立的看診人數上限（與 iOS / Android 一致） */
+export const MAX_PATIENTS = 10;
+
 /** 患者關係顯示名稱 */
 export const RELATION_LABELS: Record<string, string> = {
   self: "本人",

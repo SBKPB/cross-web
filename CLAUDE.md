@@ -60,7 +60,8 @@ Use `@/*` to import from `src/*` (configured in tsconfig.json).
 The app manages medical facilities with these core types defined in `src/types/clinic.ts`:
 - **Clinic**: Main entity with hospital_level, facility_type, departments, members…
 - **HospitalLevel**: medical_center | regional_hospital | district_hospital | clinic
-- **FacilityType**: healthcare（健保看診）| self_pay（自費門診）| aesthetic（醫美諮詢）—— 民眾端三分流，會反映在 Hero tabs 與卡片 badge
+- **FacilityType**: healthcare（看診，含健保與自費）| aesthetic（醫美）| beauty（美容/美業）| other（其他）—— 民眾端 4 類分流，會反映在 Hero tabs 與卡片 badge
+- **PaymentType**: nhi（健保）| self_pay（自費）| both —— 付款方式獨立於 facility_type（健保/自費不是服務分類）
 - **MedicalDepartment**: 18 Taiwan medical specialties (internal_medicine, surgery, pediatrics, etc.)
 
 ### UI Component Pattern

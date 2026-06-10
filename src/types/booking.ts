@@ -1,3 +1,5 @@
+import type { PaymentType } from "@/types/clinic";
+
 export type TimeOfDay = "morning" | "afternoon" | "evening";
 export type Gender = "M" | "F";
 export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
@@ -31,6 +33,7 @@ export interface ClinicConfig {
   slot_duration?: number; // 時段間隔（分鐘）：15, 30, 或 60，預設 30
   online_booking_enabled?: boolean; // 是否開通線上預約（付費功能）
   phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（預設關閉）
+  payment_type?: PaymentType | null; // 付款方式（健保 / 自費 / 兩者）；缺值下游視為 nhi
 }
 
 export interface DoctorOption {

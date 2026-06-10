@@ -3,7 +3,6 @@ import { BookingProvider } from "@/components/booking/booking-context";
 import { BookingFlow } from "@/components/booking/booking-flow";
 import { BookingError } from "@/components/booking/booking-error";
 import { bookingApi } from "@/lib/api/booking";
-import { clinicsApi } from "@/lib/api/clinics";
 import type { ClinicConfig, ServiceOption, DoctorOption } from "@/types/booking";
 import type { PaymentType } from "@/types/clinic";
 
@@ -22,25 +21,15 @@ interface BookingData {
   error: boolean;
 }
 
-// 預約 config 端點不含 payment_type，從公開診所列表（快取 300 秒）補查
-async function getPaymentType(clinicId: string): Promise<PaymentType | undefined> {
-  try {
-    const clinics = await clinicsApi.getClinics();
-    return clinics.find((c) => c.id === clinicId)?.payment_type;
-  } catch {
-    // 查不到時維持 undefined（既有慣例：缺值視為 nhi）
-    return undefined;
-  }
-}
-
 async function loadBookingData(clinicId: string): Promise<BookingData> {
   try {
-    const [clinicConfig, services, doctors, paymentType] = await Promise.all([
+    const [clinicConfig, services, doctors] = await Promise.all([
       bookingApi.getClinicConfig(clinicId),
       bookingApi.getServices(clinicId),
       bookingApi.getDoctors(clinicId),
-      getPaymentType(clinicId),
     ]);
+    // payment_type 由 config 端點直接帶出（取代以往 O(N) 公開列表補查）；缺值維持 undefined＝下游視為 nhi
+    const paymentType = clinicConfig?.payment_type ?? undefined;
     return { clinicConfig, services, doctors, paymentType, error: false };
   } catch (error) {
     console.error("Failed to load booking data:", error);

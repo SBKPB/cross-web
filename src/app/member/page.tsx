@@ -12,6 +12,7 @@ import {
   LogOut,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   Stethoscope,
   Trash2,
@@ -40,6 +41,7 @@ import {
   type MemberAppointment,
 } from "@/lib/api/member-appointment";
 import { memberPatientApi } from "@/lib/api/member-patient";
+import { EditProfileDialog } from "@/components/member/edit-profile-dialog";
 import { RecentlyViewedRail } from "@/components/member/recently-viewed-rail";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -90,12 +92,13 @@ function getInitials(name: string) {
 }
 
 export default function MemberPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   // 守衛：未登入導向登入頁，後台帳號（管理員 / 院所）導回後台，不渲染民眾端內容
   const { ready } = useRequireMember("/member");
   const [appointments, setAppointments] = useState<MemberAppointment[]>([]);
   const [patientCount, setPatientCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState("");
@@ -207,15 +210,26 @@ export default function MemberPage() {
               )}
             </div>
 
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0 text-white/80 hover:bg-white/15 hover:text-white"
-              onClick={() => logout("/")}
-              title="登出"
-            >
-              <LogOut className="size-4" />
-            </Button>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-white/80 hover:bg-white/15 hover:text-white"
+                onClick={() => setEditProfileOpen(true)}
+                title="編輯個人資料"
+              >
+                <Pencil className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-white/80 hover:bg-white/15 hover:text-white"
+                onClick={() => logout("/")}
+                title="登出"
+              >
+                <LogOut className="size-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -370,6 +384,14 @@ export default function MemberPage() {
           </Button>
         </Card>
       </div>
+
+      {/* 編輯個人資料：成功後刷新 auth user，名稱 / 手機即時同步到畫面 */}
+      <EditProfileDialog
+        open={editProfileOpen}
+        onOpenChange={setEditProfileOpen}
+        user={user}
+        onSaved={refreshUser}
+      />
 
       {/* 刪除帳號確認 */}
       <AlertDialog

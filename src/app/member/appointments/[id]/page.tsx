@@ -40,6 +40,7 @@ import {
   QUEUE_ACTIVE_STATUSES,
   isTaipeiToday,
 } from "@/lib/constants/appointment";
+import { usePollOnVisible } from "@/lib/hooks/use-poll-on-visible";
 import { cn } from "@/lib/utils";
 
 const STATUS_BADGE_VARIANT: Record<
@@ -151,20 +152,7 @@ export default function MemberAppointmentDetailPage({
     QUEUE_ACTIVE_STATUSES.includes(queueStatus.status);
 
   // 15 秒輪詢（頁籤可見才打；切回可見立即更新；離開頁面清掉 timer）
-  useEffect(() => {
-    if (!shouldPollQueue) return;
-    const timer = setInterval(() => {
-      if (document.visibilityState === "visible") void fetchQueueStatus();
-    }, 15_000);
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") void fetchQueueStatus();
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => {
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [shouldPollQueue, fetchQueueStatus]);
+  usePollOnVisible(fetchQueueStatus, 15_000, shouldPollQueue);
 
   const handleCancel = async () => {
     if (!appt) return;

@@ -31,6 +31,7 @@ import {
   APPOINTMENT_STATUS_LABELS,
   taipeiToday,
 } from "@/lib/constants/appointment";
+import { usePollOnVisible } from "@/lib/hooks/use-poll-on-visible";
 import { cn } from "@/lib/utils";
 import type {
   AppointmentStatus,
@@ -103,20 +104,11 @@ export function QueueTab({ facilityId, facility }: QueueTabProps) {
   }, [accessible, fetchBoard]);
 
   // 10 秒輪詢（頁籤可見才打；切回可見立即更新）
-  useEffect(() => {
-    if (!accessible) return;
-    const timer = setInterval(() => {
-      if (document.visibilityState === "visible") void fetchBoard({ silent: true });
-    }, 10_000);
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") void fetchBoard({ silent: true });
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => {
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [accessible, fetchBoard]);
+  const pollBoard = useCallback(
+    () => void fetchBoard({ silent: true }),
+    [fetchBoard],
+  );
+  usePollOnVisible(pollBoard, 10_000, accessible);
 
   // 櫃檯報到：confirmed → checked_in（成功後立即重抓）
   const handleCheckIn = async (appointmentId: string) => {

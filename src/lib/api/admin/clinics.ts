@@ -28,6 +28,9 @@ import type {
   AnnouncementUpdate,
   FacilityAnalytics,
   VisitorCount,
+  QueueBoard,
+  QueueCallNextRequest,
+  QueueCallNextResult,
 } from "@/types/clinic";
 
 const BASE_PATH = "/api/v1/medical-facilities";
@@ -210,6 +213,29 @@ export const adminClinicsApi = {
       api.patch<ApiAppointment>(
         `${BASE_PATH}/${facilityId}/appointments/${appointmentId}`,
         { status: "cancelled" }
+      ),
+  },
+
+  // ========== 叫號/報到（付費功能：standard 以上 / 試用；方案不足 403） ==========
+
+  queue: {
+    /** 叫號台看板（date 預設今日，Asia/Taipei） */
+    list: (facilityId: string, date?: string) =>
+      api.get<QueueBoard>(
+        `${BASE_PATH}/${facilityId}/queue${date ? `?date=${date}` : ""}`
+      ),
+
+    /** 櫃檯報到：confirmed → checked_in（冪等；其他狀態 409） */
+    checkIn: (facilityId: string, appointmentId: string) =>
+      api.post<ApiAppointment>(
+        `${BASE_PATH}/${facilityId}/appointments/${appointmentId}/check-in`
+      ),
+
+    /** 叫下一號：現任 in_progress → completed，最小號 checked_in → in_progress；無可叫 409 */
+    callNext: (facilityId: string, data: QueueCallNextRequest) =>
+      api.post<QueueCallNextResult>(
+        `${BASE_PATH}/${facilityId}/queue/call-next`,
+        data
       ),
   },
 

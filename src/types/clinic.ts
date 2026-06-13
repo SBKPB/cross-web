@@ -427,7 +427,15 @@ export interface ApiServiceUpdate {
 
 // ========== 預約 API 型別 ==========
 
-export type AppointmentStatus = "confirmed" | "completed" | "cancelled" | "no_show";
+// 預約狀態機：confirmed → checked_in → in_progress → completed / no_show；
+// cancelled 可自 confirmed 或 checked_in 取消。API 一律收/回小寫 value。
+export type AppointmentStatus =
+  | "confirmed"
+  | "checked_in" // 已報到
+  | "in_progress" // 看診中
+  | "completed"
+  | "cancelled"
+  | "no_show";
 
 export interface ApiAppointment {
   id: string;
@@ -444,6 +452,8 @@ export interface ApiAppointment {
   status: AppointmentStatus;
   booking_method: "phone" | "walk_in" | "online" | "line";
   notes: string | null;
+  queue_number: number | null; // 看診號（預約成立即取號；同診次隊列內遞增）
+  check_in_time: string | null; // 報到時間（ISO8601；未報到為 null）
   created_at: string;
   updated_at: string | null;
 }
@@ -468,6 +478,57 @@ export interface ApiAppointmentUpdate {
   appointment_date?: string;
   appointment_time?: string;
   staff_id?: string;
+}
+
+// ========== 叫號/報到 API 型別 ==========
+
+// 叫號台單筆預約（隊列內依 queue_number 排序，null 排最後再依 appointment_time）
+export interface QueueAppointmentItem {
+  id: string;
+  queue_number: number | null;
+  patient_name: string;
+  appointment_time: string; // HH:MM
+  status: AppointmentStatus;
+  check_in_time: string | null; // ISO8601
+  service_name: string | null;
+}
+
+// 診次隊列分組：(facility_id, appointment_date, staff_id)；staff_id null = 不指定醫師共用一條隊列
+export interface QueueGroup {
+  staff_id: string | null;
+  staff_name: string | null;
+  session_label: string | null;
+  current_number: number | null; // 目前叫號（推導值，無 in_progress 且無 completed 為 null）
+  waiting_count: number; // 等待人數（= checked_in 數）
+  appointments: QueueAppointmentItem[];
+}
+
+// GET /medical-facilities/{id}/queue 回應
+export interface QueueBoard {
+  date: string; // YYYY-MM-DD
+  groups: QueueGroup[];
+}
+
+// POST /medical-facilities/{id}/queue/call-next 請求
+export interface QueueCallNextRequest {
+  date: string; // YYYY-MM-DD
+  staff_id: string | null;
+}
+
+// call-next 回應中被叫到者的摘要（對齊後端 CalledAppointmentRead，僅五欄，
+// 不含 check_in_time / service_name —— 後端不回傳，勿在此型別上讀取）
+export interface QueueCalledSummary {
+  id: string;
+  queue_number: number | null;
+  patient_name: string;
+  appointment_time: string; // HH:MM
+  status: AppointmentStatus;
+}
+
+// POST /medical-facilities/{id}/queue/call-next 回應（called = 被叫那筆的摘要；無可叫時為 null）
+export interface QueueCallNextResult {
+  called: QueueCalledSummary | null;
+  current_number: number | null;
 }
 
 // ========== 人員服務關聯 API 型別 ==========

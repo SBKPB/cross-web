@@ -44,19 +44,18 @@ import { memberPatientApi } from "@/lib/api/member-patient";
 import { EditProfileDialog } from "@/components/member/edit-profile-dialog";
 import { RecentlyViewedRail } from "@/components/member/recently-viewed-rail";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-const STATUS_LABEL: Record<string, string> = {
-  confirmed: "已預約",
-  completed: "已完成",
-  cancelled: "已取消",
-  no_show: "未到診",
-};
+import {
+  APPOINTMENT_STATUS_LABELS,
+  QUEUE_ACTIVE_STATUSES,
+} from "@/lib/constants/appointment";
 
 const STATUS_VARIANT: Record<
   string,
   "default" | "secondary" | "destructive" | "outline"
 > = {
   confirmed: "default",
+  checked_in: "default",
+  in_progress: "default",
   completed: "secondary",
   cancelled: "destructive",
   no_show: "outline",
@@ -131,9 +130,9 @@ export default function MemberPage() {
       a.appointment_date.localeCompare(b.appointment_date);
     return {
       all: [...appointments].sort(byDateDesc),
-      // 已預約（即將看診）依日期由近到遠，方便最快就診的排最前
+      // 已預約（即將看診，含已報到 / 看診中）依日期由近到遠，方便最快就診的排最前
       confirmed: appointments
-        .filter((a) => a.status === "confirmed")
+        .filter((a) => QUEUE_ACTIVE_STATUSES.includes(a.status))
         .sort(byDateAsc),
       completed: appointments
         .filter((a) => a.status === "completed")
@@ -522,7 +521,7 @@ function AppointmentGroup({
         <AppointmentCard
           key={appt.id}
           appt={appt}
-          highlight={highlight && appt.status === "confirmed"}
+          highlight={highlight && QUEUE_ACTIVE_STATUSES.includes(appt.status)}
         />
       ))}
     </div>
@@ -568,7 +567,7 @@ function AppointmentCard({
                 <span className="truncate">{appt.facility_name}</span>
               </div>
               <Badge variant={STATUS_VARIANT[appt.status]} className="shrink-0">
-                {STATUS_LABEL[appt.status]}
+                {APPOINTMENT_STATUS_LABELS[appt.status]}
               </Badge>
             </div>
             {appt.staff_name && (

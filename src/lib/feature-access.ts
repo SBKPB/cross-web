@@ -10,19 +10,27 @@ import type { SubscriptionPlan, SubscriptionStatus } from "@/types/clinic";
 export type Feature =
   | "online_booking"
   | "reminders"
+  | "queue_management"
   | "analytics"
   | "no_show_risk";
 
 // 須與 backend app/core/plan_features.py 一致
 const PLAN_FEATURES: Record<SubscriptionPlan, Feature[]> = {
   free: [],
-  standard: ["online_booking", "reminders"],
-  pro: ["online_booking", "reminders", "analytics", "no_show_risk"],
+  standard: ["online_booking", "reminders", "queue_management"],
+  pro: [
+    "online_booking",
+    "reminders",
+    "queue_management",
+    "analytics",
+    "no_show_risk",
+  ],
 };
 
 export const FEATURE_LABELS: Record<Feature, string> = {
   online_booking: "線上預約",
   reminders: "預約提醒",
+  queue_management: "叫號/報到",
   analytics: "客戶分析",
   no_show_risk: "No-show 風險",
 };
@@ -37,6 +45,7 @@ export const PLAN_LABELS: Record<SubscriptionPlan, string> = {
 export const FEATURE_MIN_PLAN: Record<Feature, SubscriptionPlan> = {
   online_booking: "standard",
   reminders: "standard",
+  queue_management: "standard",
   analytics: "pro",
   no_show_risk: "pro",
 };

@@ -50,6 +50,8 @@ interface AppointmentsTabProps {
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
   confirmed: "已預約",
+  checked_in: "已報到",
+  in_progress: "看診中",
   completed: "已完成",
   cancelled: "已取消",
   no_show: "未到診",
@@ -57,6 +59,8 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
 
 const STATUS_PILL: Record<AppointmentStatus, string> = {
   confirmed: "bg-primary/10 text-primary",
+  checked_in: "bg-teal-100 text-teal-700",
+  in_progress: "bg-indigo-100 text-indigo-700",
   completed: "bg-green-100 text-green-700",
   cancelled: "bg-muted text-muted-foreground",
   no_show: "bg-amber-100 text-amber-700",
@@ -298,6 +302,8 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
             <SelectContent>
               <SelectItem value="all">全部狀態</SelectItem>
               <SelectItem value="confirmed">已預約</SelectItem>
+              <SelectItem value="checked_in">已報到</SelectItem>
+              <SelectItem value="in_progress">看診中</SelectItem>
               <SelectItem value="completed">已完成</SelectItem>
               <SelectItem value="cancelled">已取消</SelectItem>
               <SelectItem value="no_show">未到診</SelectItem>
@@ -588,35 +594,46 @@ export function AppointmentsTab({ facilityId }: AppointmentsTabProps) {
                   {isSubmitting ? "儲存中..." : "儲存"}
                 </Button>
               </>
-            ) : selectedAppointment?.status === "confirmed" ? (
+            ) : selectedAppointment &&
+              ["confirmed", "checked_in", "in_progress"].includes(
+                selectedAppointment.status,
+              ) ? (
               <>
-                <Button
-                  variant="outline"
-                  onClick={handleStartEdit}
-                  disabled={isSubmitting}
-                  className="gap-1"
-                >
-                  <PencilIcon className="size-4" />
-                  改期
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleUpdateStatus(selectedAppointment.id, "cancelled")}
-                  disabled={isSubmitting}
-                  className="gap-1"
-                >
-                  <XIcon className="size-4" />
-                  取消
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleUpdateStatus(selectedAppointment.id, "no_show")}
-                  disabled={isSubmitting}
-                  className="gap-1"
-                >
-                  <ClockIcon className="size-4" />
-                  未到
-                </Button>
+                {/* 改期僅限尚未報到的預約；取消可自 confirmed / checked_in（對齊狀態機） */}
+                {selectedAppointment.status === "confirmed" && (
+                  <Button
+                    variant="outline"
+                    onClick={handleStartEdit}
+                    disabled={isSubmitting}
+                    className="gap-1"
+                  >
+                    <PencilIcon className="size-4" />
+                    改期
+                  </Button>
+                )}
+                {selectedAppointment.status !== "in_progress" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleUpdateStatus(selectedAppointment.id, "cancelled")}
+                    disabled={isSubmitting}
+                    className="gap-1"
+                  >
+                    <XIcon className="size-4" />
+                    取消
+                  </Button>
+                )}
+                {/* 未到僅限尚未看診者；看診中（in_progress）的病患已到場，標記未到矛盾且後端會擋（409） */}
+                {selectedAppointment.status !== "in_progress" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleUpdateStatus(selectedAppointment.id, "no_show")}
+                    disabled={isSubmitting}
+                    className="gap-1"
+                  >
+                    <ClockIcon className="size-4" />
+                    未到
+                  </Button>
+                )}
                 <Button
                   onClick={() => handleUpdateStatus(selectedAppointment.id, "completed")}
                   disabled={isSubmitting}

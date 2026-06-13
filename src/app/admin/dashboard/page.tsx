@@ -31,6 +31,7 @@ import {
 } from "@/lib/feature-access";
 import type { FacilitySummary } from "@/types/auth";
 import { FACILITY_TYPE_LABELS } from "@/lib/constants/clinic-constants";
+import { QUEUE_ACTIVE_STATUSES } from "@/lib/constants/appointment";
 import { cn } from "@/lib/utils";
 import type {
   ApiAppointment,
@@ -49,7 +50,9 @@ const SUB_STATUS: Record<SubscriptionStatus, { label: string; dot: string }> = {
 };
 
 const APPT_STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
-  confirmed: { label: "已確認", cls: "bg-blue-100 text-blue-700" },
+  confirmed: { label: "已預約", cls: "bg-blue-100 text-blue-700" },
+  checked_in: { label: "已報到", cls: "bg-teal-100 text-teal-700" },
+  in_progress: { label: "看診中", cls: "bg-indigo-100 text-indigo-700" },
   completed: { label: "已完成", cls: "bg-green-100 text-green-700" },
   cancelled: { label: "已取消", cls: "bg-slate-100 text-slate-600" },
   no_show: { label: "未到診", cls: "bg-red-100 text-red-700" },
@@ -384,8 +387,9 @@ function FacilityDashboard({ facilityId }: { facilityId: string }) {
   if (error) return <DashboardError message={error} />;
   if (!data) return <DashboardLoading />;
 
-  const upcomingConfirmed = data.upcoming.filter(
-    (a) => a.status === "confirmed",
+  // 含已報到/看診中：今日預約被報到、叫號後仍是待就診量，不該從計數消失
+  const upcomingActive = data.upcoming.filter((a) =>
+    QUEUE_ACTIVE_STATUSES.includes(a.status),
   ).length;
   const noShow30 = data.recent.filter((a) => a.status === "no_show").length;
   const todaySorted = [...data.today].sort((a, b) =>
@@ -415,8 +419,8 @@ function FacilityDashboard({ facilityId }: { facilityId: string }) {
         <StatCard
           icon={CalendarClock}
           label="未來 7 天預約"
-          value={upcomingConfirmed}
-          hint="已確認"
+          value={upcomingActive}
+          hint="待就診"
         />
         <StatCard
           icon={UserX}

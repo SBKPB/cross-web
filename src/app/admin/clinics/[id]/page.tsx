@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
+  BellRing,
   BuildingIcon,
   UsersIcon,
   BriefcaseIcon,
@@ -26,6 +27,7 @@ import { ShareClinicDialog } from "@/components/clinics/share-clinic-dialog";
 import { PersonnelTab } from "@/components/admin/clinics/personnel-tab";
 import { ServicesTab } from "@/components/admin/clinics/services-tab";
 import { AppointmentsTab } from "@/components/admin/clinics/appointments-tab";
+import { QueueTab } from "@/components/admin/clinics/queue-tab";
 import { ScheduleTab } from "@/components/admin/clinics/schedule-tab";
 import { AnnouncementsTab } from "@/components/admin/clinics/announcements-tab";
 import { SubscriptionSection } from "@/components/admin/clinics/subscription-section";
@@ -298,6 +300,13 @@ export default function ClinicDetailPage() {
             預約
           </TabsTrigger>
           <TabsTrigger
+            value="queue"
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+          >
+            <BellRing className="size-4" />
+            叫號台
+          </TabsTrigger>
+          <TabsTrigger
             value="personnel"
             className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
           >
@@ -370,6 +379,10 @@ export default function ClinicDetailPage() {
 
         <TabsContent value="appointments">
           <AppointmentsTab facilityId={clinicId} />
+        </TabsContent>
+
+        <TabsContent value="queue">
+          <QueueTab facilityId={clinicId} facility={clinic} />
         </TabsContent>
 
         <TabsContent value="personnel">

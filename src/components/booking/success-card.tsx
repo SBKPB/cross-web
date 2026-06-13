@@ -48,6 +48,15 @@ export function SuccessCard({
             {booking.booking_number}
           </span>
         </p>
+        {/* 預約成立即取號，讓民眾事先知道自己幾號 */}
+        {booking.queue_number != null && (
+          <div
+            className="mt-3 rounded-full px-4 py-1.5 text-sm font-medium tabular-nums"
+            style={{ backgroundColor: `${primaryColor}1a`, color: primaryColor }}
+          >
+            您的看診號 {booking.queue_number} 號
+          </div>
+        )}
       </div>
 
       {/* Booking Details */}

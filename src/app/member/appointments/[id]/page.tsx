@@ -4,12 +4,14 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  BellRing,
   CalendarDays,
   CheckCircle2,
   Clock,
   Hash,
   MapPin,
   Stethoscope,
+  Ticket,
   XCircle,
 } from "lucide-react";
 
@@ -30,22 +32,23 @@ import { useRequireMember } from "@/lib/auth/use-require-member";
 import {
   memberAppointmentApi,
   type MemberAppointment,
+  type MemberQueueStatus,
 } from "@/lib/api/member-appointment";
 import type { AppointmentStatus } from "@/types/clinic";
+import {
+  APPOINTMENT_STATUS_LABELS,
+  QUEUE_ACTIVE_STATUSES,
+  isTaipeiToday,
+} from "@/lib/constants/appointment";
 import { cn } from "@/lib/utils";
-
-const STATUS_LABEL: Record<AppointmentStatus, string> = {
-  confirmed: "已預約",
-  completed: "已完成",
-  cancelled: "已取消",
-  no_show: "未到診",
-};
 
 const STATUS_BADGE_VARIANT: Record<
   AppointmentStatus,
   "default" | "secondary" | "destructive" | "outline"
 > = {
   confirmed: "default",
+  checked_in: "default",
+  in_progress: "default",
   completed: "secondary",
   cancelled: "destructive",
   no_show: "outline",
@@ -54,6 +57,8 @@ const STATUS_BADGE_VARIANT: Record<
 // 狀態 hero 的漸層底色
 const STATUS_HERO: Record<AppointmentStatus, string> = {
   confirmed: "from-primary to-blue-700",
+  checked_in: "from-teal-500 to-cyan-700",
+  in_progress: "from-indigo-500 to-blue-700",
   completed: "from-emerald-500 to-teal-600",
   cancelled: "from-slate-500 to-slate-700",
   no_show: "from-amber-500 to-orange-600",
@@ -81,6 +86,9 @@ export default function MemberAppointmentDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // 叫號進度（院所方案不足時 enabled=false → 隱藏進度卡）
+  const [queueStatus, setQueueStatus] = useState<MemberQueueStatus | null>(null);
+
   const [cancelOpen, setCancelOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
@@ -105,6 +113,58 @@ export default function MemberAppointmentDetailPage({
     if (!ready) return;
     fetchAppt();
   }, [ready, fetchAppt]);
+
+  // 拉取叫號進度，並把較新的狀態（已報到 / 看診中…）回寫到預約本體，hero 即時更新
+  const fetchQueueStatus = useCallback(async () => {
+    try {
+      const qs = await memberAppointmentApi.getQueueStatus(id);
+      setQueueStatus(qs);
+      setAppt((prev) =>
+        prev && prev.status !== qs.status ? { ...prev, status: qs.status } : prev,
+      );
+    } catch {
+      // 進度查詢非關鍵資訊，失敗安靜略過（卡片維持上次狀態或不顯示）
+    }
+  }, [id]);
+
+  // 進行中的預約載入後先抓一次進度
+  const apptStatus = appt?.status ?? null;
+  useEffect(() => {
+    if (!apptStatus || !QUEUE_ACTIVE_STATUSES.includes(apptStatus)) return;
+    void fetchQueueStatus();
+  }, [apptStatus, fetchQueueStatus]);
+
+  // 是否需要輪詢進度：預約是今日且仍在進行中。
+  // 刻意不以 queueStatus 已成功取得為前置條件 —— 首次請求失敗（如弱網）時，
+  // 下一輪輪詢會自動重試；確認院所未開通（enabled=false）才停止輪詢。
+  const shouldPollQueue =
+    !!appt &&
+    isTaipeiToday(appt.appointment_date) &&
+    QUEUE_ACTIVE_STATUSES.includes(appt.status) &&
+    queueStatus?.enabled !== false;
+
+  // 是否顯示進度卡：院所有開通 + 預約是今日 + 仍在進行中狀態
+  const showQueueCard =
+    !!queueStatus?.enabled &&
+    !!appt &&
+    isTaipeiToday(appt.appointment_date) &&
+    QUEUE_ACTIVE_STATUSES.includes(queueStatus.status);
+
+  // 15 秒輪詢（頁籤可見才打；切回可見立即更新；離開頁面清掉 timer）
+  useEffect(() => {
+    if (!shouldPollQueue) return;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void fetchQueueStatus();
+    }, 15_000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void fetchQueueStatus();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [shouldPollQueue, fetchQueueStatus]);
 
   const handleCancel = async () => {
     if (!appt) return;
@@ -174,7 +234,7 @@ export default function MemberAppointmentDetailPage({
                   variant={STATUS_BADGE_VARIANT[appt.status]}
                   className="bg-white/20 text-white"
                 >
-                  {STATUS_LABEL[appt.status]}
+                  {APPOINTMENT_STATUS_LABELS[appt.status]}
                 </Badge>
                 <h2 className="mt-3 flex items-center gap-2 text-2xl font-bold">
                   <MapPin className="size-5 shrink-0" />
@@ -193,6 +253,11 @@ export default function MemberAppointmentDetailPage({
               </div>
             </div>
 
+            {/* 叫號進度（今日且進行中、院所有開通叫號功能才顯示） */}
+            {showQueueCard && queueStatus && (
+              <QueueProgressCard status={queueStatus} />
+            )}
+
             {/* 詳細資訊 */}
             <Card className="divide-y divide-border/60 p-0">
               <InfoRow
@@ -200,6 +265,13 @@ export default function MemberAppointmentDetailPage({
                 label="預約編號"
                 value={appt.booking_number}
               />
+              {(appt.queue_number ?? queueStatus?.queue_number) != null && (
+                <InfoRow
+                  icon={<Ticket className="size-4" />}
+                  label="您的看診號"
+                  value={`${appt.queue_number ?? queueStatus?.queue_number} 號`}
+                />
+              )}
               <InfoRow
                 icon={<MapPin className="size-4" />}
                 label="診所"
@@ -223,7 +295,7 @@ export default function MemberAppointmentDetailPage({
               <InfoRow
                 icon={<CheckCircle2 className="size-4" />}
                 label="狀態"
-                value={STATUS_LABEL[appt.status]}
+                value={APPOINTMENT_STATUS_LABELS[appt.status]}
               />
             </Card>
 
@@ -282,6 +354,71 @@ export default function MemberAppointmentDetailPage({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+/** 看診進度卡：目前叫號 / 您的號碼 / 還差 N 位；輪到本人時整卡高亮 */
+function QueueProgressCard({ status }: { status: MemberQueueStatus }) {
+  const isMyTurn = status.status === "in_progress";
+
+  return (
+    <Card
+      className={cn(
+        "space-y-4 p-5",
+        isMyTurn && "ring-2 ring-primary/40",
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <BellRing
+            className={cn("size-4 text-primary", isMyTurn && "animate-pulse")}
+          />
+          看診進度
+        </div>
+        <span className="text-xs text-muted-foreground">每 15 秒自動更新</span>
+      </div>
+
+      {isMyTurn && (
+        <div className="rounded-2xl bg-primary p-3 text-center text-sm font-bold text-primary-foreground">
+          輪到您了！請前往診間
+        </div>
+      )}
+
+      <div className="grid grid-cols-3 divide-x divide-border/60 text-center">
+        <div className="space-y-1 px-2">
+          <p className="text-xs text-muted-foreground">目前叫號</p>
+          <p className="text-2xl font-bold text-primary tabular-nums">
+            {status.current_number ?? "—"}
+          </p>
+        </div>
+        <div className="space-y-1 px-2">
+          <p className="text-xs text-muted-foreground">您的號碼</p>
+          <p
+            className={cn(
+              "text-2xl font-bold tabular-nums",
+              isMyTurn ? "text-primary" : "text-foreground",
+            )}
+          >
+            {status.queue_number ?? "—"}
+          </p>
+        </div>
+        <div className="space-y-1 px-2">
+          <p className="text-xs text-muted-foreground">還差</p>
+          <p className="text-2xl font-bold text-foreground tabular-nums">
+            {isMyTurn ? 0 : (status.ahead_count ?? "—")}
+            <span className="ml-0.5 text-sm font-medium text-muted-foreground">
+              位
+            </span>
+          </p>
+        </div>
+      </div>
+
+      {status.status === "confirmed" && (
+        <p className="text-center text-xs text-muted-foreground">
+          抵達後請先至櫃檯報到，報到後即可掌握即時進度。
+        </p>
+      )}
+    </Card>
   );
 }
 

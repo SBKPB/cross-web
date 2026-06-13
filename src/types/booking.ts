@@ -95,4 +95,6 @@ export interface BookingResponse {
   appointment_datetime: string;
   patient_name: string;
   patient_phone?: string;
+  queue_number?: number | null; // 預約成立即取號，民眾事先知道自己幾號
+  check_in_time?: string | null; // ISO8601，櫃檯報到後才有值
 }

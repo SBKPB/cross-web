@@ -10,6 +10,22 @@ export interface MemberAppointment {
   appointment_time: string; // HH:MM:SS
   status: AppointmentStatus;
   booking_number: string;
+  queue_number: number | null; // 看診號（預約成立即取號）
+  check_in_time: string | null; // 報到時間（ISO8601；未報到為 null）
+}
+
+// 民眾端叫號進度（GET /member/appointments/{id}/queue-status）
+// enabled=false（院所方案不足）時其餘進度欄位可為 null，客戶端應隱藏進度卡
+export interface MemberQueueStatus {
+  enabled: boolean;
+  queue_number: number | null;
+  status: AppointmentStatus;
+  current_number: number | null; // 目前叫號
+  ahead_count: number | null; // 還差 N 位（同隊列號碼比我小且已報到的人數）
+  facility_name: string;
+  staff_name: string | null;
+  appointment_date: string; // YYYY-MM-DD
+  appointment_time: string; // HH:MM
 }
 
 const PREFIX = "/api/v1/member";
@@ -33,4 +49,10 @@ export const memberAppointmentApi = {
   /** 會員自助取消預約（僅 confirmed 可取消）；成功回 204 */
   cancel: (appointmentId: string): Promise<void> =>
     api.post<void>(`${PREFIX}/appointments/${appointmentId}/cancel`),
+
+  /** 查詢單筆預約的叫號進度（院所方案不足時 enabled=false，不會 403） */
+  getQueueStatus: (appointmentId: string): Promise<MemberQueueStatus> =>
+    api.get<MemberQueueStatus>(
+      `${PREFIX}/appointments/${appointmentId}/queue-status`,
+    ),
 };

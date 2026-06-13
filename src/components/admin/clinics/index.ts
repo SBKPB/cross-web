@@ -4,6 +4,7 @@ export { ClinicDeleteDialog } from "./clinic-delete-dialog";
 export { PersonnelTab } from "./personnel-tab";
 export { ServicesTab } from "./services-tab";
 export { AppointmentsTab } from "./appointments-tab";
+export { QueueTab } from "./queue-tab";
 export { ScheduleTab } from "./schedule-tab";
 export { StaffServicesDialog } from "./staff-services-dialog";
 export { StaffLeaveDialog } from "./staff-leave-dialog";

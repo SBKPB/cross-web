@@ -12,7 +12,8 @@ export type Feature =
   | "reminders"
   | "queue_management"
   | "analytics"
-  | "no_show_risk";
+  | "no_show_risk"
+  | "advanced_queue";
 
 // 須與 backend app/core/plan_features.py 一致
 const PLAN_FEATURES: Record<SubscriptionPlan, Feature[]> = {
@@ -24,6 +25,7 @@ const PLAN_FEATURES: Record<SubscriptionPlan, Feature[]> = {
     "queue_management",
     "analytics",
     "no_show_risk",
+    "advanced_queue",
   ],
 };
 
@@ -33,6 +35,7 @@ export const FEATURE_LABELS: Record<Feature, string> = {
   queue_management: "叫號/報到",
   analytics: "客戶分析",
   no_show_risk: "No-show 風險",
+  advanced_queue: "進階叫號",
 };
 
 export const PLAN_LABELS: Record<SubscriptionPlan, string> = {
@@ -48,6 +51,7 @@ export const FEATURE_MIN_PLAN: Record<Feature, SubscriptionPlan> = {
   queue_management: "standard",
   analytics: "pro",
   no_show_risk: "pro",
+  advanced_queue: "pro",
 };
 
 // 接受 MedicalFacility 與 FacilitySummary 的共同子集

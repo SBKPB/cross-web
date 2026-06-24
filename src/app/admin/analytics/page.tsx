@@ -189,6 +189,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 function AnalyticsContent({ data }: { data: FacilityAnalytics }) {
   const trendMax = Math.max(1, ...data.trend.map((t) => t.count));
   const methodMax = Math.max(1, ...data.by_method.map((m) => m.count));
+  const hourMax = Math.max(1, ...data.by_hour.map((h) => h.count));
 
   return (
     <>
@@ -243,6 +244,40 @@ function AnalyticsContent({ data }: { data: FacilityAnalytics }) {
             ))}
           </div>
         )}
+      </Card>
+
+      {/* 尖峰時段 */}
+      <Card className="p-6">
+        <h3 className="mb-4 text-sm font-semibold text-foreground">尖峰時段</h3>
+        {data.by_hour.length === 0 ? (
+          <p className="text-sm text-muted-foreground">此區間尚無預約資料。</p>
+        ) : (
+          <div className="flex h-44 items-end gap-1.5 overflow-x-auto">
+            {data.by_hour.map((h) => (
+              <div
+                key={h.hour}
+                className="flex min-w-7 flex-1 flex-col items-center gap-1"
+                title={`${h.hour}:00 ~ ${h.hour}:59：${h.count} 筆`}
+              >
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {h.count}
+                </span>
+                <div
+                  className={`w-full rounded-t transition-all ${
+                    h.count === hourMax ? "bg-primary" : "bg-primary/50"
+                  }`}
+                  style={{ height: `${(h.count / hourMax) * 100}%` }}
+                />
+                <span className="w-full text-center text-[10px] text-muted-foreground tabular-nums">
+                  {String(h.hour).padStart(2, "0")}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="mt-3 text-xs text-muted-foreground">
+          依預約時段統計；最高的時段（深色）即為尖峰。
+        </p>
       </Card>
 
       {/* 預約管道佔比 */}

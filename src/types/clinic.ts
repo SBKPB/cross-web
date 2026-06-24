@@ -261,6 +261,10 @@ export interface AnalyticsMethodCount {
   method: string; // BookingMethod value（phone / walk_in / online / line）
   count: number;
 }
+export interface AnalyticsHourCount {
+  hour: number; // 0–23
+  count: number;
+}
 export interface FacilityAnalytics {
   range_days: number;
   granularity: "day" | "week" | "month";
@@ -276,6 +280,7 @@ export interface FacilityAnalytics {
   repeat_patient_rate: number; // 0..1
   trend: AnalyticsTrendPoint[];
   by_method: AnalyticsMethodCount[];
+  by_hour: AnalyticsHourCount[];
 }
 /** 訪客人數（基本資訊，所有方案皆可看；不重複病患數） */
 export interface VisitorCount {
@@ -283,6 +288,20 @@ export interface VisitorCount {
   start_date: string;
   end_date: string;
   visitor_count: number;
+}
+/** 單一醫師平均看診時長 + 平均等待時間（進階叫號 / PRO） */
+export interface DoctorDuration {
+  staff_id: string | null;
+  staff_name: string | null; // null = 不指定醫師
+  avg_consult_minutes: number | null; // 平均看診時長
+  consult_count: number;
+  avg_wait_minutes: number | null; // 平均等待時間（報到→看診）
+  wait_count: number;
+}
+/** GET /medical-facilities/{id}/analytics/doctor-durations 回應 */
+export interface DoctorDurations {
+  range_days: number;
+  doctors: DoctorDuration[];
 }
 
 // 新增醫療單位
@@ -529,6 +548,29 @@ export interface QueueCalledSummary {
 export interface QueueCallNextResult {
   called: QueueCalledSummary | null;
   current_number: number | null;
+}
+
+// ========== 現場叫號公開看板（進階叫號 / PRO；/display 全螢幕，免登入） ==========
+
+// 看板單筆（脫敏：僅號碼 + 遮罩姓名 + 狀態，絕不含全名）
+export interface DisplayAppointment {
+  queue_number: number | null;
+  masked_name: string; // 如「王＊明」
+  status: AppointmentStatus;
+}
+export interface DisplayGroup {
+  staff_name: string | null;
+  current_number: number | null;
+  waiting_count: number;
+  estimated_wait_minutes: number | null; // 新報到約略等候
+  appointments: DisplayAppointment[]; // 僅 checked_in / in_progress
+}
+// GET /api/v1/booking/clinics/{facilityId}/queue-board（公開、免登入）
+export interface DisplayBoard {
+  enabled: boolean; // false = 院所未開通進階叫號（需升級 PRO）
+  facility_name: string | null;
+  date: string; // YYYY-MM-DD
+  groups: DisplayGroup[];
 }
 
 // ========== 人員服務關聯 API 型別 ==========

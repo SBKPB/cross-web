@@ -28,6 +28,7 @@ import type {
   AnnouncementUpdate,
   FacilityAnalytics,
   VisitorCount,
+  DoctorDurations,
   QueueBoard,
   QueueCallNextRequest,
   QueueCallNextResult,
@@ -105,6 +106,12 @@ export const adminClinicsApi = {
   visitorCount: (id: string, params?: { range?: number }) =>
     api.get<VisitorCount>(
       `${BASE_PATH}/${id}/analytics/visitor-count?range=${params?.range ?? 30}`,
+    ),
+
+  // 醫師看診時間統計（進階叫號：pro / 試用）
+  doctorDurations: (id: string, params?: { range?: number }) =>
+    api.get<DoctorDurations>(
+      `${BASE_PATH}/${id}/analytics/doctor-durations?range=${params?.range ?? 30}`,
     ),
 
   // ========== 單位設定 ==========

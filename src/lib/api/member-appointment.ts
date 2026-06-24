@@ -22,6 +22,7 @@ export interface MemberQueueStatus {
   status: AppointmentStatus;
   current_number: number | null; // 目前叫號
   ahead_count: number | null; // 還差 N 位（同隊列號碼比我小且已報到的人數）
+  estimated_wait_minutes: number | null; // 預估等候分鐘（僅進階叫號 PRO 院所有值）
   facility_name: string;
   staff_name: string | null;
   appointment_date: string; // YYYY-MM-DD

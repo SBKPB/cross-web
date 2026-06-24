@@ -401,6 +401,16 @@ function QueueProgressCard({ status }: { status: MemberQueueStatus }) {
         </div>
       </div>
 
+      {!isMyTurn && status.estimated_wait_minutes != null && (
+        <p className="text-center text-xs text-muted-foreground">
+          預估等候約{" "}
+          <span className="font-semibold text-foreground tabular-nums">
+            {status.estimated_wait_minutes}
+          </span>{" "}
+          分鐘
+        </p>
+      )}
+
       {status.status === "confirmed" && (
         <p className="text-center text-xs text-muted-foreground">
           抵達後請先至櫃檯報到，報到後即可掌握即時進度。

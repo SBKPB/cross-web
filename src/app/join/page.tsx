@@ -42,8 +42,8 @@ const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
   },
   {
     icon: BellRing,
-    title: "LINE 自動提醒",
-    description: "隔日預約自動發送 LINE 提醒，有效降低爽約率。",
+    title: "App 自動提醒",
+    description: "隔日預約自動發送 App 推播提醒，有效降低爽約率。",
   },
   {
     icon: Users,

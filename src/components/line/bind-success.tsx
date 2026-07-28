@@ -29,10 +29,10 @@ export function BindSuccess({ patientName }: BindSuccessProps) {
           <Bell className="mt-0.5 size-5 shrink-0 text-green-600" />
           <div className="space-y-1">
             <p className="text-sm font-medium text-green-800">
-              預約提醒已開啟
+              LINE 服務已開通
             </p>
             <p className="text-xs text-green-600">
-              就診前一天將透過 LINE 自動傳送提醒通知，您也可以在聊天中輸入「查詢預約」查看預約資訊。
+              您可以在聊天中輸入「查詢預約」查看預約資訊。預約提醒將透過 Cross App 推播發送，請確認已安裝 App 並開啟通知。
             </p>
           </div>
         </div>

@@ -93,7 +93,7 @@ function BindContent() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-slate-600">
-            綁定後就診前一天會透過 LINE 自動發送提醒，並可在聊天輸入「查詢預約」、「取消預約」等指令。
+            綁定後可在聊天輸入「查詢預約」、「取消預約」等指令管理您的預約。
           </p>
           <Button asChild size="lg" className="mt-5 w-full">
             <Link href={`/auth?next=${encodeURIComponent(next)}`}>
@@ -111,7 +111,7 @@ function BindContent() {
     <div className="mx-auto max-w-md px-5 py-8">
       <div className="mb-8 text-center">
         <h1 className="text-xl font-semibold text-slate-800">LINE 帳號綁定</h1>
-        <p className="mt-1 text-sm text-slate-500">綁定後即可接收預約提醒通知</p>
+        <p className="mt-1 text-sm text-slate-500">綁定後即可在 LINE 查詢與管理預約</p>
       </div>
 
       <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

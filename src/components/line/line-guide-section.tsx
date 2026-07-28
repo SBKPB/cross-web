@@ -18,10 +18,10 @@ export function LineGuideSection() {
     <div className="space-y-4 px-4 py-4">
       <div className="rounded-xl border bg-white p-5">
         <h3 className="text-center text-base font-semibold text-slate-800">
-          接收預約提醒
+          LINE 查詢預約
         </h3>
         <p className="mt-1 text-center text-sm text-slate-500">
-          加入 LINE 好友，就診前自動收到提醒通知
+          加入 LINE 好友，隨時在聊天中查詢與取消預約
         </p>
 
         {/* 三步驟說明 */}

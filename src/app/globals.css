@@ -86,38 +86,42 @@
   --sidebar-ring: #1d4ed8;
 }
 
+/* 深色模式沿用亮色的 slate + 品牌藍語意，只是把明度反過來。
+   關鍵：--primary 在深色改用「亮藍」而非原廠灰階（原本是近白色 oklch(0.922 0 0)，
+   會讓 text-primary 的強調字、搜尋按鈕、作用中 tab 全部變成白底白字）。
+   亮藍當底時前景要用深色，故 --primary-foreground 同步改深。 */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #0f172a;           /* slate-900，對應亮色 n-main */
+  --foreground: #f1f5f9;           /* slate-100 */
+  --card: #1e293b;                 /* slate-800，比背景亮一階（與亮色同邏輯） */
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #60a5fa;              /* blue-400；在 slate-900 上 7.4:1，當文字也讀得到 */
+  --primary-foreground: #0b1220;   /* 亮藍底上的深色前景（白字只有 2.3:1，不可用） */
+  --secondary: #1e293b;
+  --secondary-foreground: #cbd5e1;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;     /* slate-400，在 card/background 上皆 ≥6:1 */
+  --accent: #1e3a8a;               /* blue-900，對應亮色 n-brand-soft */
+  --accent-foreground: #bfdbfe;    /* blue-200 */
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: #334155;               /* slate-700 */
+  --input: #334155;
+  --ring: #60a5fa;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #1e293b;
+  --sidebar-foreground: #cbd5e1;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #0b1220;
+  --sidebar-accent: #1e3a8a;
+  --sidebar-accent-foreground: #bfdbfe;
+  --sidebar-border: #334155;
+  --sidebar-ring: #60a5fa;
 }
 
 @layer base {

@@ -143,8 +143,8 @@ export function HomeSearchCard() {
                 "rounded-t-xl text-sm font-semibold",
                 "transition-colors",
                 active
-                  ? "bg-white text-primary shadow-sm ring-1 ring-border/60 ring-b-0"
-                  : "bg-white/40 text-muted-foreground hover:bg-white/70 hover:text-foreground",
+                  ? "bg-card text-primary shadow-sm ring-1 ring-border/60 ring-b-0"
+                  : "bg-card/40 text-muted-foreground hover:bg-card/70 hover:text-foreground",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -160,7 +160,7 @@ export function HomeSearchCard() {
         className={cn(
           "flex flex-col md:flex-row gap-2 md:gap-1.5",
           "p-2 md:p-2",
-          "rounded-2xl rounded-tl-none bg-white shadow-xl ring-1 ring-border/60",
+          "rounded-2xl rounded-tl-none bg-card shadow-xl ring-1 ring-border/60",
         )}
       >
         {/* 關鍵字 */}
@@ -284,7 +284,7 @@ export function HomeSearchCard() {
           className={cn(
             "h-12 md:h-auto md:min-h-12 px-8 shrink-0",
             "rounded-xl bg-primary hover:bg-primary/90",
-            "text-white text-base font-semibold",
+            "text-primary-foreground text-base font-semibold",
             "shadow-sm",
           )}
         >
@@ -304,7 +304,7 @@ export function HomeSearchCard() {
             className={cn(
               "inline-flex items-center px-3.5 py-1.5",
               "rounded-full text-sm font-medium",
-              "bg-white/80 text-foreground ring-1 ring-border/60",
+              "bg-card/80 text-foreground ring-1 ring-border/60",
               "transition-all duration-150",
               "hover:bg-accent hover:text-primary hover:ring-primary/40 hover:-translate-y-0.5",
             )}

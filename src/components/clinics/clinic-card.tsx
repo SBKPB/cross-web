@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowUpRight,
   Crown,
   Flower2,
   MapPin,
@@ -69,13 +68,6 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
         className,
       )}
     >
-      {/* 收藏愛心（右上角） */}
-      <FavoriteButton
-        clinicId={clinic.id}
-        nextPath={`/clinic/${clinic.id}`}
-        className="absolute top-3 right-3 z-10"
-      />
-
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-2">
@@ -135,10 +127,14 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
             )}
           </div>
 
-          {/* Hover 時出現的箭頭（Luma 風格微互動） */}
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground opacity-0 transition-opacity group-hover/card:opacity-100">
-            <ArrowUpRight className="h-4 w-4" />
-          </div>
+          {/* 右上角只留收藏愛心。原本的 hover 箭頭已移除：卡片本身已用
+              cursor-pointer + hover 位移 + 陰影表達可點，箭頭是第四種重複訊號，
+              且 opacity-0 時仍佔 40px 寬度，會壓縮診所名稱。 */}
+          <FavoriteButton
+            clinicId={clinic.id}
+            nextPath={`/clinic/${clinic.id}`}
+            className="shrink-0"
+          />
         </div>
       </CardHeader>
 

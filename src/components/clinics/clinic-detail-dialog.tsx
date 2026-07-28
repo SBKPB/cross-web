@@ -190,7 +190,7 @@ export function ClinicDetailDialog({
           {/* 操作按鈕 */}
           <div className="flex gap-2 pt-2">
             <Button
-              className="flex-1 bg-primary text-white hover:bg-primary/90"
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
               asChild
             >
               <Link href={`/booking/${clinic.id}`}>
@@ -199,7 +199,7 @@ export function ClinicDetailDialog({
               </Link>
             </Button>
             <Button
-              className="flex-1 bg-white text-primary border border-primary/40 hover:bg-accent/50"
+              className="flex-1 bg-card text-primary border border-primary/40 hover:bg-accent/50"
               asChild
             >
               <Link href={`/clinic/${clinic.id}`}>
@@ -209,7 +209,7 @@ export function ClinicDetailDialog({
             </Button>
             {clinic.address && (
               <Button
-                className="bg-white text-primary border border-border hover:bg-accent/50 px-3"
+                className="bg-card text-primary border border-border hover:bg-accent/50 px-3"
                 asChild
                 title="導航前往"
               >

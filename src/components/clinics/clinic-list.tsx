@@ -32,7 +32,7 @@ export function ClinicList({ clinics, className, onReset }: ClinicListProps) {
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center rounded-3xl bg-white px-4 py-16 text-center ring-1 ring-border/60",
+          "flex flex-col items-center justify-center rounded-3xl bg-card px-4 py-16 text-center ring-1 ring-border/60",
           className,
         )}
       >

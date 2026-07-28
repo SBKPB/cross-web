@@ -155,7 +155,7 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
         <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
           <SelectTrigger
             size="sm"
-            className="w-[132px] rounded-full border-transparent bg-white ring-1 ring-border/60"
+            className="w-[132px] rounded-full border-transparent bg-card ring-1 ring-border/60"
             aria-label="排序方式"
           >
             <SelectValue />

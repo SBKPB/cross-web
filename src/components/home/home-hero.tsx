@@ -8,11 +8,12 @@ const TRUST = ["平台免費使用", "24 小時線上預約", "看診・醫美�
 
 export function HomeHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-background to-background">
-      {/* 柔和淺色光暈（暖、可信賴、airy） */}
-      <div className="pointer-events-none absolute -top-24 left-[15%] size-[480px] rounded-full bg-sky-200/45 blur-3xl" />
-      <div className="pointer-events-none absolute -top-10 right-[12%] size-[420px] rounded-full bg-primary/15 blur-3xl" />
-      <div className="pointer-events-none absolute top-40 right-[28%] size-[360px] rounded-full bg-teal-200/35 blur-3xl" />
+    <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-background to-background dark:from-sky-950/50">
+      {/* 柔和淺色光暈（暖、可信賴、airy）。深色模式需大幅降透明度，
+          否則淺色光暈疊在深底上會變成一片灰綠霧。 */}
+      <div className="pointer-events-none absolute -top-24 left-[15%] size-[480px] rounded-full bg-sky-200/45 blur-3xl dark:bg-sky-500/10" />
+      <div className="pointer-events-none absolute -top-10 right-[12%] size-[420px] rounded-full bg-primary/15 blur-3xl dark:bg-primary/10" />
+      <div className="pointer-events-none absolute top-40 right-[28%] size-[360px] rounded-full bg-teal-200/35 blur-3xl dark:bg-teal-500/10" />
       {/* 極淡點陣 */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.28]"

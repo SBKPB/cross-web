@@ -172,7 +172,7 @@ export function ClinicToolbar({
   return (
     <div
       className={cn(
-        "space-y-3 rounded-3xl bg-white p-3 ring-1 ring-border/60 shadow-sm sm:p-4",
+        "space-y-3 rounded-3xl bg-card p-3 ring-1 ring-border/60 shadow-sm sm:p-4",
         className,
       )}
     >
@@ -180,7 +180,7 @@ export function ClinicToolbar({
       <div
         role="tablist"
         aria-label="服務類型"
-        className="inline-flex items-center gap-1 rounded-full bg-secondary p-1"
+        className="inline-flex items-center gap-1 rounded-full bg-secondary p-1 dark:bg-background"
       >
         {/* 全部 */}
         <button
@@ -191,7 +191,7 @@ export function ClinicToolbar({
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all",
             filters.facilityType === "all"
-              ? "bg-white text-primary shadow-sm ring-1 ring-border/60"
+              ? "bg-card text-primary shadow-sm ring-1 ring-border/60"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -214,7 +214,7 @@ export function ClinicToolbar({
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all",
                 active
-                  ? "bg-white text-primary shadow-sm ring-1 ring-border/60"
+                  ? "bg-card text-primary shadow-sm ring-1 ring-border/60"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -296,7 +296,7 @@ export function ClinicToolbar({
           <div
             role="tablist"
             aria-label="付款方式"
-            className="inline-flex items-center gap-1 rounded-full bg-secondary p-1"
+            className="inline-flex items-center gap-1 rounded-full bg-secondary p-1 dark:bg-background"
           >
             {PAYMENT_FILTER_OPTIONS.map((opt) => {
               const active = filters.paymentType === opt.value;
@@ -312,7 +312,7 @@ export function ClinicToolbar({
                   className={cn(
                     "rounded-full px-3.5 py-1 text-sm font-medium transition-all",
                     active
-                      ? "bg-white text-primary shadow-sm ring-1 ring-border/60"
+                      ? "bg-card text-primary shadow-sm ring-1 ring-border/60"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >

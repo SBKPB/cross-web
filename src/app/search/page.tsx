@@ -77,8 +77,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       <main className="flex-1">
         {/* 搜尋頁 Hero：柔和漸層 + 光暈，與首頁視覺語言一致 */}
-        <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-b from-sky-50 via-background to-background">
-          <div className="pointer-events-none absolute -top-20 left-[12%] size-[360px] rounded-full bg-sky-200/40 blur-3xl" />
+        <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-b from-sky-50 via-background to-background dark:from-sky-950/50">
+          <div className="pointer-events-none absolute -top-20 left-[12%] size-[360px] rounded-full bg-sky-200/40 blur-3xl dark:bg-sky-500/10" />
           <div className="pointer-events-none absolute -top-10 right-[14%] size-[320px] rounded-full bg-primary/10 blur-3xl" />
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.22]"

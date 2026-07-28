@@ -4,56 +4,56 @@ const FEATURES = [
   {
     icon: MapPin,
     title: "一站找服務",
-    desc: "健保、自費、美容通通能搜，不用裝好幾個 App",
+    // 細帶每格只有一行的高度，文案控制在單行內以免該格變高、整排參差
+    desc: "看診、醫美、美容一次找",
   },
   {
     icon: CalendarCheck,
     title: "24 小時預約",
-    desc: "看診掛號、美容諮詢隨時都能約，不用等電話開放",
+    desc: "不用等電話開放時間",
   },
   {
     icon: ShieldCheck,
     title: "預約管理",
-    desc: "所有預約一目瞭然，取消改時間一鍵搞定",
+    desc: "取消、改時間一鍵搞定",
   },
   {
     icon: Sparkles,
     title: "平台免費",
-    desc: "Cross 使用免費，看診費用依診所規定",
+    desc: "看診費用依店家規定",
   },
 ];
 
+/**
+ * 支撐訊息細帶（原本是「Cross 有什麼不一樣」整區）。
+ *
+ * 改成帶狀的原因：首頁原本有三組視覺上完全同構的卡片區（分類 / 三步驟 / 特色）——
+ * 一樣的 rounded-3xl、一樣的 size-12 圖示磚、一樣的 hover 位移，使用者滑到第三組
+ * 就會判定「看過了」而略過。這區的內容是輔助說明而非主要內容，降成一條細帶後，
+ * 卡片語彙就只保留給真正的內容（診所卡），階層才成立。
+ *
+ * 同批一併刪除「三步完成預約」：搜尋 → 挑選 → 預約是不證自明的流程，
+ * 用三張整高卡片教這件事只是佔位。
+ */
 export function FeaturesSection() {
   return (
-    <section className="bg-background py-20">
+    <section className="border-y border-border bg-muted/40 py-12">
       <div className="container mx-auto px-4">
-        <div className="mb-14 text-center">
-          <p className="text-sm font-semibold tracking-wide text-primary">
-            為什麼選 Cross
-          </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Cross 有什麼不一樣
-          </h2>
-          <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-            把看診的大小事變簡單
-          </p>
-        </div>
-        <div className="mx-auto grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mx-auto grid max-w-5xl gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="group rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-1 hover:shadow-md hover:ring-primary/15"
-            >
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                <f.icon className="size-5" />
+            <li key={f.title} className="flex items-start gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <f.icon className="size-[18px]" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">{f.title}</p>
+                <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                  {f.desc}
+                </p>
               </div>
-              <h3 className="mt-4 font-semibold text-foreground">{f.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                {f.desc}
-              </p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

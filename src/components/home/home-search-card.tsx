@@ -23,12 +23,9 @@ import {
 } from "@/components/ui/select";
 import { categoriesFor, facilityTypeLabel } from "@/lib/api/service-categories";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
-import {
-  CITY_OPTIONS,
-  PAYMENT_TYPES,
-} from "@/lib/constants/clinic-constants";
+import { CITY_OPTIONS } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
-import type { FacilityType, PaymentType } from "@/types/clinic";
+import type { FacilityType } from "@/types/clinic";
 
 // 大類 tab（4 類，與 FacilityType 對齊；無 self_pay，自費屬付款軸）
 // label 仍由 taxonomy 提供（healthcare→「看診」），icon 在此固定。
@@ -47,17 +44,6 @@ const TAB_PLACEHOLDERS: Record<FacilityType, string> = {
   other: "傳統整復、推拿或其他健康服務…",
 };
 
-// 看診大類露出的付款篩選（只露 健保 / 自費；'all'=不限；不露 both）
-// label 取自共用 PAYMENT_TYPES，value 用 PaymentType value 送往 /search 的 payment 鍵。
-const PAYMENT_FILTER_OPTIONS: ReadonlyArray<{
-  value: PaymentType | "all";
-  label: string;
-}> = [
-  { value: "all", label: "不限付款" },
-  { value: "nhi", label: PAYMENT_TYPES.nhi },
-  { value: "self_pay", label: PAYMENT_TYPES.self_pay },
-];
-
 export function HomeSearchCard() {
   const router = useRouter();
   const taxonomy = useServiceTaxonomy();
@@ -67,8 +53,6 @@ export function HomeSearchCard() {
   const [city, setCity] = useState("all");
   // 第二層子類別（service_category code）；'all'=不限
   const [category, setCategory] = useState("all");
-  // 看診大類專用：付款方式（nhi / self_pay）；'all'=不限
-  const [payment, setPayment] = useState<PaymentType | "all">("all");
 
   // 當前大類底下的子類別（吃 taxonomy）
   const categories = useMemo(
@@ -80,7 +64,6 @@ export function HomeSearchCard() {
   const switchTab = (value: FacilityType) => {
     setActiveTab(value);
     setCategory("all");
-    setPayment("all");
   };
 
   // 組搜尋 URL：
@@ -88,13 +71,11 @@ export function HomeSearchCard() {
   //   q       → 自由關鍵字
   //   city    → 縣市
   //   cat     → service_category code（可逗號分隔多個；此處單選）
-  //   payment → 付款方式（nhi / self_pay；僅看診大類）
   const buildSearchUrl = (
     overrides?: Partial<{
       q: string;
       city: string;
       cat: string;
-      payment: PaymentType | "all";
       type: FacilityType;
     }>,
   ) => {
@@ -103,13 +84,10 @@ export function HomeSearchCard() {
     const q = overrides?.q ?? query;
     const c = overrides?.city ?? city;
     const cat = overrides?.cat ?? category;
-    const pay = overrides?.payment ?? payment;
     if (t) params.set("type", t);
     if (q) params.set("q", q);
     if (c && c !== "all") params.set("city", c);
     if (cat && cat !== "all") params.set("cat", cat);
-    // payment 僅在看診大類有意義
-    if (t === "healthcare" && pay && pay !== "all") params.set("payment", pay);
     return `/search?${params.toString()}`;
   };
 
@@ -163,8 +141,10 @@ export function HomeSearchCard() {
           "rounded-2xl rounded-tl-none bg-card shadow-xl ring-1 ring-border/60",
         )}
       >
-        {/* 關鍵字 */}
-        <div className="relative flex-1 md:border-r md:border-border/60">
+        {/* 關鍵字 —— flex-[2] 讓它拿到約兩倍於下拉選單的寬度。
+            原本四個欄位平分 max-w-3xl，關鍵字只剩約 100px，
+            placeholder「診所名稱、症狀或醫師…」會被截成「診所名」。 */}
+        <div className="relative md:flex-[2] md:min-w-[220px] md:border-r md:border-border/60">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
@@ -181,7 +161,7 @@ export function HomeSearchCard() {
         </div>
 
         {/* 城市 */}
-        <div className="relative md:flex-1 md:min-w-[180px] md:border-r md:border-border/60">
+        <div className="relative md:flex-1 md:min-w-[130px] md:border-r md:border-border/60">
           <MapPin className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
           <Select value={city} onValueChange={setCity}>
             <SelectTrigger
@@ -210,7 +190,7 @@ export function HomeSearchCard() {
         </div>
 
         {/* 子類別（依大類 taxonomy 動態）— 帶 service_category code */}
-        <div className="relative md:flex-1 md:min-w-[180px] md:border-r md:border-border/60">
+        <div className="relative md:flex-1 md:min-w-[130px] md:border-r md:border-border/60">
           <Tag className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger
@@ -244,39 +224,9 @@ export function HomeSearchCard() {
           </Select>
         </div>
 
-        {/* 付款方式（僅看診大類顯示，只露 健保 / 自費） */}
-        {activeTab === "healthcare" && (
-          <div className="relative md:min-w-[140px]">
-            <Tag className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-            <Select
-              value={payment}
-              onValueChange={(v) => setPayment(v as PaymentType | "all")}
-            >
-              <SelectTrigger
-                className={cn(
-                  "!h-12 w-full pl-10 pr-4",
-                  "border-0 bg-transparent shadow-none",
-                  "text-base text-foreground",
-                  "focus:ring-0 focus:border-transparent",
-                  "data-[placeholder]:text-muted-foreground",
-                )}
-              >
-                <SelectValue placeholder="付款方式" />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px]">
-                {PAYMENT_FILTER_OPTIONS.map((opt) => (
-                  <SelectItem
-                    key={opt.value}
-                    value={opt.value}
-                    className="focus:bg-accent focus:text-primary"
-                  >
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        {/* 付款方式（健保 / 自費）已從首頁移除：它只在 4 個大類中的「看診」有意義，
+            卻永久佔掉一欄寬度，把主要的關鍵字欄擠到不能用。篩選留在 /search 的
+            工具列，該處空間充足且本來就是做篩選的地方。 */}
 
         {/* 送出 */}
         <Button

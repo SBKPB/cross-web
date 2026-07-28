@@ -1,10 +1,10 @@
 "use client";
 
 import {
+  Clock,
   Crown,
   Flower2,
   MapPin,
-  Phone,
   Sparkles,
   Star,
   Stethoscope,
@@ -27,9 +27,30 @@ import {
   FACILITY_TYPE_LABELS,
   HOSPITAL_LEVELS,
   PAYMENT_TYPES,
+  parseAreaFromAddress,
 } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
 import type { Clinic, FacilityType } from "@/types/clinic";
+
+const WEEKDAY_ZH: Record<string, string> = {
+  Sun: "週日",
+  Mon: "週一",
+  Tue: "週二",
+  Wed: "週三",
+  Thu: "週四",
+  Fri: "週五",
+  Sat: "週六",
+};
+
+// 一律以台北時區判定今天星期幾。若直接用 new Date().getDay()，SSR 在 UTC、
+// 瀏覽器在 Asia/Taipei，跨日時段會算出不同答案而造成 hydration 不符。
+function taipeiWeekday(): string {
+  const short = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Taipei",
+    weekday: "short",
+  }).format(new Date());
+  return WEEKDAY_ZH[short] ?? short;
+}
 
 const FACILITY_TYPE_ICONS: Record<FacilityType, typeof Stethoscope> = {
   healthcare: Stethoscope,
@@ -58,6 +79,19 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
   // 醫療分級僅在健保（或舊資料無 facility_type）顯示，其餘大類不分級
   const showHospitalLevel =
     !clinic.facility_type || clinic.facility_type === "healthcare";
+
+  // 「縣市 行政區」；完整地址留給詳情頁
+  const area = parseAreaFromAddress(clinic.address) ?? clinic.city;
+
+  // 今日營業時間。business_hours 只收錄有營業的日子，查不到即今日休息。
+  // 註：這不等於「最近可預約時段」—— 後端列表端點目前不提供可約時段，
+  // 要做需新增依診所查 availability 的端點。
+  const today = clinic.business_hours?.find((h) => h.day === taipeiWeekday());
+  const todayHours = clinic.business_hours?.length
+    ? today && !today.is_closed
+      ? `今日 ${today.open}–${today.close}`
+      : "今日休息"
+    : undefined;
 
   return (
     <Card
@@ -155,18 +189,20 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
           </div>
         )}
 
-        {/* 聯絡資訊 */}
+        {/* 決策資訊：在哪裡、今天開不開。
+            完整地址與電話留到詳情頁 —— 卡片階段使用者只需要判斷「近不近、今天能不能去」，
+            而在一個主打「不用再打電話」的平台上，把電話放在卡片最顯眼的底部是矛盾的。 */}
         <div className="space-y-2 text-sm text-muted-foreground">
-          {clinic.address && (
-            <div className="flex items-start gap-2">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="line-clamp-2">{clinic.address}</span>
+          {area && (
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 shrink-0" />
+              <span className="truncate">{area}</span>
             </div>
           )}
-          {clinic.phone && (
+          {todayHours && (
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 shrink-0" />
-              <span>{clinic.phone}</span>
+              <Clock className="h-4 w-4 shrink-0" />
+              <span>{todayHours}</span>
             </div>
           )}
         </div>

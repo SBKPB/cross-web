@@ -252,6 +252,26 @@ export function parseCityFromAddress(address: string | null | undefined): string
   return undefined;
 }
 
+/**
+ * 從地址字串解析出「縣市 行政區」，卡片列表用（完整地址留給詳情頁）
+ * 範例：「807高雄市三民區長明街175號」 → 「高雄市 三民區」
+ *       「台北市信義區市府路45號」     → 「臺北市 信義區」
+ * 找不到行政區時退回只有縣市；連縣市都沒有則回 undefined。
+ */
+export function parseAreaFromAddress(
+  address: string | null | undefined,
+): string | undefined {
+  const city = parseCityFromAddress(address);
+  if (!city || !address) return undefined;
+
+  const normalized = address.replace(/台/g, "臺");
+  const afterCity = normalized.slice(normalized.indexOf(city) + city.length);
+  // 行政區為緊接縣市之後、以「區/鄉/鎮/市」結尾的 2–3 字（如 三民區、東勢鎮、頭份市）
+  const district = afterCity.match(/^(.{1,3}?[區鄉鎮市])/)?.[1];
+
+  return district ? `${city} ${district}` : city;
+}
+
 // ========== 服務類型（FacilityType） ==========
 
 // 服務型態大類（純服務軸；健保/自費屬付款軸 PaymentType，不在此）

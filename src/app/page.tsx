@@ -7,7 +7,6 @@ import { CityBrowse } from "@/components/home/city-browse";
 import { FaqSection } from "@/components/home/faq-section";
 import { FeaturesSection } from "@/components/home/features-section";
 import { HomeHero } from "@/components/home/home-hero";
-import { HowItWorks } from "@/components/home/how-it-works";
 import { PopularClinics } from "@/components/home/popular-clinics";
 import { SiteFooter } from "@/components/home/site-footer";
 import { SiteHeader } from "@/components/home/site-header";
@@ -34,7 +33,6 @@ export default async function Home() {
         <HomeHero />
         <CityBrowse />
         <PopularClinics clinics={popularClinics} />
-        <HowItWorks />
         <FeaturesSection />
         <FaqSection />
 

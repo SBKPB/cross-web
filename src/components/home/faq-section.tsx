@@ -8,7 +8,7 @@ import {
 const FAQS = [
   {
     q: "Cross 上的店家分哪些類型？",
-    a: "Cross 同時收錄健保看診、自費門診與美容諮詢三大類。每間店家頁面都會明確標示服務類型，你可以依需求篩選。",
+    a: "Cross 收錄看診、醫美、美容、其他四大類服務。健保或自費屬於付款方式，不是分類，每間店家頁面都會同時標示服務類型與付款方式，你可以依需求篩選。",
   },
   {
     q: "使用 Cross 要付錢嗎？",
@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: "美容諮詢也可以預約嗎？",
-    a: "可以。在 Hero 搜尋切換到「美容」tab 即可。美容預約通常是諮詢為主，實際療程與價格以店家現場評估為準。",
+    a: "可以。在首頁搜尋列上方切換到「美容」即可。美容預約通常是諮詢為主，實際療程與價格以店家現場評估為準。",
   },
   {
     q: "預約後想取消或改時間怎麼辦？",
@@ -34,7 +34,9 @@ const FAQS = [
 
 export function FaqSection() {
   return (
-    <section className="border-t border-border bg-muted/40 py-20">
+    // 背景改回 background：上一區的支撐細帶已是 bg-muted/40，
+    // 兩區同底色會連成一塊分不出段落。
+    <section className="bg-background py-20">
       <div className="container mx-auto max-w-3xl px-4">
         <div className="mb-12 text-center">
           <p className="text-sm font-semibold tracking-wide text-primary">FAQ</p>

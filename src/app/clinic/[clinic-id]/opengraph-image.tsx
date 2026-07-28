@@ -138,7 +138,6 @@ export default async function ClinicOgImage({ params }: OgImageProps) {
         >
           {/* logo 或十字記號 */}
           {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logo}
               width={260}

@@ -68,6 +68,15 @@ const SESSION_ORDER: ScheduleSession[] = ["morning", "afternoon", "evening"];
 
 const hhmm = (t: string) => t.slice(0, 5);
 
+// 取後端 ApiError 的 detail 訊息（防呆錯誤如重複排班/休假衝突）
+const apiErrorDetail = (err: unknown): string | null => {
+  if (err && typeof err === "object" && "data" in err) {
+    const data = (err as { data?: { detail?: unknown } }).data;
+    if (typeof data?.detail === "string") return data.detail;
+  }
+  return null;
+};
+
 export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [staff, setStaff] = useState<ApiStaff[]>([]);
@@ -88,6 +97,10 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const [shiftSession, setShiftSession] = useState<ScheduleSession>("morning");
   const [shiftStart, setShiftStart] = useState(SESSION_PRESETS.morning.start);
   const [shiftEnd, setShiftEnd] = useState(SESSION_PRESETS.morning.end);
+
+  // 送出失敗的錯誤訊息（顯示後端 detail，不再靜默吞掉）
+  const [shiftError, setShiftError] = useState("");
+  const [leaveError, setLeaveError] = useState("");
 
   // 只載入專業人員（可提供服務的人員）。useMemo 穩定 reference，
   // 避免每次重繪都換陣列、害智慧排班 dialog 反覆重設。
@@ -167,6 +180,8 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
     setShiftSession("morning");
     setShiftStart(SESSION_PRESETS.morning.start);
     setShiftEnd(SESSION_PRESETS.morning.end);
+    setShiftError("");
+    setLeaveError("");
     setDialogOpen(true);
   };
 
@@ -175,11 +190,13 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
     setShiftSession(s);
     setShiftStart(SESSION_PRESETS[s].start);
     setShiftEnd(SESSION_PRESETS[s].end);
+    setShiftError("");
   };
 
   const handleAddLeave = async () => {
     if (!selectedStaffId || !selectedDate) return;
     setIsSaving(true);
+    setLeaveError("");
     try {
       await adminClinicsApi.staffLeaves.create(facilityId, selectedStaffId, {
         date: format(selectedDate, "yyyy-MM-dd"),
@@ -190,6 +207,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
       setNoteInput("");
     } catch (err) {
       console.error("Failed to add leave:", err);
+      setLeaveError(apiErrorDetail(err) ?? "設定休假失敗，請稍後再試");
     } finally {
       setIsSaving(false);
     }
@@ -211,6 +229,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
     if (!shiftStaffId || !selectedDate) return;
     if (shiftEnd <= shiftStart) return;
     setIsSaving(true);
+    setShiftError("");
     try {
       await adminClinicsApi.schedules.create(facilityId, shiftStaffId, {
         date: format(selectedDate, "yyyy-MM-dd"),
@@ -222,6 +241,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
       setShiftStaffId("");
     } catch (err) {
       console.error("Failed to add schedule:", err);
+      setShiftError(apiErrorDetail(err) ?? "新增排班失敗，請稍後再試");
     } finally {
       setIsSaving(false);
     }
@@ -256,6 +276,28 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
   const availableStaffForLeave = professionalStaff.filter(
     (s) => !selectedDateLeaves.some((l) => l.staff.id === s.id)
   );
+
+  // 排班防呆（與後端規則一致，先在 UI 擋）：同人同日同診次重複、當日休假、起訖時間
+  const shiftDuplicate =
+    !!shiftStaffId &&
+    selectedDateShifts.some(
+      (s) => s.staff_id === shiftStaffId && s.session_type === shiftSession
+    );
+  const shiftStaffOnLeave =
+    !!shiftStaffId &&
+    selectedDateLeaves.some(({ staff: s }) => s.id === shiftStaffId);
+  const shiftBlockReason = shiftStaffOnLeave
+    ? "該人員當日已設休假，無法排班"
+    : shiftDuplicate
+      ? `該人員當日已排${SESSION_PRESETS[shiftSession].label}`
+      : shiftEnd <= shiftStart
+        ? "結束時間必須晚於開始時間"
+        : "";
+
+  // 休假前提示：該人員當日已有排班（不擋，僅提醒）
+  const leaveStaffShiftCount = selectedDateShifts.filter(
+    (s) => s.staff_id === selectedStaffId
+  ).length;
 
   if (isLoading) {
     return (
@@ -433,7 +475,10 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                       </Label>
                       <Select
                         value={shiftStaffId}
-                        onValueChange={setShiftStaffId}
+                        onValueChange={(v) => {
+                          setShiftStaffId(v);
+                          setShiftError("");
+                        }}
                       >
                         <SelectTrigger id="shift-staff">
                           <SelectValue placeholder="選擇人員" />
@@ -492,9 +537,14 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                       />
                     </div>
                   </div>
+                  {(shiftBlockReason || shiftError) && (
+                    <p className="text-xs text-destructive">
+                      {shiftBlockReason || shiftError}
+                    </p>
+                  )}
                   <Button
                     onClick={handleAddShift}
-                    disabled={!shiftStaffId || shiftEnd <= shiftStart || isSaving}
+                    disabled={!shiftStaffId || !!shiftBlockReason || isSaving}
                   >
                     {isSaving ? "處理中..." : "新增排班"}
                   </Button>
@@ -551,7 +601,10 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                     </Label>
                     <Select
                       value={selectedStaffId}
-                      onValueChange={setSelectedStaffId}
+                      onValueChange={(v) => {
+                        setSelectedStaffId(v);
+                        setLeaveError("");
+                      }}
                     >
                       <SelectTrigger id="staff-select">
                         <SelectValue placeholder="選擇人員" />
@@ -576,6 +629,15 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                       placeholder="例：特休、病假"
                     />
                   </div>
+                  {selectedStaffId && leaveStaffShiftCount > 0 && (
+                    <p className="text-xs text-amber-600">
+                      該人員當日已有 {leaveStaffShiftCount}{" "}
+                      筆排班，設定休假前請先確認是否需調整
+                    </p>
+                  )}
+                  {leaveError && (
+                    <p className="text-xs text-destructive">{leaveError}</p>
+                  )}
                   <Button
                     variant="outline"
                     onClick={handleAddLeave}

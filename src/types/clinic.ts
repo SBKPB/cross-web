@@ -353,6 +353,7 @@ export interface ApiStaff {
   role: ApiStaffRole;
   is_active: boolean;
   is_public_visible: boolean;
+  is_bookable: boolean; // false = 暫停預約（移出班表與可約時段）
   avatar_url: string | null;
   last_login: string | null;
   created_at: string;
@@ -378,6 +379,7 @@ export interface ApiStaffCreate {
   email?: string;
   role: ApiStaffRole;
   is_public_visible?: boolean;
+  is_bookable?: boolean;
 
   // 醫師專屬欄位
   department?: string;
@@ -400,6 +402,7 @@ export interface ApiStaffUpdate {
   role?: ApiStaffRole;
   is_active?: boolean;
   is_public_visible?: boolean;
+  is_bookable?: boolean;
 
   // 醫師專屬欄位
   department?: string;

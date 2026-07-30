@@ -363,6 +363,16 @@ function PersonnelCard({
               )}
               {person.is_public_visible ? "顯示中" : "隱藏"}
             </span>
+            {/* 暫停預約 pill（僅專業人員） */}
+            {isProfessional && person.is_bookable === false && (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700"
+                title="暫停接受預約：已從門診時刻表與可約時段中移除"
+              >
+                <CalendarOffIcon className="size-3.5" />
+                暫停預約
+              </span>
+            )}
           </div>
 
           {/* 專業人員資訊（醫師/美容師/治療師） */}
@@ -447,6 +457,8 @@ interface FormData {
   email: string;
   // 民眾端可見性 + 頭像
   is_public_visible: boolean;
+  // 開放預約（false = 移出班表與可約時段）
+  is_bookable: boolean;
   avatar_url: string | null;
   // 專業人員欄位（醫師/美容師/治療師）
   main_specialties: string;
@@ -468,6 +480,7 @@ function getInitialFormData(person: PersonnelData | null): FormData {
       phone: person.phone || "",
       email: person.email || "",
       is_public_visible: person.is_public_visible,
+      is_bookable: person.is_bookable ?? true,
       avatar_url: person.avatar_url,
       main_specialties: person.main_specialties?.join(", ") || "",
       experience: person.experience?.join("\n") || "",
@@ -480,6 +493,7 @@ function getInitialFormData(person: PersonnelData | null): FormData {
     phone: "",
     email: "",
     is_public_visible: false,
+    is_bookable: true,
     avatar_url: null,
     main_specialties: "",
     experience: "",
@@ -568,6 +582,7 @@ function PersonnelFormContent({
       phone: formData.phone || undefined,
       email: formData.email || undefined,
       is_public_visible: formData.is_public_visible,
+      is_bookable: formData.is_bookable,
     };
 
     // 專業人員欄位（醫師/美容師/治療師）
@@ -707,6 +722,30 @@ function PersonnelFormContent({
               </p>
             </div>
           </div>
+
+          {["doctor", "beautician", "therapist"].includes(formData.role) && (
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="is_bookable"
+                checked={formData.is_bookable}
+                onCheckedChange={(checked) =>
+                  setFormData((p) => ({
+                    ...p,
+                    is_bookable: checked === true,
+                  }))
+                }
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <Label htmlFor="is_bookable" className="font-normal">
+                  開放預約
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  關閉後，此人員暫停接受預約：從門診時刻表與可約時段中移除，介紹頁仍顯示
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

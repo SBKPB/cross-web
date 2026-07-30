@@ -31,13 +31,16 @@ export const bookingApi = {
     const raw = await api.get<Record<string, unknown>[]>(
       `/api/v1/booking/clinics/${clinicId}/doctors`
     );
-    return raw.map((item) => ({
-      id: (item.id as string) ?? null,
-      name: String(item.name ?? ""),
-      title: String(item.title ?? item.department ?? ""),
-      avatar: (item.avatar as string) ?? undefined,
-      specialties: (item.specialties ?? item.main_specialties ?? []) as string[],
-    }));
+    // 暫停預約的醫師（is_bookable=false）不進預約選單；介紹頁仍顯示
+    return raw
+      .filter((item) => item.is_bookable !== false)
+      .map((item) => ({
+        id: (item.id as string) ?? null,
+        name: String(item.name ?? ""),
+        title: String(item.title ?? item.department ?? ""),
+        avatar: (item.avatar as string) ?? undefined,
+        specialties: (item.specialties ?? item.main_specialties ?? []) as string[],
+      }));
   },
 
   getAvailableSlots: async (

@@ -24,7 +24,7 @@ const FAQS = [
   },
   {
     q: "費用怎麼計算？",
-    a: "標示價格為每月訂閱費用，且已含稅。實際開通與計費方式會在專人聯繫時為您說明清楚。",
+    a: "標示價格已含稅，可選月繳或年繳。年繳一次支付、等於付 10 個月，相當於省下 2 個月費用。實際開通與計費方式會在專人聯繫時為您說明清楚。",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function PricingPage() {
         <section className="container mx-auto px-4 pb-8">
           <PricingTable />
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            以上為每月訂閱費用（已含稅）；新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
+            價格已含稅；年繳一次支付、等於付 10 個月。新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
           </p>
         </section>
 

@@ -1,6 +1,7 @@
 // 訂閱方案（公開定價頁用）— 三方案 free / standard / pro
 //
 // 價格（月費，使用者確認）：standard NT$3,000、pro NT$8,000。
+// 年繳＝付 ANNUAL_PAID_MONTHS 個月（現為 10，等於送 2 個月）；改折扣只動這個常數。
 // 試用期 90 天為商業承諾，後端「一鍵試用」會自動把到期日設為開通日 +90 天。
 // 功能對照（featureIds）對齊後端 app/core/plan_features.py 與 src/lib/feature-access.ts，
 // 改一處記得三處同步。
@@ -11,11 +12,26 @@ import type { SubscriptionPlan } from "@/types/clinic";
 // 試用天數（全站文案統一引用，避免散落各頁不一致）
 export const TRIAL_DAYS = 90;
 
+/** 年繳實付月數：付 10 個月、用滿 12 個月（等於送 2 個月）。調折扣只改這裡。 */
+export const ANNUAL_PAID_MONTHS = 10;
+
+/** 年繳總價 */
+export const annualTotal = (monthly: number) => monthly * ANNUAL_PAID_MONTHS;
+
+/** 年繳省下的金額（相對於月繳付滿 12 個月） */
+export const annualSaving = (monthly: number) =>
+  monthly * (12 - ANNUAL_PAID_MONTHS);
+
+/** NT$ 千分位格式 */
+export const formatTWD = (n: number) => `NT$${n.toLocaleString("en-US")}`;
+
 export interface PricingPlan {
   id: SubscriptionPlan;
   name: string;
   /** 價格主數字，免費方案用「免費」 */
   priceLabel: string;
+  /** 月費金額（數字）；免費方案省略，年繳價由此推算 */
+  monthlyPrice?: number;
   /** 價格單位，如「/ 月」；免費方案可省略 */
   pricePeriod?: string;
   description: string;
@@ -48,6 +64,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: "standard",
     name: "標準",
     priceLabel: "NT$3,000",
+    monthlyPrice: 3000,
     pricePeriod: "/ 月",
     description: "開通線上預約，讓顧客 24 小時自助預約。",
     features: [
@@ -66,6 +83,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: "pro",
     name: "專業",
     priceLabel: "NT$8,000",
+    monthlyPrice: 8000,
     pricePeriod: "/ 月",
     description: "進一步用數據優化營運、降低爽約。",
     features: [

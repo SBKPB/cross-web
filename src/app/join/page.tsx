@@ -195,7 +195,7 @@ export default function JoinPage() {
               <PricingTable ctaHref="#apply" />
             </div>
             <p className="mt-6 text-center text-xs text-muted-foreground">
-              以上為每月訂閱費用（已含稅）；新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
+              價格已含稅；年繳一次支付、等於付 10 個月。新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
             </p>
           </div>
         </section>

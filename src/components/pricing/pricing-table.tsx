@@ -26,7 +26,8 @@ interface PricingTableProps {
 }
 
 export function PricingTable({ className, ctaHref }: PricingTableProps) {
-  const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  // 預設年繳：多數院所選年繳，也讓「省 2 個月」第一眼就看到
+  const [cycle, setCycle] = useState<BillingCycle>("annual");
 
   return (
     <div className={cn("mx-auto max-w-5xl", className)}>

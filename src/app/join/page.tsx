@@ -1,15 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Activity,
-  ArrowRight,
-  BellRing,
-  CalendarClock,
-  ClipboardList,
-  Eye,
-  Sparkles,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 import {
   Accordion,
@@ -19,6 +9,14 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { JoinForm } from "@/components/join/join-form";
+import {
+  BookingDemo,
+  ExposureDemo,
+  ReminderDemo,
+  RiskDemo,
+  ScheduleDemo,
+  StaffDemo,
+} from "@/components/join/feature-demos";
 import { SiteFooter } from "@/components/home/site-footer";
 import { SiteHeader } from "@/components/home/site-header";
 import { PricingTable } from "@/components/pricing/pricing-table";
@@ -29,36 +27,40 @@ export const metadata: Metadata = {
     "診所、醫美診所、美業店家加入 Cross 預約平台：線上 24 小時預約、排程班表管理、LINE 自動提醒、人員與服務管理，觸及全台尋找醫療與美容服務的民眾。",
 };
 
-const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
+const FEATURES: {
+  demo: () => React.JSX.Element;
+  title: string;
+  description: string;
+}[] = [
   {
-    icon: CalendarClock,
+    demo: BookingDemo,
     title: "24 小時線上預約",
-    description: "民眾隨時線上預約，不再漏接電話、不佔用櫃檯人力。",
+    description: "櫃檯下班了預約還在進來，不再漏接電話、不佔用人力。",
   },
   {
-    icon: ClipboardList,
+    demo: ScheduleDemo,
     title: "排程與班表管理",
-    description: "人員班表、休假與預約時段間隔，後台一站設定。",
+    description: "只標休假，其餘自動視為看診；要精細排診也排得出來。",
   },
   {
-    icon: BellRing,
+    demo: ReminderDemo,
     title: "App 自動提醒",
-    description: "隔日預約自動發送 App 推播提醒，有效降低爽約率。",
+    description: "看診前一天自動推播，病人記得來，你少一個空檔。",
   },
   {
-    icon: Users,
+    demo: StaffDemo,
     title: "人員與服務管理",
-    description: "醫師、美容師、服務項目與價格集中維護。",
+    description: "醫師、美容師、服務項目與價格集中維護，改一次全站同步。",
   },
   {
-    icon: Activity,
+    demo: RiskDemo,
     title: "爽約風險分析",
-    description: "系統預測高風險預約，提前提醒、減少空檔損失。",
+    description: "系統挑出高風險的那幾筆，讓你提前一通電話補回來。",
   },
   {
-    icon: Eye,
+    demo: ExposureDemo,
     title: "分眾精準曝光",
-    description: "健保 / 自費 / 醫美 / 美容分流，被對的客群看見。",
+    description: "看診 / 醫美 / 美容 / 其他分流，被正在找你的客群看見。",
   },
 ];
 
@@ -163,11 +165,9 @@ export default function JoinPage() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="group rounded-3xl bg-card p-6 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/15"
+                className="rounded-3xl bg-card p-5 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/15"
               >
-                <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                  <f.icon className="size-5" />
-                </span>
+                <f.demo />
                 <h3 className="mt-4 font-semibold text-foreground">{f.title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                   {f.description}

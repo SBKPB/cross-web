@@ -4,8 +4,16 @@
  * 六張卡各放一個「假的 Cross 畫面」：時段 pill、休假格、推播卡、風險條、分類 chip
  * 都沿用後台與民眾端真正在用的視覺語彙，讓人一眼看到功能長什麼樣，而不是看圖示。
  * 純 HTML/CSS、無互動、無圖片，深色模式跟著 token 走。
+ * 元素以 demo-step 循環動畫依序出現（keyframes 在 globals.css），讓畫面像正在
+ * 發生的事而不是靜態圖；只在 motion-safe 下跑。
  */
 import { cn } from "@/lib/utils";
+
+/** 循環淡入（6s 一輪）；偏好減少動態時維持靜態 */
+const step = "motion-safe:animate-[demo-step_6s_ease-in-out_infinite_both]";
+/** 風險條由 0 長到 --demo-w */
+const grow = "motion-safe:animate-[demo-grow_6s_ease-in-out_infinite_both]";
+const delay = (ms: number) => ({ animationDelay: `${ms}ms` });
 
 /** demo 外框：固定高度讓六張卡等高，內容置中 */
 function Stage({
@@ -43,8 +51,10 @@ export function BookingDemo() {
           {["09:00", "09:30", "10:00"].map((t, i) => (
             <span
               key={t}
+              style={delay(i * 140)}
               className={cn(
                 "rounded-lg py-1.5 text-center text-xs font-medium tabular-nums ring-1",
+                step,
                 i === 1
                   ? "bg-primary text-primary-foreground ring-primary"
                   : "bg-card text-muted-foreground ring-foreground/10",
@@ -54,7 +64,13 @@ export function BookingDemo() {
             </span>
           ))}
         </div>
-        <div className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+        <div
+          style={delay(900)}
+          className={cn(
+            "mt-2.5 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400",
+            step,
+          )}
+        >
           <span className="size-1.5 rounded-full bg-emerald-500" />
           已為林小姐建立預約
         </div>
@@ -76,8 +92,10 @@ export function ScheduleDemo() {
               <div className="text-[10px] text-muted-foreground">{d}</div>
               {/* 看診日不標字（重複五次會稀釋焦點），只讓「休」說話 */}
               <div
+                style={delay(i * 70)}
                 className={cn(
                   "mt-1 grid h-8 place-items-center rounded-md text-[10px] font-medium",
+                  step,
                   off.includes(i)
                     ? "bg-card text-muted-foreground ring-1 ring-dashed ring-foreground/20"
                     : "bg-primary/15",
@@ -92,7 +110,10 @@ export function ScheduleDemo() {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        <p
+          style={delay(700)}
+          className={cn("mt-3 text-center text-[11px] text-muted-foreground", step)}
+        >
           只標休假，其餘自動視為看診
         </p>
       </div>
@@ -104,7 +125,13 @@ export function ScheduleDemo() {
 export function ReminderDemo() {
   return (
     <Stage>
-      <div className="w-full max-w-[15rem] rounded-xl bg-card p-3 shadow-sm ring-1 ring-foreground/10">
+      <div
+        style={delay(250)}
+        className={cn(
+          "w-full max-w-[15rem] rounded-xl bg-card p-3 shadow-sm ring-1 ring-foreground/10",
+          step,
+        )}
+      >
         <div className="flex items-center gap-2">
           <span className="grid size-5 shrink-0 place-items-center rounded-md bg-primary text-[9px] font-bold text-primary-foreground">
             C
@@ -135,10 +162,14 @@ export function StaffDemo() {
   return (
     <Stage>
       <div className="w-full max-w-[15rem] space-y-1.5">
-        {rows.map((r) => (
+        {rows.map((r, i) => (
           <div
             key={r.name}
-            className="flex items-center gap-2 rounded-lg bg-card px-2.5 py-1.5 ring-1 ring-foreground/10"
+            style={delay(i * 180)}
+            className={cn(
+              "flex items-center gap-2 rounded-lg bg-card px-2.5 py-1.5 ring-1 ring-foreground/10",
+              step,
+            )}
           >
             <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
               {r.name.slice(0, 1)}
@@ -166,12 +197,16 @@ export function RiskDemo() {
   return (
     <Stage>
       <div className="w-full max-w-[15rem] space-y-2">
-        {rows.map((r) => {
+        {rows.map((r, i) => {
           const high = r.risk >= 50;
           return (
             <div
               key={r.time}
-              className="rounded-lg bg-card px-2.5 py-2 ring-1 ring-foreground/10"
+              style={delay(i * 220)}
+              className={cn(
+                "rounded-lg bg-card px-2.5 py-2 ring-1 ring-foreground/10",
+                step,
+              )}
             >
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-medium tabular-nums text-foreground">
@@ -195,9 +230,16 @@ export function RiskDemo() {
                 <div
                   className={cn(
                     "h-full rounded-full",
+                    grow,
                     high ? "bg-amber-500" : "bg-foreground/20",
                   )}
-                  style={{ width: `${r.risk}%` }}
+                  style={
+                    {
+                      width: `${r.risk}%`,
+                      "--demo-w": `${r.risk}%`,
+                      animationDelay: `${i * 220}ms`,
+                    } as React.CSSProperties
+                  }
                 />
               </div>
             </div>
@@ -218,8 +260,10 @@ export function ExposureDemo() {
           {tabs.map((t, i) => (
             <span
               key={t}
+              style={delay(i * 90)}
               className={cn(
                 "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                step,
                 i === 0
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground ring-1 ring-foreground/10",
@@ -229,7 +273,13 @@ export function ExposureDemo() {
             </span>
           ))}
         </div>
-        <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-card p-2.5 ring-1 ring-primary/30">
+        <div
+          style={delay(650)}
+          className={cn(
+            "mt-2.5 flex items-center gap-2 rounded-xl bg-card p-2.5 ring-1 ring-primary/30",
+            step,
+          )}
+        >
           <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-[11px] font-bold text-primary">
             康
           </span>

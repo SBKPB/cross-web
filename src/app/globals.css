@@ -170,3 +170,20 @@
     transparent 320px
   );
 }
+
+/* === /join 功能迷你 demo 的循環動畫 ===
+   一個共用 keyframe：淡入上移 → 停留 → 淡出重來。各元素只改 animation-delay
+   形成順序感（同 duration 故長期不會走鐘）。只在 motion-safe 下套用，
+   偏好減少動態時元素維持原樣即可，不需另外還原 opacity。 */
+@keyframes demo-step {
+  0%, 6% { opacity: 0; transform: translateY(4px); }
+  14%, 88% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(4px); }
+}
+
+/* 風險條：從 0 長到各自寬度（寬度由 --demo-w 帶入） */
+@keyframes demo-grow {
+  0%, 10% { width: 0; }
+  30%, 88% { width: var(--demo-w); }
+  100% { width: 0; }
+}

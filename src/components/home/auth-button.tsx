@@ -9,12 +9,13 @@ import { canAccessAdmin, getAdminHomePath } from "@/lib/auth/roles";
 /**
  * 民眾端 header 的登入 / 帳號按鈕
  *
- * - 未登入：顯示「診所登入」→ /admin 與「登入」按鈕 → /auth
+ * - 未登入：只顯示民眾「登入」→ /auth
  * - 已登入（民眾）：顯示使用者名稱 → /member
  * - 已登入（後台帳號）：顯示「管理後台」→ 後台首頁，不導向民眾端
  *
- * 「診所登入」只在完全未登入時出現；登入後台帳號後一律由下方
- * 「管理後台」接手，避免兩顆按鈕同時指向後台造成重複。
+ * 未登入時不放「診所登入」：這是民眾端 header，四個項目在民眾／院所兩種身分之間
+ * 交錯只會讓民眾困惑。院所入口統一走「夥伴加入」與 footer 的「醫療院所」區
+ * （那裡已有診所登入），登入後台帳號後再由「管理後台」接手。
  */
 export function AuthButton() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -45,25 +46,11 @@ export function AuthButton() {
   }
 
   return (
-    <>
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-        className="hidden text-foreground hover:text-primary sm:inline-flex"
-      >
-        <Link href="/admin">診所登入</Link>
-      </Button>
-      <Button
-        asChild
-        size="sm"
-        className="gap-1.5"
-      >
-        <Link href="/auth">
-          <LogIn className="size-4" />
-          登入
-        </Link>
-      </Button>
-    </>
+    <Button asChild size="sm" className="gap-1.5">
+      <Link href="/auth">
+        <LogIn className="size-4" />
+        登入
+      </Link>
+    </Button>
   );
 }

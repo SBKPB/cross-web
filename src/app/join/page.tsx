@@ -17,6 +17,7 @@ import {
   ScheduleDemo,
   StaffDemo,
 } from "@/components/join/feature-demos";
+import { PatientView } from "@/components/join/patient-view";
 import { SiteFooter } from "@/components/home/site-footer";
 import { SiteHeader } from "@/components/home/site-header";
 import { PricingTable } from "@/components/pricing/pricing-table";
@@ -176,6 +177,9 @@ export default function JoinPage() {
             ))}
           </div>
         </section>
+
+        {/* ===== 民眾眼中的你（用真的 ClinicCard 當證據） ===== */}
+        <PatientView />
 
         {/* ===== 方案與定價 ===== */}
         <section

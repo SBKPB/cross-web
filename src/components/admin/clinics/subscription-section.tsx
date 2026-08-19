@@ -191,10 +191,17 @@ export function SubscriptionSection({
             <div className="text-xs font-medium text-muted-foreground">
               方案
             </div>
-            <div className="mt-1.5">
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                 {PLAN_LABEL[effectivePlan]}
               </span>
+              {/* 計費週期只對付費方案有意義（免費無帳單、試用固定 90 天） */}
+              {effectivePlan !== "free" &&
+                facility.subscription_status !== "trial" && (
+                  <span className="inline-flex rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                    {facility.billing_cycle === "annual" ? "年繳" : "月繳"}
+                  </span>
+                )}
             </div>
           </div>
           <div className="rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5">

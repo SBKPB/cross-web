@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { adminClinicsApi } from "@/lib/api/admin/clinics";
 import { lumaDialogFooter, lumaIconBadge } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
-import type { MedicalFacility } from "@/types/clinic";
+import type { BillingCycle, MedicalFacility } from "@/types/clinic";
 
 interface RenewSubscriptionDialogProps {
   open: boolean;
@@ -28,11 +28,18 @@ interface RenewSubscriptionDialogProps {
 
 type Preset = "1m" | "3m" | "6m" | "1y" | "custom";
 
-const PRESETS: { value: Preset; label: string; months: number }[] = [
-  { value: "1m", label: "1 個月", months: 1 },
+// cycle：對得上定價頁月繳／年繳的選項才記錄週期；3 個月、半年、自訂屬個別談的
+// 方案，維持院所原本的週期不動。
+const PRESETS: {
+  value: Preset;
+  label: string;
+  months: number;
+  cycle?: BillingCycle;
+}[] = [
+  { value: "1m", label: "1 個月", months: 1, cycle: "monthly" },
   { value: "3m", label: "3 個月", months: 3 },
   { value: "6m", label: "半年", months: 6 },
-  { value: "1y", label: "1 年", months: 12 },
+  { value: "1y", label: "1 年", months: 12, cycle: "annual" },
 ];
 
 function formatDateInput(d: Date): string {
@@ -123,10 +130,13 @@ export function RenewSubscriptionDialog({
         ? `${facility.subscription_notes}\n${renewalLog}`
         : renewalLog;
 
+      const cycle = PRESETS.find((p) => p.value === preset)?.cycle;
       const updated = await adminClinicsApi.updateSubscription(facility.id, {
         subscription_status: "active",
         subscription_expires_at: expiryIso,
         subscription_notes: mergedNotes,
+        // 到期日已明確帶上，後端不會再依週期覆寫
+        ...(cycle ? { billing_cycle: cycle } : {}),
         // 起始日如果沒設，補上今天
         ...(facility.subscription_started_at
           ? {}

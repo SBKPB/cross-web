@@ -208,6 +208,9 @@ export type SubscriptionPlan = "free" | "standard" | "pro";
 // 訂閱狀態（trial 是狀態，非方案；試用期間 plan=pro + status=trial）
 export type SubscriptionStatus = "trial" | "active" | "suspended" | "cancelled";
 
+// 計費週期（只決定續約推幾個月與後台顯示，不影響功能權限）
+export type BillingCycle = "monthly" | "annual";
+
 // 醫療單位（後端回傳格式）
 export interface MedicalFacility {
   id: string;
@@ -231,6 +234,7 @@ export interface MedicalFacility {
   subscription_status: SubscriptionStatus;
   subscription_started_at: string | null;
   subscription_expires_at: string | null;
+  billing_cycle: BillingCycle;
   subscription_notes: string | null;
   trial_used_at: string | null; // 試用領取時間；null = 尚未用過（可一鍵試用）
   // 精選置頂（PRO 解鎖 + 後台逐間開關/到期）
@@ -246,6 +250,8 @@ export interface FacilitySubscriptionUpdate {
   subscription_status?: SubscriptionStatus;
   subscription_started_at?: string | null;
   subscription_expires_at?: string | null;
+  // 有給且未同時指定 subscription_expires_at 時，後端會依週期自動推算到期日
+  billing_cycle?: BillingCycle;
   subscription_notes?: string | null;
   // 精選置頂（需 PRO 解鎖；後端會驗證資格）
   is_featured?: boolean;

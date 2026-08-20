@@ -18,6 +18,10 @@ function RadioGroup({
   );
 }
 
+/**
+ * 未選取狀態與 Checkbox 同步偏離 Luma registry 預設（原為 border-transparent +
+ * bg-input/90）：無邊框的填色圓點看不出是可選的圓鈕。見 ui/checkbox.tsx 註解。
+ */
 function RadioGroupItem({
   className,
   ...props
@@ -26,7 +30,7 @@ function RadioGroupItem({
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
       className={cn(
-        "group/radio-group-item peer relative flex aspect-square size-4 shrink-0 rounded-full border border-transparent bg-input/90 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+        "group/radio-group-item peer relative flex aspect-square size-4 shrink-0 rounded-full border border-foreground/50 bg-card outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
         className,
       )}
       {...props}

@@ -21,10 +21,9 @@ const SAMPLE_CLINIC: Clinic = {
   facility_type: "healthcare",
   payment_type: "both",
   logo: null,
-  rating: 4.8,
-  review_count: 126,
+  // 不放 rating / review_count：後端目前一律回 null（評分尚未實作），
+  // 在招商頁展示等於承諾一個還不存在的功能。
   is_featured: true,
-  online_booking_enabled: true,
   business_hours: [
     { day: "週一", open: "09:00", close: "21:00", is_closed: false },
     { day: "週二", open: "09:00", close: "21:00", is_closed: false },
@@ -34,16 +33,12 @@ const SAMPLE_CLINIC: Clinic = {
     { day: "週六", open: "09:00", close: "12:00", is_closed: false },
     { day: "週日", open: "09:00", close: "12:00", is_closed: false },
   ],
-  members: [
-    { id: "1", name: "王志明", role: "doctor", department: "family_medicine" },
-    { id: "2", name: "林淑芬", role: "doctor", department: "dermatology" },
-  ],
 };
 
 /** 卡片上每個東西是後台哪裡來的——順便告訴院所「填得完整才好看」 */
 const SOURCES: { label: string; from: string }[] = [
   { label: "精選置頂", from: "專業方案解鎖，排在搜尋結果最前面" },
-  { label: "線上預約", from: "標準方案以上開通，民眾直接按下去就約" },
+  { label: "服務型態與付款方式", from: "看診／醫美／美容分流，健保或自費一眼看出" },
   { label: "科別與營業時間", from: "你在後台填的資料，改完民眾端立刻同步" },
 ];
 

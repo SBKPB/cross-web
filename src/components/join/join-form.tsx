@@ -79,18 +79,11 @@ const INITIAL_STATE: FormState = {
 };
 
 /** 區段標題：序號圓點 + 標題 */
-function SectionTitle({ step, children }: { step: number; children: string }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-        {step}
-      </span>
-      <h3 className="text-sm font-semibold tracking-tight text-foreground">
-        {children}
-      </h3>
-    </div>
-  );
-}
+const STEPS = [
+  { title: "商家類型", hint: "你經營的是哪一種？" },
+  { title: "基本資料", hint: "怎麼聯絡到你" },
+  { title: "服務資訊", hint: "提供哪些服務（可略過）" },
+];
 
 function CategoryCard({
   option,
@@ -209,15 +202,30 @@ export function JoinForm() {
         : [...prev.service_categories, code],
     }));
 
-  const canSubmit =
-    form.business_name.trim() &&
-    form.contact_name.trim() &&
-    form.phone.trim() &&
-    form.email.trim() &&
-    form.city;
+  // 三段流程：0 商家類型 / 1 基本資料 / 2 服務資訊。
+  // 一次只問一段，18 個欄位鋪在同一頁會讓人直接關掉。
+  const [step, setStep] = useState(0);
+
+  // 逐段驗證：擋在「下一步」而不是等到最後才報錯，錯誤發生在哪一段就在哪一段講
+  const stepValid = [
+    true, // 商家類型永遠有預設值
+    Boolean(
+      form.business_name.trim() &&
+        form.contact_name.trim() &&
+        form.phone.trim() &&
+        // 第二步的 fieldset 到第三步會被 disabled（避開 hidden+required 無法 focus 的原生錯誤），
+        // 連帶跳過 type="email" 的原生檢查，所以格式在這裡就擋掉
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) &&
+        form.city,
+    ),
+    true, // 服務資訊全為選填
+  ];
+  const canSubmit = stepValid[1];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // 在欄位裡按 Enter 會觸發隱式送出，只有最後一步才算數
+    if (step !== STEPS.length - 1) return;
     setError(null);
     setIsSubmitting(true);
 
@@ -279,11 +287,30 @@ export function JoinForm() {
           </span>
         </div>
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          申請已送出！
+          申請已送出
         </h2>
         <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-          感謝您加入 Cross，我們已收到「{form.business_name}」的加入申請。
-          營運團隊將在 1–2 個工作天內以電話或 Email 與您聯繫，協助完成後續設定。
+          我們已收到「{form.business_name}」的申請，並寄了一封驗證信到{" "}
+          <strong className="font-medium text-foreground">{form.email}</strong>。
+        </p>
+        <div className="w-full max-w-sm space-y-2.5 rounded-2xl bg-muted/40 p-5 text-left">
+          {[
+            "到信箱點驗證連結，並設定後台密碼（連結 72 小時內有效）",
+            "我們收到後會盡快審核",
+            "審核通過就會開通後台，屆時再以這個信箱通知您",
+          ].map((text, i) => (
+            <div key={text} className="flex gap-3">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+                {i + 1}
+              </span>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {text}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          沒收到信？請看看垃圾信匣，或重新送出一次申請。
         </p>
         <Button
           variant="outline"
@@ -291,6 +318,7 @@ export function JoinForm() {
           onClick={() => {
             setForm(INITIAL_STATE);
             setSubmitted(false);
+            setStep(0);
           }}
         >
           再填一筆
@@ -309,20 +337,36 @@ export function JoinForm() {
       <div className="h-1 bg-gradient-to-r from-primary/70 via-primary to-primary/70" />
 
       <div className="space-y-7 p-6 sm:p-8">
-        {/* 標題 */}
+        {/* 進度：讓人知道還剩幾步，而不是面對一片問不完的欄位 */}
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            填寫加入申請
+          <div className="flex items-center gap-2">
+            {STEPS.map((s, i) => (
+              <div key={s.title} className="flex flex-1 items-center gap-2">
+                <span
+                  className={cn(
+                    "h-1 flex-1 rounded-full transition-colors",
+                    i <= step ? "bg-primary" : "bg-muted",
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+          <h2 className="mt-4 text-xl font-bold tracking-tight text-foreground">
+            {STEPS[step].title}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            大約 2 分鐘 · 標示 <span className="text-destructive">*</span>{" "}
-            為必填
+            第 {step + 1} / {STEPS.length} 步 · {STEPS[step].hint}
+            {step === 1 && (
+              <>
+                {" "}
+                · 標示 <span className="text-destructive">*</span> 為必填
+              </>
+            )}
           </p>
         </div>
 
         {/* ① 商家類型 */}
-        <fieldset className="space-y-3">
-          <SectionTitle step={1}>選擇商家類型</SectionTitle>
+        <fieldset hidden={step !== 0} disabled={step !== 0} className="space-y-3">
           <div className="grid grid-cols-2 gap-2.5">
             {JOIN_CATEGORIES.map((option) => (
               <CategoryCard
@@ -336,8 +380,7 @@ export function JoinForm() {
         </fieldset>
 
         {/* ② 基本資料 */}
-        <fieldset className="space-y-4">
-          <SectionTitle step={2}>商家基本資料</SectionTitle>
+        <fieldset hidden={step !== 1} disabled={step !== 1} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2 sm:col-span-2">
               <Label htmlFor="business_name">
@@ -424,8 +467,7 @@ export function JoinForm() {
         </fieldset>
 
         {/* ③ 服務資訊 */}
-        <fieldset className="space-y-4">
-          <SectionTitle step={3}>{isClinic ? "診所資訊" : "服務資訊"}</SectionTitle>
+        <fieldset hidden={step !== 2} disabled={step !== 2} className="space-y-4">
 
           {/* 主要服務子類別：多選 chip（依所選大類動態切換清單） */}
           <div className="grid gap-2">
@@ -538,29 +580,59 @@ export function JoinForm() {
           </div>
         )}
 
-        {/* 送出 */}
+        {/* 導覽：最後一步才是送出 */}
         <div className="space-y-3">
-          <Button
-            type="submit"
-            size="lg"
-            className="group/submit w-full"
-            disabled={isSubmitting || !canSubmit}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                送出中…
-              </>
-            ) : (
-              <>
-                送出加入申請
-                <ArrowRight className="size-4 transition-transform group-hover/submit:translate-x-0.5" />
-              </>
+          <div className="flex gap-3">
+            {step > 0 && (
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                onClick={() => setStep((n) => n - 1)}
+                disabled={isSubmitting}
+              >
+                上一步
+              </Button>
             )}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            送出即表示同意 Cross 營運團隊以您提供的聯絡方式與您聯繫。
-          </p>
+            {step < STEPS.length - 1 ? (
+              <Button
+                key="next"
+                type="button"
+                size="lg"
+                className="group/next flex-1"
+                onClick={() => setStep((n) => n + 1)}
+                disabled={!stepValid[step]}
+              >
+                下一步
+                <ArrowRight className="size-4 transition-transform group-hover/next:translate-x-0.5" />
+              </Button>
+            ) : (
+              <Button
+                key="submit"
+                type="submit"
+                size="lg"
+                className="group/submit flex-1"
+                disabled={isSubmitting || !canSubmit}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    送出中…
+                  </>
+                ) : (
+                  <>
+                    送出加入申請
+                    <ArrowRight className="size-4 transition-transform group-hover/submit:translate-x-0.5" />
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+          {step === STEPS.length - 1 && (
+            <p className="text-center text-xs text-muted-foreground">
+              送出後會寄一封驗證信到你填的信箱，點連結設定密碼即可完成申請。
+            </p>
+          )}
         </div>
       </div>
     </form>

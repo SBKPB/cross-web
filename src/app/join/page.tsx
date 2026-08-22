@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 import {
@@ -8,7 +9,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { JoinForm } from "@/components/join/join-form";
 import {
   BookingDemo,
   ExposureDemo,
@@ -66,9 +66,15 @@ const FEATURES: {
 ];
 
 const STEPS = [
-  { title: "填寫加入申請", description: "送出下方表單，約需 2 分鐘。" },
-  { title: "專人聯繫", description: "1–2 個工作天內以電話或 Email 與您確認。" },
-  { title: "開通上架", description: "協助完成設定，正式於 Cross 接受預約。" },
+  { title: "填寫申請", description: "分三段填寫商家資料，約需 2 分鐘。" },
+  {
+    title: "收信驗證",
+    description: "點信中連結設定後台密碼，完成信箱驗證。",
+  },
+  {
+    title: "審核開通",
+    description: "我們確認資料後開通後台，即可上架接受預約。",
+  },
 ];
 
 const FAQS = [
@@ -86,7 +92,7 @@ const FAQS = [
   },
   {
     q: "上架要多久？",
-    a: "送出申請後 1–2 個工作天內會有專人聯繫，確認資料並協助開通，通常數個工作天即可正式上架。",
+    a: "送出申請後會立刻收到驗證信，點連結設定密碼即完成申請；我們審核通過後開通後台，通常數個工作天即可正式上架。",
   },
 ];
 
@@ -131,10 +137,10 @@ export default function JoinPage() {
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg" className="group/cta w-full sm:w-auto">
-                  <a href="#apply">
+                  <Link href="/join/apply">
                     立即申請加入
                     <ArrowRight className="size-4 transition-transform group-hover/cta:translate-x-0.5" />
-                  </a>
+                  </Link>
                 </Button>
                 <Button
                   asChild
@@ -196,7 +202,7 @@ export default function JoinPage() {
               </p>
             </div>
             <div className="mt-12">
-              <PricingTable ctaHref="#apply" />
+              <PricingTable ctaHref="/join/apply" />
             </div>
             <p className="mt-6 text-center text-xs text-muted-foreground">
               價格已含稅；年繳一次支付、等於付 10 個月。新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
@@ -204,47 +210,48 @@ export default function JoinPage() {
           </div>
         </section>
 
-        {/* ===== 申請區：流程 + 表單 ===== */}
+        {/* ===== 申請區：說明流程，表單在 /join/apply ===== */}
         <section
           id="apply"
           className="scroll-mt-20 border-t border-border bg-muted/30"
         >
           <div className="container mx-auto px-4 py-16 sm:py-20">
-            <div className="mx-auto grid max-w-5xl items-start gap-10 lg:grid-cols-[minmax(0,380px)_minmax(0,540px)] lg:justify-center lg:gap-12">
-              {/* 左：流程 */}
-              <div className="space-y-8 lg:sticky lg:top-28">
-                <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                    三步驟，正式加入
-                  </h2>
-                  <p className="mt-3 text-muted-foreground">
-                    填表後由專人協助，過程簡單、無壓力。
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                三步驟，正式加入
+              </h2>
+              <p className="mt-3 text-muted-foreground">
+                填表約 2 分鐘，接著只要收信驗證，通過審核就能登入後台。
+              </p>
+            </div>
+            <ol className="mx-auto mt-10 grid max-w-4xl gap-6 sm:grid-cols-3">
+              {STEPS.map((step, i) => (
+                <li
+                  key={step.title}
+                  className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+                >
+                  <span className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm">
+                    {i + 1}
+                  </span>
+                  <h3 className="mt-4 font-semibold text-foreground">
+                    {step.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {step.description}
                   </p>
-                </div>
-                <ol className="relative space-y-6 pl-2">
-                  <span className="absolute left-[18px] top-2 bottom-2 w-px bg-border" />
-                  {STEPS.map((step, i) => (
-                    <li key={step.title} className="relative flex gap-4">
-                      <span className="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm">
-                        {i + 1}
-                      </span>
-                      <div className="pt-1">
-                        <h3 className="font-semibold text-foreground">
-                          {step.title}
-                        </h3>
-                        <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
-                          {step.description}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-              {/* 右：表單 */}
-              <div className="lg:pt-1">
-                <JoinForm />
-              </div>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <Button size="lg" className="group/apply h-12 px-8 text-base" asChild>
+                <Link href="/join/apply">
+                  開始申請
+                  <ArrowRight className="size-4 transition-transform group-hover/apply:translate-x-0.5" />
+                </Link>
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                免費方案不需信用卡，隨時可升級。
+              </p>
             </div>
           </div>
         </section>

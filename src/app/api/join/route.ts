@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+
 import {
   categoryLabel,
   serviceCategoriesApi,
@@ -140,9 +142,12 @@ async function buildNotificationText(data: JoinApplication): Promise<string> {
   return lines.join("\n");
 }
 
-async function sendEmail(text: string, businessName: string): Promise<void> {
+async function sendEmail(
+  to: string,
+  subject: string,
+  text: string,
+): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.JOIN_NOTIFY_EMAIL;
   if (!apiKey || !to) return;
 
   const from = process.env.JOIN_NOTIFY_FROM || "Cross <onboarding@cross.twinhao.com>";
@@ -155,8 +160,8 @@ async function sendEmail(text: string, businessName: string): Promise<void> {
       },
       body: JSON.stringify({
         from,
-        to: to.split(",").map((s) => s.trim()),
-        subject: `【Cross 夥伴加入申請】${businessName}`,
+        to: to.split(",").map((x) => x.trim()),
+        subject,
         text,
       }),
     });
@@ -166,6 +171,55 @@ async function sendEmail(text: string, businessName: string): Promise<void> {
   } catch (err) {
     console.error("[join] Resend email error", err);
   }
+}
+
+/** 建立申請單，回傳驗證 token（供組驗證連結）。失敗時回傳可顯示給使用者的訊息。 */
+async function createApplication(
+  data: JoinApplication,
+): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
+  const res = await fetch(`${BACKEND_URL}/api/v1/facility-applications`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      business_name: data.business_name,
+      contact_name: data.contact_name,
+      phone: data.phone,
+      email: data.email,
+      city: data.city,
+      address: data.address,
+      team_size: data.team_size,
+      facility_type: FACILITY_BY_CATEGORY[data.category],
+      payment_type: data.payment_type ?? "nhi",
+      service_categories: data.service_categories ?? [],
+      services: data.services,
+      message: data.message,
+    }),
+  });
+  if (res.ok) {
+    const json = (await res.json()) as { verification_token: string };
+    return { ok: true, token: json.verification_token };
+  }
+  // 後端已把「這個信箱已經有帳號」之類的訊息寫成可直接顯示的中文
+  const detail = await res
+    .json()
+    .then((j: { detail?: string }) => j.detail)
+    .catch(() => undefined);
+  return { ok: false, error: detail ?? "送出失敗，請稍後再試" };
+}
+
+function verificationEmail(businessName: string, link: string): string {
+  return [
+    `${businessName} 您好，`,
+    "",
+    "感謝您申請加入 Cross。請點下面的連結驗證信箱並設定後台密碼：",
+    link,
+    "",
+    "連結 72 小時內有效。",
+    "",
+    "設定完成後，我們會盡快審核您的申請；審核通過才會開通後台，屆時會再以此信箱通知您。",
+    "",
+    "如果這不是您本人的申請，請忽略這封信——在您設定密碼之前，不會有任何帳號被建立。",
+  ].join("\n");
 }
 
 export async function POST(req: NextRequest) {
@@ -190,20 +244,36 @@ export async function POST(req: NextRequest) {
   }
 
   const data = result.data;
-  const text = await buildNotificationText(data);
 
-  // server log fallback（永遠記錄，方便沒設定通知管道時也追得到申請）
+  // 先建立申請單。失敗（例如信箱已有帳號）要如實回報給使用者，
+  // 不能像通知信那樣默默吞掉——否則對方會以為申請成功卻永遠等不到信。
+  const created = await createApplication(data);
+  if (!created.ok) {
+    return NextResponse.json({ ok: false, error: created.error }, { status: 400 });
+  }
+
+  const origin = req.nextUrl.origin;
+  const link = `${origin}/join/verify?token=${encodeURIComponent(created.token)}`;
+
   console.info("[join] new application", {
-    category: data.category,
     business_name: data.business_name,
-    contact_name: data.contact_name,
-    phone: data.phone,
     email: data.email,
-    city: data.city,
   });
 
-  // 送出 email 通知，失敗不影響回應
-  await sendEmail(text, data.business_name);
+  // 兩封信：申請人的驗證信（關鍵路徑）、營運團隊的通知信（純告知）
+  await sendEmail(
+    data.email,
+    "【Cross】請驗證信箱並設定密碼",
+    verificationEmail(data.business_name, link),
+  );
+  const notifyTo = process.env.JOIN_NOTIFY_EMAIL;
+  if (notifyTo) {
+    await sendEmail(
+      notifyTo,
+      `【Cross 夥伴加入申請】${data.business_name}`,
+      await buildNotificationText(data),
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

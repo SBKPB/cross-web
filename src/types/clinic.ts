@@ -681,3 +681,35 @@ export interface ApiScheduleBatchResult {
   skipped_leave: number;
   skipped_invalid: number;
 }
+
+// ========== 夥伴加入申請（對齊後端 app/schemas/facility_application.py）==========
+
+export type ApplicationStatus =
+  | "pending_verification" // 已送出，尚未點驗證信
+  | "pending_review" // 信箱已驗證、密碼已設，待人工審核
+  | "approved"
+  | "rejected";
+
+export interface FacilityApplication {
+  id: string;
+  business_name: string;
+  contact_name: string;
+  phone: string;
+  email: string;
+  city: string | null;
+  address: string | null;
+  team_size: string | null;
+  facility_type: FacilityType;
+  payment_type: PaymentType;
+  service_categories: string[];
+  services: string | null;
+  message: string | null;
+  status: ApplicationStatus;
+  verified_at: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+  /** 核准後建立的院所／帳號，供後台直接跳過去 */
+  created_facility_id: string | null;
+  created_user_id: string | null;
+  created_at: string;
+}

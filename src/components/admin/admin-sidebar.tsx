@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Building2,
+  ClipboardCheck,
   CreditCard,
   KeyRound,
   LayoutDashboard,
@@ -34,6 +35,7 @@ interface NavItem {
 const SYSTEM_NAV: NavItem[] = [
   { href: "/admin/dashboard", label: "總覽", icon: LayoutDashboard },
   { href: "/admin/clinics", label: "院所管理", icon: Building2 },
+  { href: "/admin/applications", label: "夥伴申請", icon: ClipboardCheck },
   { href: "/admin/users", label: "使用者管理", icon: UserCog },
   { href: "/admin/settings", label: "系統設定", icon: Settings },
 ];

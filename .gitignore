@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 範本檔要進版控：只有 key 與說明、沒有任何真值，
+# 新進者與部署時才知道有哪些變數要設（例如 VISITOR_HASH_SALT 沒設會靜默停用造訪統計）
+!.env.example
 
 # vercel
 .vercel

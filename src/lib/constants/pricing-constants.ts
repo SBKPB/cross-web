@@ -70,7 +70,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       "包含「免費」所有功能",
       "24 小時線上預約",
-      "LINE / App 預約提醒",
+      "App 推播預約提醒",
       "現場叫號／報到管理",
       "排程與班表管理",
     ],

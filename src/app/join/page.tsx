@@ -25,7 +25,7 @@ import { PricingTable } from "@/components/pricing/pricing-table";
 export const metadata: Metadata = {
   title: "夥伴加入",
   description:
-    "診所、醫美診所、美業店家加入 Cross 預約平台：線上 24 小時預約、排程班表管理、LINE 自動提醒、人員與服務管理，觸及全台尋找醫療與美容服務的民眾。",
+    "診所、醫美診所、美業店家加入 Cross 預約平台：線上 24 小時預約、排程班表管理、App 推播提醒、人員與服務管理，觸及全台尋找醫療與美容服務的民眾。",
 };
 
 const FEATURES: {

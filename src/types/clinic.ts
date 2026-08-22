@@ -293,7 +293,10 @@ export interface VisitorCount {
   range_days: number;
   start_date: string;
   end_date: string;
+  /** 區間內有預約的不重複病患數 */
   visitor_count: number;
+  /** 診所頁的不重複造訪人數（IP 雜湊去重）；舊後端未回傳時視為 0 */
+  page_view_count: number;
 }
 /** 單一醫師平均看診時長 + 平均等待時間（進階叫號 / PRO） */
 export interface DoctorDuration {

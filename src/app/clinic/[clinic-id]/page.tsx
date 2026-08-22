@@ -36,6 +36,7 @@ import type {
   Service,
 } from "@/types/clinic";
 import type { WeeklySchedule } from "@/types/schedule";
+import { TrackView } from "@/components/clinic-detail/track-view";
 
 const API_BASE_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -472,6 +473,8 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
 
   return (
     <div className="min-h-screen bg-background pb-28 lg:pb-16">
+      {/* 造訪回報（不渲染任何東西） */}
+      <TrackView clinicId={clinic.id} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

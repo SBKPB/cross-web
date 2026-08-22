@@ -2,17 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  BarChart3,
-  CalendarCheck,
-  CheckCircle2,
-  Lock,
-  Loader2,
-  TrendingUp,
-  UserCheck,
-  Users,
-  XCircle,
-} from "lucide-react";
+import { BarChart3, CalendarCheck, CheckCircle2, Eye, Loader2, Lock, TrendingUp, UserCheck, Users, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -128,20 +118,36 @@ export default function AnalyticsPage() {
 }
 
 function VisitorCard({ data }: { data: VisitorCount }) {
+  // 刻意不算「轉換率」：分子（有預約的病患）涵蓋電話、現場、App 全管道且依
+  // 看診日開窗，分母（造訪）只涵蓋 web 且依造訪日開窗——兩個母體不相交，
+  // 相除常態超過 100%（造訪表是新的、從 0 開始累積，預約卻有歷史資料）。
+  // 真要做轉換率得改成「同區間內經 web 建立的線上預約 / 造訪」，是另一個功能。
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between">
+    <Card className="grid gap-6 p-6 sm:grid-cols-2">
+      <div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Eye className="size-4" />
+          造訪人數
+        </div>
+        <div className="mt-2 text-3xl font-bold tracking-tight text-foreground tabular-nums">
+          {data.page_view_count}
+        </div>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          近 {data.range_days} 天看過你診所頁的人（同一 IP 同一天只算一次）
+        </p>
+      </div>
+      <div className="sm:border-l sm:border-border sm:pl-6">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Users className="size-4" />
           訪客人數
         </div>
-        <span className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
+        <div className="mt-2 text-3xl font-bold tracking-tight text-foreground tabular-nums">
           {data.visitor_count}
-        </span>
+        </div>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          近 {data.range_days} 天不重複到訪病患（{data.start_date} ~ {data.end_date}）
+        </p>
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">
-        近 {data.range_days} 天不重複到訪病患（{data.start_date} ~ {data.end_date}）
-      </p>
     </Card>
   );
 }

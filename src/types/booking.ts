@@ -29,7 +29,6 @@ export interface ClinicConfig {
   phone: string | null;
   address: string | null;
   google_maps_url?: string;
-  line_return_url?: string;
   slot_duration?: number; // 時段間隔（分鐘）：15, 30, 或 60，預設 30
   online_booking_enabled?: boolean; // 是否開通線上預約（付費功能）
   phone_booking_enabled?: boolean; // 未開通線上預約時是否顯示電話預約（預設關閉）

@@ -7,7 +7,6 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SuccessCard } from "@/components/booking/success-card";
 import { CalendarButtons } from "@/components/booking/calendar-buttons";
-import { LineGuideSection } from "@/components/line/line-guide-section";
 import { bookingApi } from "@/lib/api/booking";
 import type { BookingResponse } from "@/types/booking";
 
@@ -81,8 +80,6 @@ export default function SuccessPage({ params }: SuccessPageProps) {
             <CalendarButtons booking={booking} primaryColor={primaryColor} />
           </div>
 
-          {/* LINE 好友引導 */}
-          <LineGuideSection />
         </>
       )}
 

@@ -39,7 +39,6 @@ src/
 │   ├── booking/              # 預約流程
 │   ├── member/               # 民眾會員
 │   ├── admin/                # 後台管理
-│   ├── bind/                 # LINE / Google 帳號綁定
 │   ├── privacy/ + terms/     # 法律頁
 │   └── api/[...path]/        # 後端代理路由
 ├── components/

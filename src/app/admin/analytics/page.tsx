@@ -22,7 +22,6 @@ const METHOD_LABELS: Record<string, string> = {
   phone: "電話",
   walk_in: "現場",
   online: "線上",
-  line: "LINE",
 };
 
 function pct(rate: number): string {

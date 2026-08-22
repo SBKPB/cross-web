@@ -264,7 +264,7 @@ export interface AnalyticsTrendPoint {
   count: number;
 }
 export interface AnalyticsMethodCount {
-  method: string; // BookingMethod value（phone / walk_in / online / line）
+  method: string; // BookingMethod value（phone / walk_in / online）
   count: number;
 }
 export interface AnalyticsHourCount {
@@ -481,7 +481,7 @@ export interface ApiAppointment {
   appointment_date: string;
   appointment_time: string;
   status: AppointmentStatus;
-  booking_method: "phone" | "walk_in" | "online" | "line";
+  booking_method: "phone" | "walk_in" | "online";
   notes: string | null;
   queue_number: number | null; // 看診號（預約成立即取號；同診次隊列內遞增）
   check_in_time: string | null; // 報到時間（ISO8601；未報到為 null）

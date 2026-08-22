@@ -9,7 +9,6 @@ import {
   ShieldIcon,
   Trash2Icon,
   CalendarPlus,
-  Link2Off,
   KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ import {
   UserFormDialog,
   UserRoleDialog,
   UserDeleteDialog,
-  UserLineUnbindDialog,
   ResetPasswordDialog,
 } from "@/components/admin/users";
 import { RenewSubscriptionDialog } from "@/components/admin/clinics/renew-subscription-dialog";
@@ -96,8 +94,6 @@ export default function AdminUsersPage() {
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
   const [renewDialogOpen, setRenewDialogOpen] = useState(false);
   const [renewFacility, setRenewFacility] = useState<MedicalFacility | null>(null);
-  const [unbindDialogOpen, setUnbindDialogOpen] = useState(false);
-  const [unbindUser, setUnbindUser] = useState<AdminUser | null>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [resetUser, setResetUser] = useState<AdminUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -351,28 +347,6 @@ export default function AdminUsersPage() {
   const handleOpenReset = (user: AdminUser) => {
     setResetUser(user);
     setResetDialogOpen(true);
-  };
-
-  // ========== 解除 LINE 綁定 ==========
-  const handleOpenUnbind = (user: AdminUser) => {
-    setUnbindUser(user);
-    setUnbindDialogOpen(true);
-  };
-
-  const handleUnbind = async () => {
-    if (!unbindUser) return;
-    setIsSubmitting(true);
-    try {
-      const res = await adminUsersApi.unbindLine(unbindUser.id);
-      setUnbindDialogOpen(false);
-      setUnbindUser(null);
-      alert(`已清除 ${res.deleted_count} 筆 LINE 綁定`);
-    } catch (err) {
-      console.error("Failed to unbind LINE:", err);
-      alert("解除失敗，請稍後再試");
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   // ========== 刪除使用者 ==========
@@ -629,17 +603,6 @@ export default function AdminUsersPage() {
                           <KeyRound className="size-4" />
                         </Button>
                       )}
-                      {/* LINE 綁定僅民眾端會員適用；員工/管理員不綁 LINE，不顯示 */}
-                      {tab === "patient" && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleOpenUnbind(user)}
-                          title="解除 LINE 綁定"
-                        >
-                          <Link2Off className="size-4" />
-                        </Button>
-                      )}
                       <Button
                         variant="ghost"
                         size="icon-sm"
@@ -705,17 +668,6 @@ export default function AdminUsersPage() {
         }}
         user={deletingUser}
         onConfirm={handleDelete}
-        isLoading={isSubmitting}
-      />
-
-      <UserLineUnbindDialog
-        open={unbindDialogOpen}
-        onOpenChange={(open) => {
-          setUnbindDialogOpen(open);
-          if (!open) setUnbindUser(null);
-        }}
-        user={unbindUser}
-        onConfirm={handleUnbind}
         isLoading={isSubmitting}
       />
 

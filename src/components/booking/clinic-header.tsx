@@ -66,7 +66,7 @@ export function ClinicHeader({ clinic, className }: ClinicHeaderProps) {
 
       {/* 院所識別卡（疊在 banner 上） */}
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="-mt-12 rounded-3xl bg-card p-5 shadow-xl ring-1 ring-foreground/5">
+        <div className="glass -mt-12 rounded-3xl p-5">
           <div className="flex items-start gap-4">
             {/* Logo */}
             {clinic.logo ? (

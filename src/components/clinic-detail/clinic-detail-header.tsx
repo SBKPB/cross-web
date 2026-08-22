@@ -115,7 +115,7 @@ export function ClinicDetailHeader({ clinic, className }: ClinicDetailHeaderProp
 
       {/* ===== 院所識別卡（疊在 banner 上） ===== */}
       <div className="container relative mx-auto px-4 sm:px-6">
-        <div className="-mt-20 rounded-[1.75rem] bg-card p-5 shadow-xl ring-1 ring-foreground/5 sm:-mt-24 sm:p-7">
+        <div className="glass -mt-20 rounded-[1.75rem] p-5 sm:-mt-24 sm:p-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
             {/* Logo：有上傳用圖、否則院所名首字頭像 */}
             {clinic.logo ? (

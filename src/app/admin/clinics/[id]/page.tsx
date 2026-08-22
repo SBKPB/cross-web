@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
+  BarChart3,
   BellRing,
-  BuildingIcon,
-  UsersIcon,
   BriefcaseIcon,
-  CalendarIcon,
+  BuildingIcon,
   CalendarDaysIcon,
+  CalendarIcon,
   Clock,
   Mail,
   MapPin,
@@ -19,6 +19,7 @@ import {
   Share2,
   Timer,
   TrashIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,6 +31,7 @@ import { ServicesTab } from "@/components/admin/clinics/services-tab";
 import { AppointmentsTab } from "@/components/admin/clinics/appointments-tab";
 import { QueueTab } from "@/components/admin/clinics/queue-tab";
 import { DoctorStatsTab } from "@/components/admin/clinics/doctor-stats-tab";
+import { FacilityAnalyticsView } from "@/components/admin/clinics/analytics-tab";
 import { ScheduleTab } from "@/components/admin/clinics/schedule-tab";
 import { AnnouncementsTab } from "@/components/admin/clinics/announcements-tab";
 import { SubscriptionSection } from "@/components/admin/clinics/subscription-section";
@@ -316,6 +318,13 @@ export default function ClinicDetailPage() {
             看診統計
           </TabsTrigger>
           <TabsTrigger
+            value="analytics"
+            className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
+          >
+            <BarChart3 className="size-4" />
+            客戶分析
+          </TabsTrigger>
+          <TabsTrigger
             value="personnel"
             className="gap-2 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-foreground/5"
           >
@@ -396,6 +405,15 @@ export default function ClinicDetailPage() {
 
         <TabsContent value="stats">
           <DoctorStatsTab facilityId={clinicId} facility={clinic} />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          {/* 系統管理員視角：造訪／訪客人數全方案可看，完整分析依該院所方案 */}
+          <FacilityAnalyticsView
+            facilityId={clinicId}
+            facility={clinic}
+            variant="admin"
+          />
         </TabsContent>
 
         <TabsContent value="personnel">

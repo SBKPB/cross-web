@@ -138,7 +138,8 @@ export function HomeSearchCard() {
         className={cn(
           "flex flex-col md:flex-row gap-2 md:gap-1.5",
           "p-2 md:p-2",
-          "rounded-2xl rounded-tl-none bg-card shadow-xl ring-1 ring-border/60",
+          // 玻璃主角：坐在 hero 光暈上，透出後面的顏色才有厚度感
+          "glass rounded-2xl rounded-tl-none",
         )}
       >
         {/* 關鍵字 —— flex-[2] 讓它拿到約兩倍於下拉選單的寬度。

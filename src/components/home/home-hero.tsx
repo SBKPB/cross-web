@@ -11,9 +11,14 @@ export function HomeHero() {
     <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-background to-background dark:from-sky-950/50">
       {/* 柔和淺色光暈（暖、可信賴、airy）。深色模式需大幅降透明度，
           否則淺色光暈疊在深底上會變成一片灰綠霧。 */}
-      <div className="pointer-events-none absolute -top-24 left-[15%] size-[480px] rounded-full bg-sky-200/45 blur-3xl dark:bg-sky-500/10" />
-      <div className="pointer-events-none absolute -top-10 right-[12%] size-[420px] rounded-full bg-primary/15 blur-3xl dark:bg-primary/10" />
-      <div className="pointer-events-none absolute top-40 right-[28%] size-[360px] rounded-full bg-teal-200/35 blur-3xl dark:bg-teal-500/10" />
+      {/* 光暈：不只是裝飾，是玻璃搜尋卡「透出來的東西」。原本三顆全擠在上半部，
+          搜尋卡背後一片空白，玻璃在淺色模式下就完全看不出來。所以刻意讓其中
+          兩顆下移到卡片高度，並在淺色模式加深一階——玻璃本身維持克制不加濃，
+          改成讓背景值得一看。 */}
+      <div className="pointer-events-none absolute -top-24 left-[15%] size-[480px] rounded-full bg-sky-300/50 blur-3xl dark:bg-sky-500/10" />
+      <div className="pointer-events-none absolute top-[22rem] left-[18%] size-[420px] rounded-full bg-primary/20 blur-3xl dark:bg-primary/12" />
+      <div className="pointer-events-none absolute top-[26rem] right-[16%] size-[400px] rounded-full bg-teal-300/40 blur-3xl dark:bg-teal-500/12" />
+      <div className="pointer-events-none absolute -top-10 right-[12%] size-[420px] rounded-full bg-violet-200/35 blur-3xl dark:bg-violet-500/10" />
       {/* 極淡點陣 */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.28]"

@@ -29,7 +29,7 @@ export function StickySubmitButton({
     <div
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3",
-        "border-t border-border/60 bg-background/80 backdrop-blur-lg",
+        "glass-bar border-t border-border/60",
         className,
       )}
     >

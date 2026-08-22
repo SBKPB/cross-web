@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-white/80 backdrop-blur-lg dark:bg-card/80">
+    <header className="glass-bar sticky top-0 z-50 border-b border-border">
       {/* 底部品牌色漸層細線，與 SiteFooter 頂部呼應 */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 

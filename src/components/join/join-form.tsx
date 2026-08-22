@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -105,7 +105,7 @@ function CategoryCard({
         "ring-1 hover:-translate-y-0.5",
         selected
           ? "bg-primary/[0.06] ring-2 ring-primary shadow-sm"
-          : "bg-card ring-foreground/10 hover:ring-primary/40 hover:shadow-sm",
+          : "bg-card ring-foreground/50 hover:ring-primary hover:shadow-sm",
       )}
     >
       {/* 勾選徽章 */}
@@ -156,7 +156,7 @@ function CategoryChip({
         "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium ring-1 transition-all duration-200",
         selected
           ? "bg-primary text-primary-foreground ring-primary shadow-sm"
-          : "bg-card text-foreground ring-foreground/12 hover:ring-primary/40 hover:text-primary",
+          : "bg-card text-foreground ring-foreground/50 hover:ring-primary hover:text-primary",
       )}
     >
       {selected && <Check className="size-3.5" strokeWidth={3} />}
@@ -205,22 +205,48 @@ export function JoinForm() {
   // 三段流程：0 商家類型 / 1 基本資料 / 2 服務資訊。
   // 一次只問一段，18 個欄位鋪在同一頁會讓人直接關掉。
   const [step, setStep] = useState(0);
+  // 換步時按鈕會卸載或轉 disabled，焦點被瀏覽器丟回 body。把焦點移到該步標題，
+  // 一次解決「鍵盤使用者失去位置」與「螢幕閱讀器不知道畫面換了」兩件事。
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const movedRef = useRef(false);
+  useEffect(() => {
+    if (!movedRef.current) {
+      movedRef.current = true; // 初次載入不搶焦點
+      return;
+    }
+    headingRef.current?.focus();
+  }, [step, submitted]);
 
-  // 逐段驗證：擋在「下一步」而不是等到最後才報錯，錯誤發生在哪一段就在哪一段講
-  const stepValid = [
-    true, // 商家類型永遠有預設值
-    Boolean(
-      form.business_name.trim() &&
-        form.contact_name.trim() &&
-        form.phone.trim() &&
-        // 第二步的 fieldset 到第三步會被 disabled（避開 hidden+required 無法 focus 的原生錯誤），
-        // 連帶跳過 type="email" 的原生檢查，所以格式在這裡就擋掉
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) &&
-        form.city,
-    ),
-    true, // 服務資訊全為選填
-  ];
-  const canSubmit = stepValid[1];
+  // 逐段驗證：回傳「還缺什麼」而不是一個 boolean。原本只把「下一步」設成 disabled，
+  // 使用者把 email 打成 wang@gmail 時按鈕就是灰的、畫面上沒有半個字說明原因。
+  const missingInStep1 = (): { id: string; label: string }[] => {
+    const miss: { id: string; label: string }[] = [];
+    if (!form.business_name.trim())
+      miss.push({ id: "business_name", label: "商家名稱" });
+    if (!form.contact_name.trim())
+      miss.push({ id: "contact_name", label: "聯絡人姓名" });
+    if (!form.phone.trim()) miss.push({ id: "phone", label: "聯絡電話" });
+    // 第二步的 fieldset 到第三步會被 disabled（避開 hidden+required 無法 focus 的
+    // 原生錯誤），連帶跳過 type="email" 的原生檢查，所以格式在這裡就擋掉
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+      miss.push({ id: "email", label: form.email.trim() ? "Email 格式" : "Email" });
+    if (!form.city) miss.push({ id: "city", label: "縣市" });
+    return miss;
+  };
+
+  /** 按下「下一步」：擋關時把缺項講出來並把焦點送到第一個問題欄位。 */
+  const goNext = () => {
+    const miss = step === 1 ? missingInStep1() : [];
+    if (miss.length > 0) {
+      setError(`還差：${miss.map((m) => m.label).join("、")}`);
+      document.getElementById(miss[0].id)?.focus();
+      return;
+    }
+    setError(null);
+    setStep((n) => n + 1);
+  };
+
+  const canSubmit = missingInStep1().length === 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -286,7 +312,11 @@ export function JoinForm() {
             <CheckCircle2 className="size-9" />
           </span>
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
+        <h2
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-2xl font-bold tracking-tight text-foreground outline-none"
+        >
           申請已送出
         </h2>
         <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
@@ -336,22 +366,43 @@ export function JoinForm() {
       {/* 卡片頂部品牌色細線 */}
       <div className="h-1 bg-gradient-to-r from-primary/70 via-primary to-primary/70" />
 
+      {/* 蜜罐欄位：對使用者隱藏。刻意放在 space-y-7 容器「之外」——Tailwind 4 的
+          space-y 用 :not(:last-child) 選擇器，零高度的它照樣分到一格 28px。 */}
+      <div aria-hidden="true" className="h-0 w-0 overflow-hidden">
+        <input
+          type="text"
+          name="company_website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.hp}
+          onChange={(e) => update("hp", e.target.value)}
+        />
+      </div>
+
       <div className="space-y-7 p-6 sm:p-8">
         {/* 進度：讓人知道還剩幾步，而不是面對一片問不完的欄位 */}
         <div>
-          <div className="flex items-center gap-2">
+          <div
+            aria-hidden="true"
+            className="flex items-center gap-2"
+          >
             {STEPS.map((s, i) => (
-              <div key={s.title} className="flex flex-1 items-center gap-2">
-                <span
-                  className={cn(
-                    "h-1 flex-1 rounded-full transition-colors",
-                    i <= step ? "bg-primary" : "bg-muted",
-                  )}
-                />
-              </div>
+              <span
+                key={s.title}
+                className={cn(
+                  "h-1 flex-1 rounded-full transition-colors",
+                  // 未完成段原本用 bg-muted：深色模式 --muted 與 --card 同色，
+                  // 對比 1.00:1 直接消失。foreground/20 兩個模式都看得見。
+                  i <= step ? "bg-primary" : "bg-foreground/20",
+                )}
+              />
             ))}
           </div>
-          <h2 className="mt-4 text-xl font-bold tracking-tight text-foreground">
+          <h2
+            ref={headingRef}
+            tabIndex={-1}
+            className="mt-4 text-xl font-bold tracking-tight text-foreground outline-none"
+          >
             {STEPS[step].title}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -562,23 +613,18 @@ export function JoinForm() {
           </div>
         </fieldset>
 
-        {/* 蜜罐欄位：對使用者隱藏（0 尺寸 overflow-hidden 容器，避免水平溢出） */}
-        <div aria-hidden="true" className="h-0 w-0 overflow-hidden">
-          <input
-            type="text"
-            name="company_website"
-            tabIndex={-1}
-            autoComplete="off"
-            value={form.hp}
-            onChange={(e) => update("hp", e.target.value)}
-          />
+        {/* role="alert" 必須在錯誤出現前就在 DOM 裡才穩定觸發，所以容器常駐、只切換內容。
+            text-destructive 疊在 destructive/10 上只有 4.13:1（深色 3.56:1），改用實色過 AA。 */}
+        <div
+          role="alert"
+          className={cn(
+            error
+              ? "rounded-2xl bg-destructive/10 p-3 text-sm text-red-800 ring-1 ring-destructive/20 dark:text-red-300"
+              : "sr-only",
+          )}
+        >
+          {error}
         </div>
-
-        {error && (
-          <div className="rounded-2xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
-            {error}
-          </div>
-        )}
 
         {/* 導覽：最後一步才是送出 */}
         <div className="space-y-3">
@@ -588,7 +634,10 @@ export function JoinForm() {
                 type="button"
                 size="lg"
                 variant="outline"
-                onClick={() => setStep((n) => n - 1)}
+                onClick={() => {
+                  setError(null);
+                  setStep((n) => n - 1);
+                }}
                 disabled={isSubmitting}
               >
                 上一步
@@ -600,8 +649,7 @@ export function JoinForm() {
                 type="button"
                 size="lg"
                 className="group/next flex-1"
-                onClick={() => setStep((n) => n + 1)}
-                disabled={!stepValid[step]}
+                onClick={goNext}
               >
                 下一步
                 <ArrowRight className="size-4 transition-transform group-hover/next:translate-x-0.5" />

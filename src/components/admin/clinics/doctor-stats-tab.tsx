@@ -129,7 +129,7 @@ function DoctorCard({ doctor }: { doctor: DoctorDuration }) {
       <p
         className={cn(
           "text-xs",
-          lowConsult ? "text-amber-600" : "text-muted-foreground",
+          lowConsult ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground",
         )}
       >
         {lowConsult

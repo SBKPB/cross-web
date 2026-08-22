@@ -69,7 +69,7 @@ function getPlanPill(
   const expired = !!expiresAt && new Date(expiresAt).getTime() < Date.now();
   if (expired) return PLAN_PILL.free; // 到期 → 免費方案
   if (status === "trial")
-    return { label: "試用中", cls: "bg-amber-100 text-amber-700" };
+    return { label: "試用中", cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" };
   return PLAN_PILL[plan];
 }
 
@@ -244,7 +244,7 @@ export default function ClinicDetailPage() {
                   className={cn(
                     "rounded-full px-2.5 py-1 text-xs font-medium",
                     clinic.is_active
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                       : "bg-muted text-muted-foreground",
                   )}
                 >

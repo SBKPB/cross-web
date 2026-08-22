@@ -514,7 +514,7 @@ function ResultPanel({
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-center gap-2 py-4 text-center">
-        <span className="inline-flex size-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+        <span className="inline-flex size-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300">
           <CheckCircle2 className="size-6" />
         </span>
         <p className="text-lg font-semibold text-foreground">

@@ -234,7 +234,7 @@ export default function AdminUsersPage() {
               "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
               hint.tone === "destructive"
                 ? "bg-destructive/10 text-destructive"
-                : "bg-amber-100 text-amber-700",
+                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
             )}
           >
             {hint.label}
@@ -514,7 +514,7 @@ export default function AdminUsersPage() {
                       className={cn(
                         "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
                         user.is_active
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                           : "bg-muted text-muted-foreground",
                       )}
                     >

@@ -179,7 +179,7 @@ function GroupCard({ group }: { group: DisplayGroup }) {
                       "rounded-full px-3 py-1 text-sm font-medium",
                       calling
                         ? "bg-primary text-primary-foreground"
-                        : "bg-teal-100 text-teal-700",
+                        : "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
                     )}
                   >
                     {calling ? "看診中" : "候診中"}

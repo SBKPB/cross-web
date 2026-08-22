@@ -42,11 +42,11 @@ import type {
 
 const STATUS_PILL: Record<AppointmentStatus, string> = {
   confirmed: "bg-primary/10 text-primary",
-  checked_in: "bg-teal-100 text-teal-700",
-  in_progress: "bg-indigo-100 text-indigo-700",
-  completed: "bg-green-100 text-green-700",
+  checked_in: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
+  in_progress: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
+  completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
   cancelled: "bg-muted text-muted-foreground",
-  no_show: "bg-amber-100 text-amber-700",
+  no_show: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
 };
 
 function formatTime(time: string): string {

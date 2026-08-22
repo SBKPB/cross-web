@@ -123,7 +123,7 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
           className={cn(
             "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium tabular-nums",
             atLimit
-              ? "bg-amber-100 text-amber-700"
+              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
               : "bg-primary/10 text-primary",
           )}
         >
@@ -156,7 +156,7 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
         />
         <div className="flex items-center justify-between gap-3">
           {atLimit ? (
-            <p className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-700">
+            <p className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
               已有 3 則顯示中，請先將一則設為過期再新增。
             </p>
           ) : (
@@ -209,7 +209,7 @@ export function AnnouncementsTab({ facilityId }: { facilityId: string }) {
                     className={cn(
                       "rounded-full px-2.5 py-1 text-xs font-medium",
                       a.is_active
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                         : "bg-muted text-muted-foreground",
                     )}
                   >

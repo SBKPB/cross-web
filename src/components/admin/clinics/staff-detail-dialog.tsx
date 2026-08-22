@@ -103,7 +103,7 @@ export function StaffDetailDialog({
                     className={cn(
                       "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium",
                       staff.is_public_visible
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                         : "bg-muted text-muted-foreground",
                     )}
                   >

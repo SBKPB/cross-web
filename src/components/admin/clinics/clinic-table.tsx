@@ -92,7 +92,7 @@ export function ClinicTable({ clinics, onEdit, onDelete }: ClinicTableProps) {
                   className={cn(
                     "rounded-full px-2.5 py-1 text-xs font-medium",
                     clinic.is_active
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                       : "bg-muted text-muted-foreground",
                   )}
                 >

@@ -63,8 +63,8 @@ const STATUS_LABEL: Record<SubscriptionStatus, string> = {
 
 // 狀態 pill 柔色
 const STATUS_PILL: Record<SubscriptionStatus, string> = {
-  trial: "bg-amber-100 text-amber-700",
-  active: "bg-green-100 text-green-700",
+  trial: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
   suspended: "bg-destructive/10 text-destructive",
   cancelled: "bg-muted text-muted-foreground",
 };
@@ -178,7 +178,7 @@ export function SubscriptionSection({
         )}
         {isExpiringSoon && !isExpired && (
           <div className="mt-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
               <Clock3 className="size-3.5" />
               <span className="tabular-nums">{daysUntil}</span> 天後到期
             </span>
@@ -241,7 +241,7 @@ export function SubscriptionSection({
             </div>
             <div className="mt-1.5 flex items-center gap-2">
               {featuredActive ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                   <Crown className="size-3.5" />
                   精選中
                   {facility.featured_until && (
@@ -471,7 +471,7 @@ function SubscriptionEditDialog({
           </div>
 
           {/* 精選置頂（站內搜尋曝光，PRO 功能） */}
-          <div className="grid gap-3 rounded-2xl bg-amber-50/60 p-4 ring-1 ring-amber-200/60">
+          <div className="grid gap-3 rounded-2xl bg-amber-50/60 dark:bg-amber-900/30 p-4 ring-1 ring-amber-200/60">
             <div className="flex items-start gap-3">
               <Checkbox
                 id="is_featured"

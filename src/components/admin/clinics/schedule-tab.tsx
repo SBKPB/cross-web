@@ -375,7 +375,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                     item.kind === "shift" ? (
                       <div
                         key={`s-${item.data.id}`}
-                        className="truncate rounded bg-emerald-100 px-1 py-0.5 text-xs text-emerald-700"
+                        className="truncate rounded bg-emerald-100 px-1 py-0.5 text-xs text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
                         title={`${item.data.staff_name}・${SESSION_PRESETS[item.data.session_type].label} ${hhmm(item.data.start_time)}–${hhmm(item.data.end_time)}`}
                       >
                         {SESSION_PRESETS[item.data.session_type].short}{" "}
@@ -405,7 +405,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
         {/* 圖例 */}
         <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-border/60 pt-4">
           <div className="flex items-center gap-2">
-            <div className="size-3 rounded bg-emerald-100" />
+            <div className="size-3 rounded bg-emerald-100 dark:bg-emerald-900/30" />
             <span className="text-sm text-muted-foreground">門診排班</span>
           </div>
           <div className="flex items-center gap-2">
@@ -446,7 +446,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                         <span className="font-medium text-foreground">
                           {s.staff_name}
                         </span>
-                        <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
+                        <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                           {SESSION_PRESETS[s.session_type].label}
                         </span>
                         <span className="ml-2 text-sm text-muted-foreground tabular-nums">
@@ -630,7 +630,7 @@ export function ScheduleTab({ facilityId }: ScheduleTabProps) {
                     />
                   </div>
                   {selectedStaffId && leaveStaffShiftCount > 0 && (
-                    <p className="text-xs text-amber-600">
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
                       該人員當日已有 {leaveStaffShiftCount}{" "}
                       筆排班，設定休假前請先確認是否需調整
                     </p>

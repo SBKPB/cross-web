@@ -50,12 +50,12 @@ const SUB_STATUS: Record<SubscriptionStatus, { label: string; dot: string }> = {
 };
 
 const APPT_STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
-  confirmed: { label: "已預約", cls: "bg-blue-100 text-blue-700" },
-  checked_in: { label: "已報到", cls: "bg-teal-100 text-teal-700" },
-  in_progress: { label: "看診中", cls: "bg-indigo-100 text-indigo-700" },
-  completed: { label: "已完成", cls: "bg-green-100 text-green-700" },
-  cancelled: { label: "已取消", cls: "bg-slate-100 text-slate-600" },
-  no_show: { label: "未到診", cls: "bg-red-100 text-red-700" },
+  confirmed: { label: "已預約", cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
+  checked_in: { label: "已報到", cls: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300" },
+  in_progress: { label: "看診中", cls: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300" },
+  completed: { label: "已完成", cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" },
+  cancelled: { label: "已取消", cls: "bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-300" },
+  no_show: { label: "未到診", cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" },
 };
 
 // ===== 日期工具 =====
@@ -91,7 +91,7 @@ function StatCard({
           className={cn(
             "inline-flex size-10 items-center justify-center rounded-2xl transition group-hover:scale-105",
             tone === "warning"
-              ? "bg-amber-100 text-amber-600"
+              ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300"
               : "bg-primary/10 text-primary",
           )}
         >

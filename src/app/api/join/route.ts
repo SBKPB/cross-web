@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  applicationNotificationEmail,
+  verificationEmail,
+  type EmailContent,
+} from "@/lib/email-templates";
+
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
 import {
@@ -113,40 +119,41 @@ function validate(raw: unknown): ValidationResult {
   return { ok: true, data };
 }
 
-async function buildNotificationText(data: JoinApplication): Promise<string> {
-  const lines = [
-    "【Cross 新夥伴加入申請】",
-    "",
-    `商家類型：${JOIN_CATEGORY_LABELS[data.category]}`,
-    `商家名稱：${data.business_name}`,
-    `聯絡人：${data.contact_name}`,
-    `電話：${data.phone}`,
-    `Email：${data.email}`,
-    `縣市：${data.city}`,
+async function buildNotificationRows(
+  data: JoinApplication,
+): Promise<{ label: string; value: string }[]> {
+  const rows: { label: string; value: string }[] = [
+    { label: "商家類型", value: JOIN_CATEGORY_LABELS[data.category] },
+    { label: "商家名稱", value: data.business_name },
+    { label: "聯絡人", value: data.contact_name },
+    { label: "電話", value: data.phone },
+    { label: "Email", value: data.email },
+    { label: "縣市", value: data.city },
   ];
-  if (data.address) lines.push(`地址：${data.address}`);
-  if (data.team_size) lines.push(`規模：${data.team_size}`);
+  if (data.address) rows.push({ label: "地址", value: data.address });
+  if (data.team_size) rows.push({ label: "規模", value: data.team_size });
   if (data.service_categories && data.service_categories.length > 0) {
-    // 以 service-categories taxonomy 把 code 攤成中文 label（Node server 可直接 await）
+    // 以 service-categories taxonomy 把 code 攤成中文 label
     const taxonomy = await serviceCategoriesApi.get();
-    const labels = data.service_categories.map((code) =>
-      categoryLabel(taxonomy, code),
-    );
-    lines.push(`主要服務：${labels.join("、")}`);
+    rows.push({
+      label: "主要服務",
+      value: data.service_categories
+        .map((code) => categoryLabel(taxonomy, code))
+        .join("、"),
+    });
   }
   if (data.payment_type) {
-    lines.push(`付費類型：${PAYMENT_TYPES[data.payment_type] ?? data.payment_type}`);
+    rows.push({
+      label: "付費類型",
+      value: PAYMENT_TYPES[data.payment_type] ?? data.payment_type,
+    });
   }
-  if (data.services) lines.push(`其他服務：${data.services}`);
-  if (data.message) lines.push(`備註：${data.message}`);
-  return lines.join("\n");
+  if (data.services) rows.push({ label: "其他服務", value: data.services });
+  if (data.message) rows.push({ label: "備註", value: data.message });
+  return rows;
 }
 
-async function sendEmail(
-  to: string,
-  subject: string,
-  text: string,
-): Promise<void> {
+async function sendEmail(to: string, content: EmailContent): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey || !to) return;
 
@@ -161,8 +168,10 @@ async function sendEmail(
       body: JSON.stringify({
         from,
         to: to.split(",").map((x) => x.trim()),
-        subject,
-        text,
+        subject: content.subject,
+        html: content.html,
+        // 純文字不是備胎：有人關掉 HTML 讀信，寄件信譽也吃這個
+        text: content.text,
       }),
     });
     if (!res.ok) {
@@ -207,21 +216,6 @@ async function createApplication(
   return { ok: false, error: detail ?? "送出失敗，請稍後再試" };
 }
 
-function verificationEmail(businessName: string, link: string): string {
-  return [
-    `${businessName} 您好，`,
-    "",
-    "感謝您申請加入 Cross。請點下面的連結驗證信箱並設定後台密碼：",
-    link,
-    "",
-    "連結 72 小時內有效。",
-    "",
-    "設定完成後，我們會盡快審核您的申請；審核通過才會開通後台，屆時會再以此信箱通知您。",
-    "",
-    "如果這不是您本人的申請，請忽略這封信——在您設定密碼之前，不會有任何帳號被建立。",
-  ].join("\n");
-}
-
 export async function POST(req: NextRequest) {
   let raw: unknown;
   try {
@@ -261,17 +255,16 @@ export async function POST(req: NextRequest) {
   });
 
   // 兩封信：申請人的驗證信（關鍵路徑）、營運團隊的通知信（純告知）
-  await sendEmail(
-    data.email,
-    "【Cross】請驗證信箱並設定密碼",
-    verificationEmail(data.business_name, link),
-  );
+  await sendEmail(data.email, verificationEmail(data.business_name, link));
   const notifyTo = process.env.JOIN_NOTIFY_EMAIL;
   if (notifyTo) {
     await sendEmail(
       notifyTo,
-      `【Cross 夥伴加入申請】${data.business_name}`,
-      await buildNotificationText(data),
+      applicationNotificationEmail(
+        data.business_name,
+        await buildNotificationRows(data),
+        `${origin}/admin/applications`,
+      ),
     );
   }
 

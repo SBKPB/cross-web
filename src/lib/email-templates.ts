@@ -1,5 +1,8 @@
 /**
- * Email HTML 模板。
+ * Email HTML 模板（營運團隊通知信）。
+ *
+ * 申請人的驗證信在 backend/app/services/email_templates.py——驗證 token
+ * 不能離開後端，所以那封信由後端寄。兩邊是同一套視覺，改版面要一起改。
  *
  * Email client 的 HTML 支援停在 2003 年左右：不能用 flex / grid、外部 CSS 常被
  * 剝掉、Outlook 用 Word 引擎算版。所以這裡一律：table 佈局、樣式全部 inline、
@@ -106,47 +109,6 @@ export interface EmailContent {
   subject: string;
   html: string;
   text: string;
-}
-
-/** 寄給申請人：驗證信箱並設定密碼 */
-export function verificationEmail(
-  businessName: string,
-  link: string,
-): EmailContent {
-  const html = shell(
-    "請驗證信箱並設定後台密碼，連結 72 小時內有效。",
-    [
-      h1("請驗證信箱並設定密碼"),
-      p(
-        `<strong style="color:${INK};">${esc(businessName)}</strong> 您好，感謝您申請加入 Cross。<br>點下面的按鈕驗證信箱，並設定之後登入院所後台要用的密碼。`,
-      ),
-      button("驗證信箱並設定密碼", link),
-      p(
-        `按鈕打不開的話，請複製這個網址到瀏覽器：<br><span style="color:${BRAND};word-break:break-all;">${esc(link)}</span>`,
-      ),
-      `            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;">
-              <tr><td style="padding:16px;background:${CANVAS};border-radius:12px;font-family:${FONT};font-size:13px;line-height:21px;color:${MUTED};">
-                連結 <strong style="color:${INK};">72 小時</strong>內有效。<br>
-                設定完成後我們會盡快審核，<strong style="color:${INK};">審核通過才會開通後台</strong>，屆時再以這個信箱通知您。<br>
-                如果這不是您本人的申請，請忽略這封信——在您設定密碼之前，不會有任何帳號被建立。
-              </td></tr>
-            </table>`,
-    ].join("\n"),
-  );
-
-  const text = [
-    `${businessName} 您好，`,
-    "",
-    "感謝您申請加入 Cross。請點下面的連結驗證信箱並設定後台密碼：",
-    link,
-    "",
-    "連結 72 小時內有效。",
-    "設定完成後我們會盡快審核；審核通過才會開通後台，屆時再以這個信箱通知您。",
-    "",
-    "如果這不是您本人的申請，請忽略這封信——在您設定密碼之前，不會有任何帳號被建立。",
-  ].join("\n");
-
-  return { subject: "【Cross】請驗證信箱並設定密碼", html, text };
 }
 
 /** 寄給營運團隊：有新申請進來 */

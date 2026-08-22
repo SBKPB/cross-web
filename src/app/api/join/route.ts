@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import {
   applicationNotificationEmail,
-  verificationEmail,
   type EmailContent,
 } from "@/lib/email-templates";
 
@@ -182,10 +181,10 @@ async function sendEmail(to: string, content: EmailContent): Promise<void> {
   }
 }
 
-/** 建立申請單，回傳驗證 token（供組驗證連結）。失敗時回傳可顯示給使用者的訊息。 */
+/** 建立申請單。驗證信由後端寄（token 不離開後端），這裡只拿到有沒有寄成功。 */
 async function createApplication(
   data: JoinApplication,
-): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
+): Promise<{ ok: true; emailSent: boolean } | { ok: false; error: string }> {
   const res = await fetch(`${BACKEND_URL}/api/v1/facility-applications`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -205,8 +204,8 @@ async function createApplication(
     }),
   });
   if (res.ok) {
-    const json = (await res.json()) as { verification_token: string };
-    return { ok: true, token: json.verification_token };
+    const json = (await res.json()) as { email_sent?: boolean };
+    return { ok: true, emailSent: json.email_sent === true };
   }
   // 後端已把「這個信箱已經有帳號」之類的訊息寫成可直接顯示的中文
   const detail = await res
@@ -246,16 +245,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: created.error }, { status: 400 });
   }
 
+  // 驗證信寄不出去就不能回報成功——對方會一直等一封不會來的信。
+  // 申請單已經建立，重送一次會沿用同一張並換發新 token，所以叫他重試是安全的。
+  if (!created.emailSent) {
+    console.error("[join] verification email not sent", { email: data.email });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "驗證信寄送失敗，請稍後再送出一次；若持續發生請來信 office@twinhao.com",
+      },
+      { status: 502 },
+    );
+  }
+
   const origin = req.nextUrl.origin;
-  const link = `${origin}/join/verify?token=${encodeURIComponent(created.token)}`;
 
   console.info("[join] new application", {
     business_name: data.business_name,
     email: data.email,
   });
 
-  // 兩封信：申請人的驗證信（關鍵路徑）、營運團隊的通知信（純告知）
-  await sendEmail(data.email, verificationEmail(data.business_name, link));
+  // 申請人的驗證信由後端寄出（token 不能經過這裡）；這裡只寄營運團隊的通知信
   const notifyTo = process.env.JOIN_NOTIFY_EMAIL;
   if (notifyTo) {
     await sendEmail(

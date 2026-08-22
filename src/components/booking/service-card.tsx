@@ -6,6 +6,7 @@ import { getServicePriceBadge } from "@/lib/service-price";
 import { cn } from "@/lib/utils";
 import type { ServiceOption } from "@/types/booking";
 import type { PaymentType } from "@/types/clinic";
+import { inkOn } from "@/lib/color-contrast";
 
 interface ServiceCardProps {
   service: ServiceOption;
@@ -20,7 +21,7 @@ export function ServiceCard({
   service,
   isSelected,
   onSelect,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
   paymentType,
 }: ServiceCardProps) {
   // 價格 badge 統一規則（依 payment_type gating，三端一致）
@@ -57,9 +58,12 @@ export function ServiceCard({
         <div
           className={cn(
             "flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-            isSelected ? "border-transparent text-white" : "border-border",
+            isSelected ? "border-transparent" : "border-border",
           )}
-          style={{ backgroundColor: isSelected ? primaryColor : undefined }}
+          style={{
+            backgroundColor: isSelected ? primaryColor : undefined,
+            color: isSelected ? inkOn(primaryColor) : undefined,
+          }}
         >
           {isSelected && <Check className="size-3.5" strokeWidth={3} />}
         </div>

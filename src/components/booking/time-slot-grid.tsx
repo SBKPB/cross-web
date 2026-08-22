@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { TIME_PERIODS } from "@/lib/constants/booking-constants";
 import { cn } from "@/lib/utils";
 import type { TimeOfDay, TimeSlot } from "@/types/booking";
+import { inkOn } from "@/lib/color-contrast";
 
 interface TimeSlotGridProps {
   slots: TimeSlot[];
@@ -17,7 +18,7 @@ export function TimeSlotGrid({
   slots,
   selectedSlot,
   onSelectSlot,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
 }: TimeSlotGridProps) {
   const groupedSlots = useMemo(() => {
     const groups: Record<TimeOfDay, TimeSlot[]> = {
@@ -70,7 +71,7 @@ export function TimeSlotGrid({
                     disabled={isDisabled}
                     className={cn(
                       "rounded-full py-2.5 text-sm font-medium transition-all",
-                      isSelected && "scale-[1.03] text-white shadow-md",
+                      isSelected && "scale-[1.03] shadow-md",
                       !isSelected &&
                         !isDisabled &&
                         "bg-muted/60 text-foreground hover:bg-muted",
@@ -79,6 +80,7 @@ export function TimeSlotGrid({
                     )}
                     style={{
                       backgroundColor: isSelected ? primaryColor : undefined,
+                      color: isSelected ? inkOn(primaryColor) : undefined,
                     }}
                   >
                     {slot.time}

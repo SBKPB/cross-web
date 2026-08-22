@@ -26,7 +26,8 @@ export default function SuccessPage({ params }: SuccessPageProps) {
   const [isLoading, setIsLoading] = useState(!!bookingId);
   const [error, setError] = useState(!bookingId);
 
-  const primaryColor = "#ec4899";
+  // 與站上 --primary 一致；原本寫死的 #ec4899 配白字只有 3.53:1
+  const primaryColor = "#1d4ed8";
 
   useEffect(() => {
     if (!bookingId) return;

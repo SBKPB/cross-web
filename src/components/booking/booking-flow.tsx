@@ -24,6 +24,7 @@ import { DatePicker } from "./date-picker";
 import { TimeSlotGrid } from "./time-slot-grid";
 import { BookingForm } from "./booking-form";
 import { PatientSelector } from "@/components/patient/patient-selector";
+import { inkOn } from "@/lib/color-contrast";
 import { StickySubmitButton } from "./sticky-submit-button";
 
 interface BookingFlowProps {
@@ -269,8 +270,11 @@ export function BookingFlow({
                   </p>
                   <button
                     type="button"
-                    className="rounded-full px-5 py-2 text-sm font-medium text-white shadow-sm"
-                    style={{ backgroundColor: primaryColor }}
+                    className="rounded-full px-5 py-2 text-sm font-medium shadow-sm"
+                    style={{
+                      backgroundColor: primaryColor,
+                      color: inkOn(primaryColor),
+                    }}
                     onClick={loadSlots}
                   >
                     重新載入

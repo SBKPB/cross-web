@@ -11,7 +11,7 @@ interface SuccessCardProps {
 
 export function SuccessCard({
   booking,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
 }: SuccessCardProps) {
   const appointmentDate = new Date(booking.appointment_datetime);
   const formattedDate = appointmentDate.toLocaleDateString("zh-TW", {

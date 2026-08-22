@@ -5,6 +5,7 @@ import { CalendarX2, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { BookableDate } from "@/types/booking";
+import { inkOn } from "@/lib/color-contrast";
 
 interface DatePickerProps {
   dates: BookableDate[];
@@ -23,7 +24,7 @@ export function DatePicker({
   dates,
   selectedDate,
   onSelectDate,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
 }: DatePickerProps) {
   const hasAvailableDates = dates.some((d) => d.isAvailable);
 
@@ -112,12 +113,13 @@ export function DatePicker({
               disabled={isDisabled}
               className={cn(
                 "flex flex-col items-center rounded-2xl py-2.5 transition-all",
-                isSelected && "scale-[1.03] text-white shadow-md",
+                isSelected && "scale-[1.03] shadow-md",
                 !isSelected && !isDisabled && "text-foreground hover:bg-muted",
                 isDisabled && "cursor-not-allowed opacity-30",
               )}
               style={{
                 backgroundColor: isSelected ? primaryColor : undefined,
+                color: isSelected ? inkOn(primaryColor) : undefined,
               }}
             >
               <span className="text-xs font-medium">

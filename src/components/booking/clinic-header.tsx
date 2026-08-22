@@ -6,6 +6,7 @@ import { ArrowLeft, MapPin, Phone } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { ClinicConfig } from "@/types/booking";
+import { inkOn } from "@/lib/color-contrast";
 
 interface ClinicHeaderProps {
   clinic: ClinicConfig;
@@ -80,8 +81,11 @@ export function ClinicHeader({ clinic, className }: ClinicHeaderProps) {
               </div>
             ) : (
               <div
-                className="flex size-16 shrink-0 items-center justify-center rounded-2xl text-2xl font-bold text-white shadow-sm"
-                style={{ backgroundColor: clinic.primary_color }}
+                className="flex size-16 shrink-0 items-center justify-center rounded-2xl text-2xl font-bold shadow-sm"
+                style={{
+                  backgroundColor: clinic.primary_color,
+                  color: inkOn(clinic.primary_color),
+                }}
               >
                 {clinic.clinic_name.charAt(0)}
               </div>

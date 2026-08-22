@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 
 import { BOOKING_STEPS } from "@/lib/constants/booking-constants";
 import { cn } from "@/lib/utils";
+import { inkOn } from "@/lib/color-contrast";
 
 interface BookingStepperProps {
   currentStep: 1 | 2 | 3;
@@ -14,7 +15,7 @@ interface BookingStepperProps {
 export function BookingStepper({
   currentStep,
   onStepClick,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
 }: BookingStepperProps) {
   return (
     <div className="mx-auto flex max-w-2xl items-center justify-center gap-1 px-4 py-3.5 sm:gap-2">
@@ -34,13 +35,14 @@ export function BookingStepper({
               className={cn(
                 "flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-all",
                 "ring-1 ring-foreground/5",
-                isCompleted && "text-white shadow-sm",
-                isCurrent && "text-white shadow-md ring-2 ring-offset-2 ring-offset-background",
+                isCompleted && "shadow-sm",
+                isCurrent && "shadow-md ring-2 ring-offset-2 ring-offset-background",
                 !isActive && "bg-muted text-muted-foreground",
                 isClickable && "cursor-pointer hover:opacity-90",
               )}
               style={{
                 backgroundColor: isActive ? primaryColor : undefined,
+                color: isActive ? inkOn(primaryColor) : undefined,
                 ...(isCurrent ? { "--tw-ring-color": primaryColor } : {}),
               }}
             >

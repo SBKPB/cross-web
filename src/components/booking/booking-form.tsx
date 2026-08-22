@@ -4,12 +4,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useBooking, useBookingDispatch } from "@/components/booking/booking-context";
+import { inkOn } from "@/lib/color-contrast";
 
 interface BookingFormProps {
   primaryColor?: string;
 }
 
-export function BookingForm({ primaryColor = "#3b82f6" }: BookingFormProps) {
+export function BookingForm({ primaryColor = "#1d4ed8" }: BookingFormProps) {
   const { formData } = useBooking();
   const dispatch = useBookingDispatch();
 
@@ -44,6 +45,8 @@ export function BookingForm({ primaryColor = "#3b82f6" }: BookingFormProps) {
           style={{
             backgroundColor: formData.privacyAccepted ? primaryColor : undefined,
             borderColor: formData.privacyAccepted ? primaryColor : undefined,
+            // 白勾勾只在深色品牌色上讀得到；淺色品牌色要換深色勾
+            color: formData.privacyAccepted ? inkOn(primaryColor) : undefined,
           }}
         />
         <Label

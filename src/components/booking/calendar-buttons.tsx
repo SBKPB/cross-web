@@ -45,7 +45,7 @@ const subscribeNoop = () => () => {};
 
 export function CalendarButtons({
   booking,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
 }: CalendarButtonsProps) {
   // Apple 日曆按鈕只在 Apple 裝置顯示
   const showApple = useSyncExternalStore(

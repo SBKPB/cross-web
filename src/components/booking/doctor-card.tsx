@@ -5,6 +5,7 @@ import { Check, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { DoctorOption } from "@/types/booking";
+import { inkOn } from "@/lib/color-contrast";
 
 interface DoctorCardProps {
   doctor: DoctorOption;
@@ -17,7 +18,7 @@ export function DoctorCard({
   doctor,
   isSelected,
   onSelect,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
 }: DoctorCardProps) {
   return (
     <button
@@ -53,8 +54,8 @@ export function DoctorCard({
         {/* Selection Check */}
         {isSelected && (
           <div
-            className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full text-white ring-2 ring-card"
-            style={{ backgroundColor: primaryColor }}
+            className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full ring-2 ring-card"
+            style={{ backgroundColor: primaryColor, color: inkOn(primaryColor) }}
           >
             <Check className="size-3" strokeWidth={3} />
           </div>

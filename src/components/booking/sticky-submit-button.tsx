@@ -3,6 +3,7 @@
 import { ArrowRight, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { inkOn } from "@/lib/color-contrast";
 
 interface StickySubmitButtonProps {
   label: string;
@@ -20,7 +21,7 @@ export function StickySubmitButton({
   onClick,
   disabled = false,
   isLoading = false,
-  primaryColor = "#3b82f6",
+  primaryColor = "#1d4ed8",
   className,
   hint,
 }: StickySubmitButtonProps) {
@@ -44,12 +45,12 @@ export function StickySubmitButton({
           disabled={disabled || isLoading}
           className={cn(
             "group/button inline-flex h-12 w-full items-center justify-center gap-2",
-            "rounded-2xl text-base font-semibold text-white",
+            "rounded-2xl text-base font-semibold",
             "shadow-lg transition-all",
             "hover:brightness-105 active:translate-y-px",
             "disabled:pointer-events-none disabled:opacity-50",
           )}
-          style={{ backgroundColor: primaryColor }}
+          style={{ backgroundColor: primaryColor, color: inkOn(primaryColor) }}
         >
           {isLoading ? (
             <>

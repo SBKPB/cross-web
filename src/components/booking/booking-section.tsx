@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { inkOn } from "@/lib/color-contrast";
 
 interface BookingSectionProps {
   /** 區段序號（如 1、2、3），顯示在標題前的圓形徽章 */
@@ -38,8 +39,11 @@ export function BookingSection({
         <div className="flex items-center gap-2.5">
           {index !== undefined && (
             <span
-              className="flex size-7 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm"
-              style={{ backgroundColor: primaryColor }}
+              className="flex size-7 shrink-0 items-center justify-center rounded-xl text-sm font-bold shadow-sm"
+              style={{
+                backgroundColor: primaryColor,
+                color: inkOn(primaryColor),
+              }}
             >
               {index}
             </span>

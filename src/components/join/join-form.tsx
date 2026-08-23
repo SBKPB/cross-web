@@ -319,13 +319,17 @@ export function JoinForm() {
         >
           申請已送出
         </h2>
+        {/* 後端刻意不告訴前端走了哪條路（驗證信／「你已經有帳號了」／「審核中」），
+            否則這個公開端點就能被拿來查某信箱有沒有帳號。所以這裡的文案必須
+            對三種情況都成立——不能寫死「寄了驗證信」。 */}
         <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-          我們已收到「{form.business_name}」的申請，並寄了一封驗證信到{" "}
-          <strong className="font-medium text-foreground">{form.email}</strong>。
+          我們已收到「{form.business_name}」的申請，並寄了一封信到{" "}
+          <strong className="font-medium text-foreground">{form.email}</strong>
+          ，請依信中的指示完成下一步。
         </p>
         <div className="w-full max-w-sm space-y-2.5 rounded-2xl bg-muted/40 p-5 text-left">
           {[
-            "到信箱點驗證連結，並設定後台密碼（連結 72 小時內有效）",
+            "到信箱點信中的連結，設定後台密碼（連結 72 小時內有效）",
             "我們收到後會盡快審核",
             "審核通過就會開通後台，屆時再以這個信箱通知您",
           ].map((text, i) => (
@@ -340,7 +344,7 @@ export function JoinForm() {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          沒收到信？請看看垃圾信匣，或重新送出一次申請。
+          沒收到信？請看看垃圾信匣；一分鐘後仍沒有，再重新送出一次申請。
         </p>
         <Button
           variant="outline"

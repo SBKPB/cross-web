@@ -13,6 +13,9 @@ import type {
   ApiAppointment,
   ApiAppointmentCreate,
   ApiAppointmentUpdate,
+  ApiPatientListItem,
+  ApiPatientDetail,
+  ApiPatientUpdate,
   ApiStaffService,
   ApiStaffServiceCreate,
   ApiStaffLeave,
@@ -220,6 +223,37 @@ export const adminClinicsApi = {
       api.patch<ApiAppointment>(
         `${BASE_PATH}/${facilityId}/appointments/${appointmentId}`,
         { status: "cancelled" }
+      ),
+  },
+
+  // ========== 患者檔案 / 就診時間軸（所有方案；院所基本營運，不做 gating） ==========
+
+  patients: {
+    /** 患者清單；q 同時比對姓名 / 電話 / 身分證，依最近就診日排序 */
+    list: (
+      facilityId: string,
+      params?: { q?: string; include_inactive?: boolean; limit?: number; offset?: number },
+    ) => {
+      const sp = new URLSearchParams();
+      if (params?.q) sp.append("q", params.q);
+      if (params?.include_inactive) sp.append("include_inactive", "true");
+      if (params?.limit) sp.append("limit", String(params.limit));
+      if (params?.offset) sp.append("offset", String(params.offset));
+      const query = sp.toString();
+      return api.get<ApiPatientListItem[]>(
+        `${BASE_PATH}/${facilityId}/patients${query ? `?${query}` : ""}`,
+      );
+    },
+
+    /** 患者檔案：基本資料 + 就診彙總 + 完整時間軸（一支請求回全部） */
+    get: (facilityId: string, patientId: string) =>
+      api.get<ApiPatientDetail>(`${BASE_PATH}/${facilityId}/patients/${patientId}`),
+
+    /** 更新註記（過敏 / 病史 / 聯絡方式 / 偏好醫師）；需院所管理權限 */
+    update: (facilityId: string, patientId: string, data: ApiPatientUpdate) =>
+      api.patch<ApiPatientDetail>(
+        `${BASE_PATH}/${facilityId}/patients/${patientId}`,
+        data,
       ),
   },
 

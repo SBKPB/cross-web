@@ -713,3 +713,84 @@ export interface FacilityApplication {
   created_user_id: string | null;
   created_at: string;
 }
+
+// ========== 患者檔案 / 就診時間軸（院所後台，所有方案） ==========
+
+export interface ApiPatientListItem {
+  id: string;
+  name: string;
+  phone: string;
+  gender: "M" | "F" | null;
+  birth_date: string | null;
+  national_id_last4: string | null; // 只回末 4 碼
+  is_active: boolean;
+  member_linked: boolean; // 已綁會員 vs 純現場客
+  appointment_count: number;
+  no_show_count: number;
+  last_visit_date: string | null;
+}
+
+export interface ApiPatientStats {
+  total: number;
+  completed: number;
+  cancelled: number;
+  no_show: number;
+  upcoming: number;
+  no_show_rate: number; // 0–1，分母只算 completed + no_show
+  first_visit: string | null;
+  last_visit: string | null;
+  top_staff_name: string | null;
+}
+
+export interface ApiPatientTimelineEvent {
+  from_status: AppointmentStatus;
+  to_status: AppointmentStatus;
+  reason: string | null;
+  created_at: string | null;
+}
+
+export interface ApiPatientTimelineItem {
+  appointment_id: string;
+  appointment_date: string;
+  appointment_time: string;
+  status: AppointmentStatus;
+  booking_method: "phone" | "walk_in" | "online";
+  staff_name: string | null;
+  service_name: string | null;
+  queue_number: number | null;
+  check_in_time: string | null;
+  notes: string | null;
+  created_at: string | null;
+  events: ApiPatientTimelineEvent[];
+}
+
+export interface ApiPatientDetail {
+  id: string;
+  name: string;
+  phone: string;
+  gender: "M" | "F" | null;
+  birth_date: string | null;
+  national_id_last4: string | null;
+  address: string | null;
+  emergency_contact: string | null;
+  medical_history: string | null;
+  allergy_info: string | null;
+  is_active: boolean;
+  member_linked: boolean;
+  preferred_staff_id: string | null;
+  preferred_staff_name: string | null;
+  created_at: string | null;
+  stats: ApiPatientStats;
+  timeline: ApiPatientTimelineItem[];
+}
+
+// 姓名/生日/身分證不可改：它們是跨院所認領與去重的 key
+export interface ApiPatientUpdate {
+  phone?: string;
+  address?: string | null;
+  emergency_contact?: string | null;
+  medical_history?: string | null;
+  allergy_info?: string | null;
+  preferred_staff_id?: string | null;
+  is_active?: boolean;
+}

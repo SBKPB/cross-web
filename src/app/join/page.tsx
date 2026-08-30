@@ -68,12 +68,12 @@ const FEATURES: {
 const STEPS = [
   { title: "填寫申請", description: "分三段填寫商家資料，約需 2 分鐘。" },
   {
-    title: "收信驗證",
-    description: "點信中連結設定後台密碼，完成信箱驗證。",
+    title: "輸入驗證碼",
+    description: "輸入寄到信箱的 6 位數驗證碼並設定密碼，後台立即開通。",
   },
   {
-    title: "審核開通",
-    description: "我們確認資料後開通後台，即可上架接受預約。",
+    title: "審核上架",
+    description: "先進後台整理資料；審核通過即可上架，開始接受預約。",
   },
 ];
 
@@ -92,7 +92,7 @@ const FAQS = [
   },
   {
     q: "上架要多久？",
-    a: "送出申請後會立刻收到驗證信，點連結設定密碼即完成申請；我們審核通過後開通後台，通常數個工作天即可正式上架。",
+    a: "送出申請、輸入信箱驗證碼後，後台立即開通，馬上就能整理院所資料；上架到民眾端需通過審核，通常數個工作天內完成。",
   },
 ];
 
@@ -221,7 +221,7 @@ export default function JoinPage() {
                 三步驟，正式加入
               </h2>
               <p className="mt-3 text-muted-foreground">
-                填表約 2 分鐘，接著只要收信驗證，通過審核就能登入後台。
+                填表約 2 分鐘，輸入信箱驗證碼後台立即開通；審核通過即可上架。
               </p>
             </div>
             <ol className="mx-auto mt-10 grid max-w-4xl gap-6 sm:grid-cols-3">

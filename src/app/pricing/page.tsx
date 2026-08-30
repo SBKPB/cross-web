@@ -87,7 +87,7 @@ export default function PricingPage() {
               準備好讓更多人找到你了嗎？
             </h2>
             <p className="relative mx-auto mt-3 max-w-md text-primary-foreground/80">
-              填寫加入申請，收信驗證後由我們審核開通，通常數個工作天完成。
+              填寫加入申請、輸入信箱驗證碼，後台立即開通；上架到民眾端通過審核即可。
             </p>
             <Button
               asChild

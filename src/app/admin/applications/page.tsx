@@ -77,9 +77,9 @@ export default function ApplicationsPage() {
           夥伴加入申請
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          申請人完成信箱驗證後才會進入待審核。
-          <strong className="font-medium text-foreground">核准時才會建立院所與帳號</strong>
-          ，在那之前對方無法登入後台。
+          申請人輸入信箱驗證碼後，
+          <strong className="font-medium text-foreground">帳號與院所（未上架）即已開通</strong>
+          ；這裡的核准把關的是「上架到民眾端」。舊驗證信流程的申請單仍為核准時才建帳號。
         </p>
       </div>
 
@@ -108,7 +108,7 @@ export default function ApplicationsPage() {
           title={`目前沒有${STATUS_LABEL[tab]}的申請`}
           description={
             tab === "pending_verification"
-              ? "這些人送出了表單但還沒點驗證信，不需要你處理。"
+              ? "這些人送出了表單但還沒輸入驗證碼，不需要你處理。"
               : "新的申請完成信箱驗證後會出現在「待審核」。"
           }
         />
@@ -209,7 +209,7 @@ function ApplicationCard({
               ) : (
                 <CheckCircle2 className="size-4" />
               )}
-              核准並建立帳號
+              {row.created_user_id ? "核准上架" : "核准並建立帳號"}
             </Button>
             <Button
               variant="outline"
@@ -223,6 +223,13 @@ function ApplicationCard({
               )}
               退回
             </Button>
+            {row.created_facility_id && (
+              <Button asChild size="sm" variant="ghost" className="ml-auto">
+                <Link href={`/admin/clinics/${row.created_facility_id}`}>
+                  先看院所資料
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       ) : (

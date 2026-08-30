@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -211,8 +212,63 @@ export function JoinForm() {
   // 三段流程：0 商家類型 / 1 基本資料 / 2 服務資訊。
   // 一次只問一段，18 個欄位鋪在同一頁會讓人直接關掉。
   const [step, setStep] = useState(0);
+
+  // ===== 驗證碼階段（送出後同頁完成，不再要求去信箱點連結）=====
+  const [code, setCode] = useState("");
+  const [vPassword, setVPassword] = useState("");
+  const [vConfirm, setVConfirm] = useState("");
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  // 重寄成功等正向回饋（有畫面看得到、螢幕閱讀器也聽得到，不然重寄像沒反應）
+  const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  // 重寄冷卻（後端同信箱 60 秒節流；前端先擋掉必然失敗的點擊）
+  const [resendIn, setResendIn] = useState(0);
+  // 信箱本來就有 Cross 帳號：密碼沿用原本那組，要把這件事講清楚再放行進後台
+  const [openedExisting, setOpenedExisting] = useState(false);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setTimeout(() => setResendIn((n) => n - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
+
+  // 驗證碼階段只活在記憶體：手機切去收信或不小心重整，回來就是空白表單、
+  // 手上的碼無處可輸。把「已送出＋表單內容」存進 sessionStorage，重整後回到輸碼畫面
+  // （驗證碼與密碼仍需重新輸入，不落地）。成功／重填時清掉。
+  const STORAGE_KEY = "cross_join_pending";
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as { form?: FormState };
+        if (saved.form?.email) {
+          setForm(saved.form);
+          setSubmitted(true);
+        }
+      }
+    } catch {
+      // 無痕視窗 / 讀取被擋 → 就當作全新填寫，不影響流程
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      if (submitted && !openedExisting) {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ form }));
+      } else {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // 忽略：sessionStorage 不可用不該讓表單壞掉
+    }
+  }, [submitted, openedExisting, form]);
+
   // 換步時按鈕會卸載或轉 disabled，焦點被瀏覽器丟回 body。把焦點移到該步標題，
   // 一次解決「鍵盤使用者失去位置」與「螢幕閱讀器不知道畫面換了」兩件事。
+  // openedExisting 也要在依賴內：那個「密碼沿用原本那組」的畫面是全流程最不能漏聽的。
   const headingRef = useRef<HTMLHeadingElement>(null);
   const movedRef = useRef(false);
   useEffect(() => {
@@ -221,7 +277,7 @@ export function JoinForm() {
       return;
     }
     headingRef.current?.focus();
-  }, [step, submitted]);
+  }, [step, submitted, openedExisting]);
 
   // 逐段驗證：回傳「還缺什麼」而不是一個 boolean。原本只把「下一步」設成 disabled，
   // 使用者把 email 打成 wang@gmail 時按鈕就是灰的、畫面上沒有半個字說明原因。
@@ -254,15 +310,9 @@ export function JoinForm() {
 
   const canSubmit = missingInStep1().length === 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // 在欄位裡按 Enter 會觸發隱式送出，只有最後一步才算數
-    if (step !== STEPS.length - 1) return;
-    setError(null);
-    setIsSubmitting(true);
-
+  const buildPayload = (): JoinApplication => {
     const selected = JOIN_CATEGORIES.find((c) => c.value === form.category)!;
-    const payload: JoinApplication = {
+    return {
       category: form.category,
       facility_type: selected.facilityType,
       business_name: form.business_name.trim(),
@@ -284,12 +334,20 @@ export function JoinForm() {
       // 付費類型為診所專屬
       ...(isClinic ? { payment_type: form.payment_type } : {}),
     };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // 在欄位裡按 Enter 會觸發隱式送出，只有最後一步才算數
+    if (step !== STEPS.length - 1) return;
+    setError(null);
+    setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(buildPayload()),
       });
       const json = (await res.json().catch(() => null)) as
         | { ok: boolean; error?: string }
@@ -299,6 +357,7 @@ export function JoinForm() {
         return;
       }
       setSubmitted(true);
+      setResendIn(60);
     } catch {
       setError("無法連線到伺服器，請稍後再試");
     } finally {
@@ -306,64 +365,283 @@ export function JoinForm() {
     }
   };
 
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(code)) {
+      setVerifyError("請輸入信中的 6 位數驗證碼");
+      return;
+    }
+    if (vPassword.length < 8) {
+      setVerifyError("密碼至少 8 碼");
+      return;
+    }
+    if (vPassword !== vConfirm) {
+      setVerifyError("兩次輸入的密碼不一致");
+      return;
+    }
+    setVerifyError(null);
+    setVerifyNotice(null);
+    setIsVerifying(true);
+    try {
+      const res = await fetch("/api/v1/facility-applications/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          code,
+          password: vPassword,
+        }),
+      });
+      const json = (await res.json().catch(() => null)) as
+        | {
+            access_token?: string;
+            refresh_token?: string;
+            existing_account?: boolean;
+            // detail 可能是 FastAPI 422 的錯誤物件陣列，不一定是字串
+            detail?: unknown;
+          }
+        | null;
+      if (!res.ok || !json?.access_token || !json.refresh_token) {
+        // 只有字串才拿來當訊息；422 的 detail 是陣列，直接 render 會讓 React 崩潰
+        const detail =
+          typeof json?.detail === "string" ? json.detail : "驗證失敗，請稍後再試";
+        setVerifyError(detail);
+        return;
+      }
+      localStorage.setItem("access_token", json.access_token);
+      localStorage.setItem("refresh_token", json.refresh_token);
+      if (json.existing_account) {
+        // 密碼沿用原帳號那組——先講清楚再讓他進後台，否則他會拿剛設的新密碼去登入
+        setOpenedExisting(true);
+      } else {
+        // 整頁導向讓 auth-context 在載入時讀 localStorage 完成登入
+        window.location.assign("/admin");
+      }
+    } catch {
+      setVerifyError("無法連線到伺服器，請稍後再試");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setIsResending(true);
+    setVerifyError(null);
+    setVerifyNotice(null);
+    try {
+      const res = await fetch("/api/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // resend：後端會換發新碼；web route 據此略過營運通知信，不重複轟炸信箱
+        body: JSON.stringify({ ...buildPayload(), resend: true }),
+      });
+      const json = (await res.json().catch(() => null)) as
+        | { ok: boolean; error?: string }
+        | null;
+      if (!res.ok || !json?.ok) {
+        setVerifyError(json?.error ?? "重新寄送失敗，請稍後再試");
+        return;
+      }
+      setCode("");
+      setResendIn(60);
+      // 舊碼已作廢，明講「以最新一封為準」避免使用者輸入舊信的碼
+      setVerifyNotice("新的驗證碼已寄出，請以最新一封信的驗證碼為準。");
+    } catch {
+      setVerifyError("無法連線到伺服器，請稍後再試");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   if (submitted) {
-    return (
-      <div
-        className="flex flex-col items-center gap-4 overflow-hidden rounded-[2rem] bg-card p-10 text-center shadow-xl ring-1 ring-foreground/5"
-        style={{ animation: "fadeInUp 0.5s ease-out both" }}
-      >
-        <div className="relative flex size-20 items-center justify-center">
-          <span className="absolute inset-0 animate-ping rounded-full bg-primary/15 [animation-iteration-count:3]" />
-          <span className="relative flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+    // 帳號已開通、但信箱本來就有 Cross 帳號 → 先講清楚密碼沿用哪一組
+    if (openedExisting) {
+      return (
+        <div
+          className="flex flex-col items-center gap-4 overflow-hidden rounded-[2rem] bg-card p-10 text-center shadow-xl ring-1 ring-foreground/5"
+          style={{ animation: "fadeInUp 0.5s ease-out both" }}
+        >
+          <span className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
             <CheckCircle2 className="size-9" />
           </span>
+          <h2
+            ref={headingRef}
+            tabIndex={-1}
+            className="text-2xl font-bold tracking-tight text-foreground outline-none"
+          >
+            後台已開通
+          </h2>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+            這個信箱本來就有 Cross 帳號，登入密碼
+            <strong className="font-medium text-foreground">沿用原本那組</strong>
+            ——剛剛填的新密碼沒有被使用。
+          </p>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+            現在就能進後台整理院所資料；上架到民眾端需通過審核，屆時會寄信通知。
+          </p>
+          <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
+            不記得原本的密碼？下次登入前請來信{" "}
+            <strong className="font-medium text-foreground">
+              office@twinhao.com
+            </strong>{" "}
+            協助重設。
+          </p>
+          <Button
+            size="lg"
+            className="mt-1"
+            onClick={() => window.location.assign("/admin")}
+          >
+            進入院所後台
+            <ArrowRight className="size-4" />
+          </Button>
         </div>
-        <h2
-          ref={headingRef}
-          tabIndex={-1}
-          className="text-2xl font-bold tracking-tight text-foreground outline-none"
-        >
-          申請已送出
-        </h2>
-        {/* 後端刻意不告訴前端走了哪條路（驗證信／「你已經有帳號了」／「審核中」），
-            否則這個公開端點就能被拿來查某信箱有沒有帳號。所以這裡的文案必須
-            對三種情況都成立——不能寫死「寄了驗證信」。 */}
-        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-          我們已收到「{form.business_name}」的申請，並寄了一封信到{" "}
-          <strong className="font-medium text-foreground">{form.email}</strong>
-          ，請依信中的指示完成下一步。
-        </p>
-        <div className="w-full max-w-sm space-y-2.5 rounded-2xl bg-muted/40 p-5 text-left">
-          {[
-            "到信箱點信中的連結，設定後台密碼（連結 72 小時內有效）",
-            "我們收到後會盡快審核",
-            "審核通過就會開通後台，屆時再以這個信箱通知您",
-          ].map((text, i) => (
-            <div key={text} className="flex gap-3">
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
-                {i + 1}
-              </span>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {text}
-              </p>
+      );
+    }
+
+    return (
+      <form
+        onSubmit={handleVerify}
+        className="overflow-hidden rounded-[2rem] bg-card shadow-xl ring-1 ring-foreground/5"
+        style={{ animation: "fadeInUp 0.5s ease-out both" }}
+      >
+        <div className="space-y-6 p-6 sm:p-8">
+          <div>
+            <h2
+              ref={headingRef}
+              tabIndex={-1}
+              className="text-xl font-bold tracking-tight text-foreground outline-none"
+            >
+              輸入驗證碼，立即開通後台
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              若你剛送出申請，驗證碼會寄到{" "}
+              <strong className="font-medium text-foreground">
+                {form.email}
+              </strong>
+              ，15 分鐘內有效。{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmitted(false);
+                  setVerifyError(null);
+                  setVerifyNotice(null);
+                  setCode("");
+                }}
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                填錯信箱？返回修改
+              </button>
+            </p>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="otp-code">6 位數驗證碼</Label>
+            <Input
+              id="otp-code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              className="h-14 text-center text-2xl font-bold tracking-[0.5em] tabular-nums"
+              placeholder="000000"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="otp-password">設定後台密碼</Label>
+                <Input
+                  id="otp-password"
+                  type="password"
+                  autoComplete="new-password"
+                  maxLength={128}
+                  value={vPassword}
+                  onChange={(e) => setVPassword(e.target.value)}
+                  placeholder="至少 8 碼"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="otp-confirm">再次輸入密碼</Label>
+                <Input
+                  id="otp-confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  maxLength={128}
+                  value={vConfirm}
+                  onChange={(e) => setVConfirm(e.target.value)}
+                />
+              </div>
             </div>
-          ))}
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              之後就用這個信箱＋這組密碼登入院所後台。若這個信箱已經有 Cross
+              帳號，會沿用原本的密碼，這裡填的不會生效。
+            </p>
+          </div>
+
+          {/* role="alert" 容器常駐、只切內容才穩定觸發朗讀；顏色沿用主表單過 AA 的實色 */}
+          <div
+            role="alert"
+            className={cn(
+              verifyError
+                ? "rounded-2xl bg-destructive/10 p-3 text-sm text-red-800 ring-1 ring-destructive/20 dark:text-red-300"
+                : verifyNotice
+                  ? "rounded-2xl bg-emerald-500/10 p-3 text-sm text-emerald-800 ring-1 ring-emerald-500/20 dark:text-emerald-300"
+                  : "sr-only",
+            )}
+          >
+            {verifyError ?? verifyNotice}
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={isVerifying}
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  開通中…
+                </>
+              ) : (
+                <>
+                  完成驗證，進入後台
+                  <ArrowRight className="size-4" />
+                </>
+              )}
+            </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              沒收到信？看看垃圾信匣，或{" "}
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendIn > 0 || isResending}
+                className="font-medium text-primary underline-offset-2 enabled:hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground"
+              >
+                {resendIn > 0
+                  ? `重新寄送（${resendIn} 秒後可用）`
+                  : isResending
+                    ? "寄送中…"
+                    : "重新寄送驗證碼"}
+              </button>
+            </p>
+            {/* 已完成驗證的人重送表單不會再收到碼——給一條登入逃生口，別讓他卡死 */}
+            <p className="text-center text-xs text-muted-foreground">
+              已經完成過驗證了？直接{" "}
+              <Link
+                href="/admin/login"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                前往登入
+              </Link>
+              。帳號開通後即可整理院所資料；上架到民眾端需審核通過，屆時會寄信通知。
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          沒收到信？請看看垃圾信匣；一分鐘後仍沒有，再重新送出一次申請。
-        </p>
-        <Button
-          variant="outline"
-          className="mt-1"
-          onClick={() => {
-            setForm(INITIAL_STATE);
-            setSubmitted(false);
-            setStep(0);
-          }}
-        >
-          再填一筆
-        </Button>
-      </div>
+      </form>
     );
   }
 
@@ -685,7 +963,7 @@ export function JoinForm() {
           </div>
           {step === STEPS.length - 1 && (
             <p className="text-center text-xs text-muted-foreground">
-              送出後會寄一封驗證信到你填的信箱，點連結設定密碼即可完成申請。
+              送出後輸入寄到信箱的 6 位數驗證碼，後台立即開通。
             </p>
           )}
         </div>

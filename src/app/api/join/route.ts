@@ -181,7 +181,7 @@ async function sendEmail(to: string, content: EmailContent): Promise<void> {
   }
 }
 
-/** 建立申請單。驗證信由後端寄（token 不離開後端），這裡只拿到有沒有寄成功。 */
+/** 建立申請單。驗證碼由後端寄（碼不離開後端），這裡只拿到有沒有寄成功。 */
 async function createApplication(
   data: JoinApplication,
 ): Promise<{ ok: true; emailSent: boolean } | { ok: false; error: string }> {
@@ -223,6 +223,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "格式錯誤" }, { status: 400 });
   }
 
+  // 重新寄送驗證碼：申請人已在驗證頁，後端會沿用同一張申請單換發新碼；
+  // 營運通知信第一次送出時已寄過，重寄不再轟炸。
+  const isResend =
+    typeof raw === "object" && raw !== null &&
+    (raw as Record<string, unknown>).resend === true;
+
   const result = validate(raw);
 
   // 蜜罐命中：對機器人回 200，但不做任何通知
@@ -245,14 +251,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: created.error }, { status: 400 });
   }
 
-  // 驗證信寄不出去就不能回報成功——對方會一直等一封不會來的信。
-  // 申請單已經建立，重送一次會沿用同一張並換發新 token，所以叫他重試是安全的。
+  // 驗證碼寄不出去就不能回報成功——對方會一直等一封不會來的信。
+  // 申請單已經建立，重送一次會沿用同一張並換發新碼，所以叫他重試是安全的。
   if (!created.emailSent) {
     console.error("[join] verification email not sent", { email: data.email });
     return NextResponse.json(
       {
         ok: false,
-        error: "驗證信寄送失敗，請稍後再送出一次；若持續發生請來信 office@twinhao.com",
+        error: "驗證碼寄送失敗，請稍後再試一次；若持續發生請來信 office@twinhao.com",
       },
       { status: 502 },
     );
@@ -265,9 +271,9 @@ export async function POST(req: NextRequest) {
     email: data.email,
   });
 
-  // 申請人的驗證信由後端寄出（token 不能經過這裡）；這裡只寄營運團隊的通知信
+  // 申請人的驗證碼信由後端寄出（碼不能經過這裡）；這裡只寄營運團隊的通知信
   const notifyTo = process.env.JOIN_NOTIFY_EMAIL;
-  if (notifyTo) {
+  if (notifyTo && !isResend) {
     await sendEmail(
       notifyTo,
       applicationNotificationEmail(

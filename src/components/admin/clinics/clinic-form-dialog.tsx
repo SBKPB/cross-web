@@ -196,6 +196,7 @@ function ClinicFormContent({
   );
   const [logoBusy, setLogoBusy] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const logoFileRef = useRef<HTMLInputElement>(null);
 
   const handleLogoFile = async (file: File | null) => {
@@ -292,7 +293,18 @@ function ClinicFormContent({
       (data as MedicalFacilityUpdate).show_schedule = formData.show_schedule;
     }
 
-    await onSubmit(data);
+    // 父層 handleUpdate 只 console.error 後 rethrow；不接住的話後端錯誤（例如
+    // 「加入申請審核中不得上架」的 409）會整包靜默失敗，使用者以為沒反應。
+    // 後端可讀訊息在 ApiError.data.detail（ApiError.message 只是「API Error: 409」）。
+    setSubmitError(null);
+    try {
+      await onSubmit(data);
+    } catch (err) {
+      const detail = (err as { data?: { detail?: unknown } })?.data?.detail;
+      setSubmitError(
+        typeof detail === "string" ? detail : "儲存失敗，請稍後再試",
+      );
+    }
   };
 
   const updateBusinessHour = (
@@ -727,9 +739,10 @@ function ClinicFormContent({
             </div>
 
             {isEditing && (
-              <div className={cn(sectionCard, "flex items-center gap-2")}>
+              <div className={cn(sectionCard, "flex items-start gap-2")}>
                 <Checkbox
                   id="is_active"
+                  className="mt-0.5"
                   checked={formData.is_active}
                   onCheckedChange={(checked) =>
                     setFormData((prev) => ({
@@ -739,7 +752,11 @@ function ClinicFormContent({
                   }
                 />
                 <Label htmlFor="is_active" className="font-normal">
-                  啟用院所
+                  {/* 全流程對外都講「上架」，這裡是唯一的開關，標籤把兩個詞綁在一起 */}
+                  上架到民眾端（啟用院所）
+                  <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                    開啟後民眾就能在搜尋與分類頁看到這間院所。
+                  </span>
                 </Label>
               </div>
             )}
@@ -879,6 +896,18 @@ function ClinicFormContent({
           </div>
         </TabsContent>
       </Tabs>
+
+      <div
+        role="alert"
+        className={cn(
+          "mt-4",
+          submitError
+            ? "rounded-2xl bg-destructive/10 p-3 text-sm text-red-800 ring-1 ring-destructive/20 dark:text-red-300"
+            : "sr-only",
+        )}
+      >
+        {submitError}
+      </div>
 
       <DialogFooter className={cn("mt-6", lumaDialogFooter)}>
         <Button

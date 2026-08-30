@@ -30,6 +30,7 @@ import {
 } from "@/lib/constants/clinic-constants";
 import {
   JOIN_CATEGORIES,
+  JOIN_CATEGORY_ACCENT,
   SERVICE_PLACEHOLDERS,
   TEAM_SIZE_OPTIONS,
   type JoinCategoryOption,
@@ -95,42 +96,47 @@ function CategoryCard({
   onSelect: () => void;
 }) {
   const Icon = CATEGORY_ICONS[option.icon];
+  const accent = JOIN_CATEGORY_ACCENT[option.value];
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        "group relative flex flex-col items-start gap-2.5 rounded-2xl p-3.5 text-left transition-all duration-200",
-        "ring-1 hover:-translate-y-0.5",
+        "group relative flex flex-col items-start gap-2.5 rounded-2xl p-4 text-left transition-all duration-200",
+        // 焦點用 outline 而非本專案慣用的 focus-visible:ring-3：ring 是 box-shadow，
+        // 已經被卡片自己的邊框佔用，再疊上去會蓋掉選中態的 ring-2。往外 offset 才分得出來。
+        "ring-1 focus-visible:outline-2 focus-visible:outline-offset-2",
         selected
-          ? "bg-primary/[0.06] ring-2 ring-primary shadow-sm"
-          : "bg-card ring-foreground/50 hover:ring-primary hover:shadow-sm",
+          ? cn("shadow-sm ring-2", accent.card)
+          : "bg-card ring-foreground/50 hover:bg-muted/50",
       )}
     >
-      {/* 勾選徽章 */}
+      {/* 勾號：選中不能只靠顏色傳達（WCAG 1.4.1），色盲使用者靠這個看 */}
       <span
         className={cn(
-          "absolute right-2.5 top-2.5 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all duration-200",
+          "absolute right-3 top-3 flex size-5 items-center justify-center rounded-full transition-all duration-200",
+          accent.solid,
           selected ? "scale-100 opacity-100" : "scale-50 opacity-0",
         )}
       >
         <Check className="size-3" strokeWidth={3} />
       </span>
+      {/* 未選中一律中性灰：四顆同色的藍會讓「選中」那顆淹沒在其他三顆裡 */}
       <span
         className={cn(
-          "inline-flex size-9 items-center justify-center rounded-xl transition-colors duration-200",
+          "inline-flex size-10 items-center justify-center rounded-xl transition-colors duration-200",
           selected
-            ? "bg-primary text-primary-foreground"
-            : "bg-primary/10 text-primary group-hover:bg-primary/15",
+            ? accent.solid
+            : "bg-foreground/[0.07] text-muted-foreground group-hover:text-foreground",
         )}
       >
-        <Icon className="size-[18px]" />
+        <Icon className="size-5" />
       </span>
       <span className="text-sm font-semibold text-foreground">
         {option.label}
       </span>
-      <span className="text-[11px] leading-snug text-muted-foreground">
+      <span className="text-xs leading-snug text-muted-foreground">
         {option.description}
       </span>
     </button>
@@ -367,9 +373,6 @@ export function JoinForm() {
       className="overflow-hidden rounded-[2rem] bg-card shadow-xl ring-1 ring-foreground/5"
       style={{ animation: "fadeInUp 0.5s ease-out both" }}
     >
-      {/* 卡片頂部品牌色細線 */}
-      <div className="h-1 bg-gradient-to-r from-primary/70 via-primary to-primary/70" />
-
       {/* 蜜罐欄位：對使用者隱藏。刻意放在 space-y-7 容器「之外」——Tailwind 4 的
           space-y 用 :not(:last-child) 選擇器，零高度的它照樣分到一格 28px。 */}
       <div aria-hidden="true" className="h-0 w-0 overflow-hidden">

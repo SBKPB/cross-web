@@ -43,6 +43,32 @@ export const JOIN_CATEGORIES: JoinCategoryOption[] = [
   },
 ];
 
+// 選中時卡片換上的語意色。色相沿用民眾端診所卡的 FACILITY_TYPE_COLORS，
+// 讓人在申請當下看到的顏色，就是日後上架後自己院所被標記的顏色。
+// 另立一份而不直接沿用：badge 只需要一組淺底，卡片還要深色模式與實心 icon 底。
+// 「其他」用 slate 但刻意拉到 700 實心——淺灰選中態會被誤讀成停用。
+export const JOIN_CATEGORY_ACCENT: Record<
+  JoinCategory,
+  { card: string; solid: string }
+> = {
+  clinic: {
+    card: "bg-sky-50 ring-sky-600 dark:bg-sky-950/40 dark:ring-sky-400",
+    solid: "bg-sky-600 text-white dark:bg-sky-400 dark:text-sky-950",
+  },
+  aesthetic: {
+    card: "bg-pink-50 ring-pink-600 dark:bg-pink-950/40 dark:ring-pink-400",
+    solid: "bg-pink-600 text-white dark:bg-pink-400 dark:text-pink-950",
+  },
+  beauty: {
+    card: "bg-rose-50 ring-rose-600 dark:bg-rose-950/40 dark:ring-rose-400",
+    solid: "bg-rose-600 text-white dark:bg-rose-400 dark:text-rose-950",
+  },
+  other: {
+    card: "bg-slate-100 ring-slate-600 dark:bg-slate-800/60 dark:ring-slate-400",
+    solid: "bg-slate-700 text-white dark:bg-slate-300 dark:text-slate-900",
+  },
+};
+
 export const JOIN_CATEGORY_LABELS: Record<JoinCategory, string> = {
   clinic: "診所",
   aesthetic: "醫美診所",

@@ -20,9 +20,11 @@ import { lumaPageContainer } from "@/lib/styles/luma";
 import { cn } from "@/lib/utils";
 import type { ApplicationStatus, FacilityApplication } from "@/types/clinic";
 
+// 「待驗證信箱」不列 tab：新流程下申請人是在同一頁輸驗證碼即開通，這個狀態只
+// 存在於送出到輸碼之間的數秒，tab 裡看到的都是半途放棄的殘骸，對審核沒有意義。
+// 狀態本身保留（STATUS_LABEL 仍完整），只是不給它一個檢視入口。
 const TABS: { value: ApplicationStatus; label: string }[] = [
   { value: "pending_review", label: "待審核" },
-  { value: "pending_verification", label: "待驗證信箱" },
   { value: "approved", label: "已核准" },
   { value: "rejected", label: "已退回" },
 ];
@@ -106,11 +108,7 @@ export default function ApplicationsPage() {
         <AdminEmptyState
           icon={tab === "pending_review" ? ClipboardCheck : MailWarning}
           title={`目前沒有${STATUS_LABEL[tab]}的申請`}
-          description={
-            tab === "pending_verification"
-              ? "這些人送出了表單但還沒輸入驗證碼，不需要你處理。"
-              : "新的申請完成信箱驗證後會出現在「待審核」。"
-          }
+          description="申請人輸入信箱驗證碼、帳號開通後，會出現在「待審核」等你把關上架。"
         />
       ) : (
         <div className="space-y-4">

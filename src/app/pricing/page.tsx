@@ -57,6 +57,13 @@ export default function PricingPage() {
           <p className="mt-6 text-center text-xs text-muted-foreground">
             價格已含稅；年繳一次支付、等於付 10 個月。新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
           </p>
+          <p className="mt-3 text-center text-sm text-muted-foreground">
+            訂閱取消與退費申請方式，請參閱
+            <Link href="/refund" className="ml-1 text-primary underline underline-offset-4">
+              退款政策
+            </Link>
+            。
+          </p>
         </section>
 
         {/* FAQ */}

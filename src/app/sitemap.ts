@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/join`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${SITE}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${SITE}/refund`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   // 動態頁：診所頁 + 各縣市 / 各科別 在地落地頁（最具 SEO 價值的長尾）

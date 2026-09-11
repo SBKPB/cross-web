@@ -35,6 +35,7 @@ const LINK_GROUPS: { title: string; links: FooterLink[] }[] = [
         external: true,
       },
       { label: "服務條款", href: "/terms" },
+      { label: "退款政策", href: "/refund" },
     ],
   },
 ];

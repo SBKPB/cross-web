@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background py-8">
@@ -54,7 +56,20 @@ export default function TermsPage() {
 
           <section>
             <h2 className="mb-2 text-base font-semibold text-slate-900">
-              6. 條款修改
+              6. 退款與訂閱取消
+            </h2>
+            <p>
+              Cross 平台費用的退款申請與訂閱取消方式，請參閱
+              <Link href="/refund" className="mx-1 text-primary underline underline-offset-4">
+                退款政策
+              </Link>
+              。由院所收取的費用，請直接向收款院所申請退費。
+            </p>
+          </section>
+
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-900">
+              7. 條款修改
             </h2>
             <p>
               本條款可能不定期更新，繼續使用本服務即表示同意更新後的條款。
@@ -63,7 +78,7 @@ export default function TermsPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-slate-500">
-          最後更新日期：2026 年 2 月
+          最後更新日期：2026 年 9 月 11 日
         </p>
       </div>
     </div>

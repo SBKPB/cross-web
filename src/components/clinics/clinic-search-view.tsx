@@ -12,6 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { clinicsApi } from "@/lib/api/clinics";
+import { buildCategoryLabelMap } from "@/lib/api/service-categories";
+import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
+import { matchesClinicSearch } from "@/lib/clinic-discovery";
+import { Button } from "@/components/ui/button";
 import type { Clinic, ClinicFilters } from "@/types/clinic";
 
 interface ClinicSearchViewProps {
@@ -40,15 +44,22 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<ClinicFilters>(initialFilters);
   const [sort, setSort] = useState<SortKey>("default");
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const taxonomy = useServiceTaxonomy();
+  const categoryLabels = useMemo(() => buildCategoryLabelMap(taxonomy), [taxonomy]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setIsLoading(true);
+      setLoadError(false);
       try {
         const data = await clinicsApi.getClinics();
         if (!cancelled) setClinics(data);
       } catch (error) {
         console.error("[Search] Failed to fetch clinics:", error);
+        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -56,16 +67,11 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   const filteredClinics = useMemo(() => {
     const result = clinics.filter((clinic) => {
-      if (filters.search) {
-        const q = filters.search.toLowerCase();
-        const nameHit = clinic.clinic_name.toLowerCase().includes(q);
-        const addrHit = clinic.address?.toLowerCase().includes(q) ?? false;
-        if (!nameHit && !addrHit) return false;
-      }
+      if (!matchesClinicSearch(clinic, filters.search, categoryLabels)) return false;
       // 醫療分級僅在「看診/全部」大類適用（與 toolbar 的 showLevelFilter 一致，
       // 避免非看診大類帶 level 參數時產生看不見、移不掉的隱形篩選）
       const levelScope =
@@ -127,27 +133,27 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
     }
 
     return result;
-  }, [clinics, filters, sort]);
+  }, [clinics, filters, sort, categoryLabels]);
 
   return (
     <div className="space-y-5">
       {/* 黏性工具列：捲動時固定於頁首下方，方便隨時調整篩選 */}
-      <div className="sticky top-16 z-30 -mx-4 bg-background/80 px-4 py-3 backdrop-blur">
-        <ClinicToolbar filters={filters} onFiltersChange={setFilters} />
+      <div className="-mx-4 bg-background/95 px-4 py-3 md:sticky md:top-16 md:z-30 md:backdrop-blur">
+        <ClinicToolbar filters={filters} onFiltersChange={setFilters} resultCount={filteredClinics.length} />
       </div>
 
       {/* 結果計數 + 排序 */}
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground" role="status">
           {isLoading ? (
             "載入店家中…"
           ) : (
             <>
-              共{" "}
+              {loadError ? "尚未取得店家資料" : <>共{" "}
               <span className="font-semibold text-foreground">
                 {filteredClinics.length}
               </span>{" "}
-              間店家
+              間店家</>}
             </>
           )}
         </p>
@@ -176,6 +182,11 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
 
       {isLoading ? (
         <ClinicListSkeleton />
+      ) : loadError ? (
+        <div className="rounded-3xl border bg-card p-8 text-center" role="alert">
+          <p className="mb-4">暫時無法載入店家，請稍後再試。</p>
+          <Button variant="outline" onClick={() => setReloadKey((key) => key + 1)}>重新載入</Button>
+        </div>
       ) : (
         <ClinicList
           clinics={filteredClinics}

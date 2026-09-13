@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Building2 } from "lucide-react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -27,7 +28,9 @@ function AuthContent() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const nextUrl = searchParams.get("next") || "/member";
+  const requestedNext = searchParams.get("next") || "/member";
+  const nextUrl = requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !/[\\\x00-\x1f]/.test(requestedNext) ? requestedNext : "/member";
+  const isBooking = nextUrl.startsWith("/booking/");
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -78,10 +81,11 @@ function AuthContent() {
           </div>
           <CardTitle className="mt-3 text-2xl">登入 Cross</CardTitle>
           <CardDescription>
-            登入後即可預約看診、管理看診對象與查看預約紀錄
+            {isBooking ? "登入後回到所選時段，確認看診對象後即可完成預約。" : "登入後即可預約看診、管理看診對象與查看預約紀錄"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
+          {isBooking && <Link href={nextUrl} className="mb-3 block text-center text-sm text-primary underline underline-offset-4">返回選擇時段</Link>}
           {error && (
             <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
               {error}

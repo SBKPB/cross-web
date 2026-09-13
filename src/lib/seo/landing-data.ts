@@ -1,4 +1,5 @@
 import { parseCityFromAddress } from "@/lib/constants/clinic-constants";
+import { isDemoClinic } from "@/lib/clinic-discovery";
 import type { FacilityType, PaymentType } from "@/types/clinic";
 
 // 伺服器端直接打後端（與 sitemap.ts / clinic 頁一致）
@@ -40,7 +41,7 @@ export async function getAllClinics(): Promise<LandingClinic[]> {
     });
     if (!res.ok) return [];
     const raw = (await res.json()) as RawClinic[];
-    return raw.map((c) => ({
+    return raw.filter((c) => !isDemoClinic(c.id)).map((c) => ({
       id: c.id,
       name: c.name,
       address: c.address ?? null,

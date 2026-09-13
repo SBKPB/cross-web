@@ -195,7 +195,7 @@ export function ClinicDetailDialog({
             >
               <Link href={`/booking/${clinic.id}`}>
                 <Calendar className="h-4 w-4 mr-2" />
-                立即預約
+                查看可約時段
               </Link>
             </Button>
             <Button

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { CalendarClock } from "lucide-react";
 import { useBooking, useBookingDispatch } from "@/components/booking/booking-context";
@@ -26,6 +27,8 @@ import { BookingForm } from "./booking-form";
 import { PatientSelector } from "@/components/patient/patient-selector";
 import { inkOn } from "@/lib/color-contrast";
 import { StickySubmitButton } from "./sticky-submit-button";
+import { availableSlotForSelection, bookingDraftKey, decodeBookingDraft, encodeBookingDraft } from "@/lib/booking-draft";
+import { isDemoClinic } from "@/lib/clinic-discovery";
 
 interface BookingFlowProps {
   clinicId: string;
@@ -56,30 +59,36 @@ export function BookingFlow({
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [selectedPatient, setSelectedPatient] = useState<MemberPatientRead | null>(null);
+  const slotsRequest = useRef(0);
+  const isDemo = isDemoClinic(clinicId);
 
-  // 未登入 → 先去 /auth 登入，登入完自動回來
+  // 登入後回到原本選取的時段；重新取得名額後才允許送出。
   useEffect(() => {
-    if (authLoading) return;
-    if (!isAuthenticated) {
-      router.replace(`/auth?next=${encodeURIComponent(pathname)}`);
-    }
-  }, [authLoading, isAuthenticated, router, pathname]);
+    try {
+      const key = bookingDraftKey(clinicId);
+      const draft = decodeBookingDraft(sessionStorage.getItem(key), services, doctors);
+      sessionStorage.removeItem(key);
+      if (draft) dispatch({ type: "RESTORE_SELECTION", payload: draft });
+    } catch { /* 停用瀏覽器儲存時仍可正常選擇及預約。 */ }
+  }, [clinicId, services, doctors, dispatch]);
 
   const primaryColor = clinicConfig.primary_color;
 
   const loadSlots = useCallback(() => {
     if (!selection.service) return;
+    const requestId = ++slotsRequest.current;
     setIsLoadingSlots(true);
     setSlotsError(false);
     bookingApi
       .getAvailableSlots(clinicId, selection.service.id, selection.doctor?.id ?? null)
-      .then(setAvailableDates)
+      .then((dates) => { if (requestId === slotsRequest.current) setAvailableDates(dates); })
       .catch((error) => {
+        if (requestId !== slotsRequest.current) return;
         console.error("Failed to load available slots:", error);
         setSlotsError(true);
         setAvailableDates([]);
       })
-      .finally(() => setIsLoadingSlots(false));
+      .finally(() => { if (requestId === slotsRequest.current) setIsLoadingSlots(false); });
   }, [clinicId, selection.service, selection.doctor]);
 
   // 載入可預約時段（loadSlots 已 memoize 於 service / doctor）
@@ -87,6 +96,7 @@ export function BookingFlow({
     if (currentStep === 3 && selection.service) {
       loadSlots();
     }
+    return () => { slotsRequest.current += 1; };
   }, [currentStep, selection.service, loadSlots]);
 
   // 取得選取日期的時段
@@ -95,6 +105,8 @@ export function BookingFlow({
     const dateInfo = availableDates.find((d) => d.date === selection.date);
     return dateInfo?.slots || [];
   }, [availableDates, selection.date]);
+  const currentSlot = availableSlotForSelection(availableDates, selection);
+  const validSlot = Boolean(currentSlot && !isLoadingSlots && !slotsError);
 
   // 判斷是否可以進入下一步
   const canProceed = useMemo(() => {
@@ -105,15 +117,13 @@ export function BookingFlow({
         return selection.doctor !== null;
       case 3:
         return (
-          selection.date !== null &&
-          selection.timeSlot !== null &&
-          selectedPatient !== null &&
-          formData.privacyAccepted
+          !isDemo && validSlot && !authLoading &&
+          (!isAuthenticated || (selectedPatient !== null && formData.privacyAccepted))
         );
       default:
         return false;
     }
-  }, [currentStep, selection, formData, selectedPatient]);
+  }, [currentStep, selection, formData, selectedPatient, validSlot, authLoading, isAuthenticated, isDemo]);
 
   // 下一步按鈕文字
   const nextButtonLabel = useMemo(() => {
@@ -123,11 +133,11 @@ export function BookingFlow({
       case 2:
         return "選擇時間";
       case 3:
-        return "確認送出預約";
+        return isDemo ? "示範流程，不會建立預約" : isAuthenticated ? "確認送出預約" : "登入並繼續預約";
       default:
         return "下一步";
     }
-  }, [currentStep]);
+  }, [currentStep, isAuthenticated, isDemo]);
 
   // sticky 按鈕上方的選取摘要提示
   const submitHint = useMemo(() => {
@@ -147,6 +157,14 @@ export function BookingFlow({
     if (!canProceed) return;
 
     if (currentStep === 3) {
+      if (isDemo || !validSlot) return;
+      if (!isAuthenticated) {
+        try {
+          sessionStorage.setItem(bookingDraftKey(clinicId), encodeBookingDraft(selection));
+        } catch { /* 無法暫存時，登入後仍可重新選取時段。 */ }
+        router.push(`/auth?next=${encodeURIComponent(pathname)}`);
+        return;
+      }
       // 送出預約
       if (!selection.service || !selection.date || !selection.timeSlot || !selectedPatient) {
         return;
@@ -176,7 +194,7 @@ export function BookingFlow({
     } else {
       dispatch({ type: "NEXT_STEP" });
     }
-  }, [canProceed, currentStep, clinicId, selection, formData, selectedPatient, dispatch, router]);
+  }, [canProceed, currentStep, clinicId, selection, formData, selectedPatient, dispatch, router, isDemo, validSlot, isAuthenticated, pathname]);
 
   // 處理返回上一步
   const handleStepClick = useCallback(
@@ -188,19 +206,16 @@ export function BookingFlow({
     [currentStep, dispatch]
   );
 
-  // 未登入或 loading → 顯示 loading（等 redirect 完成）
-  if (authLoading || !isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-background pb-32">
       {/* Clinic Header */}
       <ClinicHeader clinic={clinicConfig} />
+      <div className="mx-auto mt-5 w-full max-w-2xl px-4">
+        <p className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-relaxed">
+          {isDemo ? "這是示範院所，可體驗服務與時段選擇，不會建立實際預約。" : "先選服務與時段，確認時再登入。時段以送出預約時的剩餘名額為準。"}
+          {isDemo && <Link href="/search" className="ml-2 font-medium text-primary underline">查看合作店家</Link>}
+        </p>
+      </div>
 
       {/* Stepper — sticky 在頂部 */}
       <div className="sticky top-0 z-20 mt-6 border-y border-border/60 bg-background/80 backdrop-blur-lg">
@@ -246,7 +261,7 @@ export function BookingFlow({
                 確認預約資訊
               </h1>
               <p className="text-sm text-muted-foreground">
-                選擇看診時間與對象，最後確認送出
+                選擇合適的時段，再確認看診對象
               </p>
             </div>
 
@@ -283,6 +298,7 @@ export function BookingFlow({
               ) : (
                 <div className="space-y-6">
                   <DatePicker
+                    key={`${selection.service?.id}-${selection.doctor?.id}`}
                     dates={availableDates}
                     selectedDate={selection.date}
                     onSelectDate={(date) =>
@@ -299,7 +315,7 @@ export function BookingFlow({
                       </div>
                       <TimeSlotGrid
                         slots={selectedDateSlots}
-                        selectedSlot={selection.timeSlot}
+                        selectedSlot={currentSlot ?? null}
                         onSelectSlot={(slot) =>
                           dispatch({ type: "SET_TIME_SLOT", payload: slot })
                         }
@@ -309,8 +325,10 @@ export function BookingFlow({
                   )}
                 </div>
               )}
+              {!isLoadingSlots && !slotsError && selection.timeSlot && !currentSlot && <p className="mt-4 text-sm text-destructive" role="status">原先選取的時段已無法預約，請重新選擇。</p>}
             </BookingSection>
 
+            {isAuthenticated && !isDemo ? <>
             {/* ② 看診對象 */}
             <BookingSection
               index={2}
@@ -332,6 +350,11 @@ export function BookingFlow({
             >
               <BookingForm primaryColor={primaryColor} />
             </BookingSection>
+
+            </> : !isDemo ? <div className="rounded-2xl border bg-card p-5">
+              <h2 className="font-semibold">選好時間，再登入完成預約</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">登入後可選擇看診對象與填寫備註。所選服務與時段會暫存 30 分鐘，名額尚未保留。</p>
+            </div> : null}
 
             {submitError && (
               <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">

@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { isDemoClinic } from "@/lib/clinic-discovery";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -320,6 +321,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    ...(isDemoClinic(clinicId) ? { robots: { index: false, follow: false } } : {}),
     keywords: [clinic.clinic_name, ...labels, clinic.city ?? "", "線上預約", "掛號"]
       .filter(Boolean)
       .join("、"),
@@ -475,15 +477,16 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
     <div className="min-h-screen bg-background pb-28 lg:pb-16">
       {/* 造訪回報（不渲染任何東西） */}
       <TrackView clinicId={clinic.id} />
-      <script
+      {!isDemoClinic(clinicId) && <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      />}
       {/* 記錄一次瀏覽（登入會員，跨裝置同步；純副作用） */}
       <RecordView clinicId={clinicId} />
 
       {/* Hero：裝飾性 banner + 院所識別卡 */}
       <ClinicDetailHeader clinic={clinic} />
+      {isDemoClinic(clinicId) && <div className="container mx-auto px-4 pt-6"><p className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed">示範院所：本頁的團隊、地址、費用與班表僅供功能展示，不提供實際看診服務。</p></div>}
 
       {/* 桌機雙欄：主內容 + 黏性側欄 */}
       <div className="container mx-auto px-4 pt-6 sm:px-6 sm:pt-8">

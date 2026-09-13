@@ -15,7 +15,7 @@ const FEATURES = [
   {
     icon: ShieldCheck,
     title: "預約管理",
-    desc: "取消、改時間一鍵搞定",
+    desc: "查詢預約、提前取消",
   },
   {
     icon: Sparkles,

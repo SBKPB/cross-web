@@ -21,7 +21,7 @@ export function BookingCard({ clinicId, className }: BookingCardProps) {
       <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-white/10 blur-2xl" />
       <h3 className="relative text-lg font-bold">線上預約</h3>
       <p className="relative mt-1 text-sm leading-relaxed text-primary-foreground/85">
-        選擇門診時段，免電話排隊。
+        先選服務與時段，確認後再登入預約。
       </p>
 
       <Button
@@ -32,7 +32,7 @@ export function BookingCard({ clinicId, className }: BookingCardProps) {
       >
         <Link href={`/booking/${clinicId}`}>
           <CalendarCheck className="size-5" />
-          立即預約
+          查看可約時段
         </Link>
       </Button>
 

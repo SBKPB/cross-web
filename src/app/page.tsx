@@ -3,7 +3,6 @@ import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { AppDownload } from "@/components/home/app-download";
-import { CityBrowse } from "@/components/home/city-browse";
 import { FaqSection } from "@/components/home/faq-section";
 import { FeaturesSection } from "@/components/home/features-section";
 import { HomeHero } from "@/components/home/home-hero";
@@ -31,7 +30,6 @@ export default async function Home() {
 
       <main className="flex-1">
         <HomeHero />
-        <CityBrowse />
         <PopularClinics clinics={popularClinics} />
         <FeaturesSection />
         <FaqSection />

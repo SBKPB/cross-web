@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { isDemoClinic } from "@/lib/clinic-discovery";
 import {
   deriveFacilityType,
   parseCityFromAddress,
@@ -126,7 +127,7 @@ export const clinicsApi = {
       "/api/v1/booking/clinics",
       { next: { revalidate: 300 } },
     );
-    return backendClinics.map(transformClinic);
+    return backendClinics.filter((clinic) => !isDemoClinic(clinic.id)).map(transformClinic);
   },
 
   getPopularClinics: async (limit = 6): Promise<Clinic[]> => {
@@ -134,6 +135,6 @@ export const clinicsApi = {
       `/api/v1/booking/clinics/popular?limit=${limit}`,
       { next: { revalidate: 300 } },
     );
-    return backendClinics.map(transformClinic);
+    return backendClinics.filter((clinic) => !isDemoClinic(clinic.id)).map(transformClinic);
   },
 };

@@ -23,6 +23,7 @@ interface BookingState {
 }
 
 type BookingAction =
+  | { type: "RESTORE_SELECTION"; payload: BookingSelection }
   | { type: "SET_SERVICE"; payload: ServiceOption }
   | { type: "SET_DOCTOR"; payload: DoctorOption }
   | { type: "SET_DATE"; payload: string }
@@ -49,15 +50,17 @@ const initialState: BookingState = {
 
 function bookingReducer(state: BookingState, action: BookingAction): BookingState {
   switch (action.type) {
+    case "RESTORE_SELECTION":
+      return { ...initialState, selection: action.payload, currentStep: 3 };
     case "SET_SERVICE":
       return {
         ...state,
-        selection: { ...state.selection, service: action.payload },
+        selection: { ...state.selection, service: action.payload, date: null, timeSlot: null },
       };
     case "SET_DOCTOR":
       return {
         ...state,
-        selection: { ...state.selection, doctor: action.payload },
+        selection: { ...state.selection, doctor: action.payload, date: null, timeSlot: null },
       };
     case "SET_DATE":
       return {

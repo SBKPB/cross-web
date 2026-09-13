@@ -29,7 +29,7 @@ export function StickyBookingButton({
       <Button asChild size="lg" className="w-full shadow-lg">
         <Link href={`/booking/${clinicId}`}>
           <Calendar className="size-5" />
-          立即預約
+          查看可約時段
         </Link>
       </Button>
     </div>

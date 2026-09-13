@@ -1,384 +1,132 @@
 "use client";
 
-import {
-  Flower2,
-  LayoutGrid,
-  Search,
-  Sparkles,
-  Stethoscope,
-  Store,
-  X,
-  type LucideIcon,
-} from "lucide-react";
-
+import { useState } from "react";
+import { Flower2, LayoutGrid, Search, SlidersHorizontal, Sparkles, Stethoscope, Store, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  categoriesFor,
-  categoryLabel,
-} from "@/lib/api/service-categories";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { categoriesFor, categoryLabel, facilityTypeLabel } from "@/lib/api/service-categories";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
-import {
-  CITY_OPTIONS,
-  HOSPITAL_LEVEL_OPTIONS,
-  HOSPITAL_LEVELS,
-  PAYMENT_TYPES,
-} from "@/lib/constants/clinic-constants";
+import { CITY_OPTIONS, HOSPITAL_LEVEL_OPTIONS, HOSPITAL_LEVELS, PAYMENT_TYPES } from "@/lib/constants/clinic-constants";
 import { cn } from "@/lib/utils";
-import type { ClinicFilters, FacilityType, PaymentType } from "@/types/clinic";
+import type { ClinicFilters, FacilityType } from "@/types/clinic";
 
 interface ClinicToolbarProps {
   filters: ClinicFilters;
   onFiltersChange: (filters: ClinicFilters) => void;
+  resultCount: number;
   className?: string;
 }
 
-// 頂層服務大類 tab（4 類，與首頁 Hero tabs 視覺一致）
-// label 一律取自 taxonomy；icon 本地對照即可
-const FACILITY_TAB_ICONS: Record<FacilityType, LucideIcon> = {
-  healthcare: Stethoscope,
-  aesthetic: Sparkles,
-  beauty: Flower2,
-  other: Store,
-};
+const TABS = [
+  { value: "all", label: "全部", icon: LayoutGrid },
+  { value: "healthcare", icon: Stethoscope },
+  { value: "aesthetic", icon: Sparkles },
+  { value: "beauty", icon: Flower2 },
+  { value: "other", icon: Store },
+] as const;
 
-const FACILITY_TAB_ORDER: FacilityType[] = [
-  "healthcare",
-  "aesthetic",
-  "beauty",
-  "other",
-];
-
-// 付款方式篩選（僅看診大類顯示）：'all' | 健保 | 自費（不提供 both 當選項）
-const PAYMENT_FILTER_OPTIONS: { value: ClinicFilters["paymentType"]; label: string }[] = [
-  { value: "all", label: "全部" },
-  { value: "nhi", label: PAYMENT_TYPES.nhi },
-  { value: "self_pay", label: PAYMENT_TYPES.self_pay },
-];
-
-// select trigger 共用樣式：面板內 inset 風格（淺灰底、無外框陰影），hover 微亮
-const TRIGGER_CLASS = cn(
-  "!h-11 min-w-[128px] flex-1 rounded-xl border-transparent bg-secondary/70 px-4 text-sm",
-  "transition-colors hover:bg-secondary sm:flex-none",
-  "data-[placeholder]:text-muted-foreground",
-);
-
-// 留空交給 SelectContent 預設（bg-popover/text-popover-foreground），深色模式才正確
-const CONTENT_CLASS = "";
-const ITEM_CLASS = "focus:bg-accent focus:text-primary";
-
-export function ClinicToolbar({
-  filters,
-  onFiltersChange,
-  className,
-}: ClinicToolbarProps) {
+export function ClinicToolbar({ filters, onFiltersChange, resultCount, className }: ClinicToolbarProps) {
   const taxonomy = useServiceTaxonomy();
+  const [open, setOpen] = useState(false);
+  const showLevel = filters.facilityType === "all" || filters.facilityType === "healthcare";
+  const showPayment = filters.facilityType === "healthcare";
+  const subcategories = filters.facilityType === "all"
+    ? taxonomy.facility_types.flatMap((type) => type.categories)
+    : categoriesFor(taxonomy, filters.facilityType);
+  const advancedCount = filters.serviceCategories.length + Number(showLevel && filters.hospitalLevel !== "all") + Number(showPayment && filters.paymentType !== "all");
+  const update = (patch: Partial<ClinicFilters>) => onFiltersChange({ ...filters, ...patch });
+  const clearAdvanced = () => update({ hospitalLevel: "all", paymentType: "all", serviceCategories: [] });
+  const toggleCategory = (code: string) => update({
+    serviceCategories: filters.serviceCategories.includes(code)
+      ? filters.serviceCategories.filter((item) => item !== code)
+      : [...filters.serviceCategories, code],
+  });
+  const chips = [
+    ...(filters.search ? [{ label: `「${filters.search}」`, remove: () => update({ search: "" }) }] : []),
+    ...(filters.city !== "all" ? [{ label: filters.city, remove: () => update({ city: "all" }) }] : []),
+    ...(showLevel && filters.hospitalLevel !== "all" ? [{ label: HOSPITAL_LEVELS[filters.hospitalLevel], remove: () => update({ hospitalLevel: "all" }) }] : []),
+    ...(showPayment && filters.paymentType !== "all" ? [{ label: PAYMENT_TYPES[filters.paymentType], remove: () => update({ paymentType: "all" }) }] : []),
+    ...filters.serviceCategories.map((code) => ({ label: categoryLabel(taxonomy, code), remove: () => toggleCategory(code) })),
+  ];
 
-  // 看診大類才有「醫療分級」概念；全部 / 看診時顯示醫療分級 Select
-  const showLevelFilter =
-    filters.facilityType === "all" || filters.facilityType === "healthcare";
-
-  // 第二層子類別 chip：選定某大類就顯示該大類子類別；
-  // facilityType==='all' 時預設顯示看診科別（最常用情境）
-  const subcategoryFacilityType: FacilityType =
-    filters.facilityType === "all" ? "healthcare" : filters.facilityType;
-  const subcategories = categoriesFor(taxonomy, subcategoryFacilityType);
-
-  // 付款篩選：僅看診大類顯示
-  const showPaymentFilter = filters.facilityType === "healthcare";
-
-  const handleClearFilters = () => {
-    onFiltersChange({
-      search: "",
-      hospitalLevel: "all",
-      serviceCategories: [],
-      city: "all",
-      facilityType: "all",
-      paymentType: "all",
-    });
-  };
-
-  const handleFacilityType = (value: ClinicFilters["facilityType"]) => {
-    const isLevelScope = value === "all" || value === "healthcare";
-    const isHealthcare = value === "healthcare";
-    onFiltersChange({
-      ...filters,
-      facilityType: value,
-      // 切換大類時 reset 子類別（不同大類 code 集合不同）
-      serviceCategories: [],
-      // 非看診/全部時清掉醫療分級
-      hospitalLevel: isLevelScope ? filters.hospitalLevel : "all",
-      // 付款篩選僅看診大類有意義
-      paymentType: isHealthcare ? filters.paymentType : "all",
-    });
-  };
-
-  const toggleCategory = (code: string) => {
-    const next = filters.serviceCategories.includes(code)
-      ? filters.serviceCategories.filter((c) => c !== code)
-      : [...filters.serviceCategories, code];
-    onFiltersChange({ ...filters, serviceCategories: next });
-  };
-
-  // 已套用的篩選 chips（服務大類已用分段控制呈現，故不重複列入）
-  const activeChips: { key: string; label: string; onRemove: () => void }[] = [];
-  if (filters.search) {
-    activeChips.push({
-      key: "search",
-      label: `「${filters.search}」`,
-      onRemove: () => onFiltersChange({ ...filters, search: "" }),
-    });
-  }
-  if (filters.city !== "all") {
-    activeChips.push({
-      key: "city",
-      label: filters.city,
-      onRemove: () => onFiltersChange({ ...filters, city: "all" }),
-    });
-  }
-  if (showLevelFilter && filters.hospitalLevel !== "all") {
-    activeChips.push({
-      key: "level",
-      label: HOSPITAL_LEVELS[filters.hospitalLevel],
-      onRemove: () => onFiltersChange({ ...filters, hospitalLevel: "all" }),
-    });
-  }
-  for (const code of filters.serviceCategories) {
-    activeChips.push({
-      key: `cat-${code}`,
-      label: categoryLabel(taxonomy, code),
-      onRemove: () =>
-        onFiltersChange({
-          ...filters,
-          serviceCategories: filters.serviceCategories.filter((c) => c !== code),
-        }),
-    });
-  }
-  if (showPaymentFilter && filters.paymentType !== "all") {
-    activeChips.push({
-      key: "payment",
-      label: PAYMENT_TYPES[filters.paymentType as PaymentType],
-      onRemove: () => onFiltersChange({ ...filters, paymentType: "all" }),
-    });
-  }
-
-  return (
-    <div
-      className={cn(
-        "space-y-3 rounded-3xl bg-card p-3 ring-1 ring-border/60 shadow-sm sm:p-4",
-        className,
-      )}
-    >
-      {/* 服務大類分段控制（4 類 + 全部） */}
-      <div
-        role="tablist"
-        aria-label="服務類型"
-        className="inline-flex items-center gap-1 rounded-full bg-secondary p-1 dark:bg-background"
-      >
-        {/* 全部 */}
-        <button
-          type="button"
-          role="tab"
-          aria-selected={filters.facilityType === "all"}
-          onClick={() => handleFacilityType("all")}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all",
-            filters.facilityType === "all"
-              ? "bg-card text-primary shadow-sm ring-1 ring-border/60"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <LayoutGrid className="size-4" />
-          全部
-        </button>
-
-        {FACILITY_TAB_ORDER.map((value) => {
-          const active = filters.facilityType === value;
-          const Icon = FACILITY_TAB_ICONS[value];
-          const label =
-            taxonomy.facility_types.find((f) => f.value === value)?.label ?? value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => handleFacilityType(value)}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all",
-                active
-                  ? "bg-card text-primary shadow-sm ring-1 ring-border/60"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon className="size-4" />
-              {label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 搜尋框 + 篩選器 */}
-      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="搜尋店家名稱或地址…"
-            value={filters.search}
-            onChange={(e) =>
-              onFiltersChange({ ...filters, search: e.target.value })
-            }
-            className={cn(
-              "h-11 rounded-xl border-transparent bg-secondary/70 pl-11 pr-4 text-base shadow-none",
-              "transition-colors hover:bg-secondary focus-visible:bg-background",
-            )}
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Select
-            value={filters.city}
-            onValueChange={(value) =>
-              onFiltersChange({ ...filters, city: value })
-            }
-          >
-            <SelectTrigger className={TRIGGER_CLASS} aria-label="縣市">
-              <SelectValue placeholder="縣市" />
-            </SelectTrigger>
-            <SelectContent className={cn(CONTENT_CLASS, "max-h-[320px]")}>
-              {CITY_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value} className={ITEM_CLASS}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
+  const advancedFields = (
+    <div className="space-y-5">
+      {showLevel && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">醫療分級</p>
+          <Select value={filters.hospitalLevel} onValueChange={(value) => update({ hospitalLevel: value as ClinicFilters["hospitalLevel"] })}>
+            <SelectTrigger className="!h-11 w-full rounded-xl md:w-48" aria-label="醫療分級"><SelectValue /></SelectTrigger>
+            <SelectContent>{HOSPITAL_LEVEL_OPTIONS.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
           </Select>
-
-          {showLevelFilter && (
-            <Select
-              value={filters.hospitalLevel}
-              onValueChange={(value) =>
-                onFiltersChange({
-                  ...filters,
-                  hospitalLevel: value as ClinicFilters["hospitalLevel"],
-                })
-              }
-            >
-              <SelectTrigger className={TRIGGER_CLASS} aria-label="醫療分級">
-                <SelectValue placeholder="醫療分級" />
-              </SelectTrigger>
-              <SelectContent className={CONTENT_CLASS}>
-                {HOSPITAL_LEVEL_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className={ITEM_CLASS}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
         </div>
-      </div>
-
-      {/* 付款方式篩選（僅看診大類） */}
-      {showPaymentFilter && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-xs font-medium text-muted-foreground">
-            付款方式
-          </span>
-          <div
-            role="tablist"
-            aria-label="付款方式"
-            className="inline-flex items-center gap-1 rounded-full bg-secondary p-1 dark:bg-background"
-          >
-            {PAYMENT_FILTER_OPTIONS.map((opt) => {
-              const active = filters.paymentType === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() =>
-                    onFiltersChange({ ...filters, paymentType: opt.value })
-                  }
-                  className={cn(
-                    "rounded-full px-3.5 py-1 text-sm font-medium transition-all",
-                    active
-                      ? "bg-card text-primary shadow-sm ring-1 ring-border/60"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
+      )}
+      {showPayment && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">付款方式</p>
+          <div className="flex gap-2" role="group" aria-label="付款方式">
+            {(["all", "nhi", "self_pay"] as const).map((value) => (
+              <Button key={value} variant={filters.paymentType === value ? "default" : "outline"} className="h-11 rounded-full" aria-pressed={filters.paymentType === value} onClick={() => update({ paymentType: value })}>
+                {value === "all" ? "全部" : PAYMENT_TYPES[value]}
+              </Button>
+            ))}
           </div>
         </div>
       )}
-
-      {/* 第二層子類別 chip（多選） */}
-      {subcategories.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {subcategories.map((cat) => {
-            const active = filters.serviceCategories.includes(cat.code);
-            return (
-              <button
-                key={cat.code}
-                type="button"
-                aria-pressed={active}
-                onClick={() => toggleCategory(cat.code)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium transition-all",
-                  active
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground",
-                )}
-              >
-                {cat.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* 已套用篩選 chips */}
-      {activeChips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">已套用</span>
-          {activeChips.map((chip) => (
-            <span
-              key={chip.key}
-              className="inline-flex items-center gap-1 rounded-full bg-accent py-1 pl-3 pr-1.5 text-xs font-medium text-accent-foreground"
-            >
-              {chip.label}
-              <button
-                type="button"
-                onClick={chip.onRemove}
-                className="rounded-full p-0.5 text-accent-foreground/70 transition-colors hover:bg-primary/15 hover:text-primary"
-                aria-label={`移除 ${chip.label}`}
-              >
-                <X className="size-3" />
-              </button>
-            </span>
+      <div className="space-y-2">
+        <p className="text-sm font-medium">服務分類 <span className="font-normal text-muted-foreground">可複選</span></p>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="服務分類">
+          {subcategories.map((category) => (
+            <Button key={category.code} variant={filters.serviceCategories.includes(category.code) ? "default" : "secondary"} className="min-h-11 rounded-full px-3 text-sm md:min-h-9" aria-pressed={filters.serviceCategories.includes(category.code)} onClick={() => toggleCategory(category.code)}>
+              {category.label}
+            </Button>
           ))}
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={handleClearFilters}
-            className="text-muted-foreground hover:text-primary"
-          >
-            清除全部
-          </Button>
         </div>
-      )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={cn("space-y-3 rounded-3xl bg-card p-3 shadow-sm ring-1 ring-border/60 sm:p-4", className)}>
+      <div role="group" aria-label="服務類型" className="flex gap-1 overflow-x-auto rounded-2xl bg-secondary p-1">
+        {TABS.map((tab) => (
+          <button key={tab.value} type="button" aria-pressed={filters.facilityType === tab.value}
+            onClick={() => update({ facilityType: tab.value, serviceCategories: [], hospitalLevel: tab.value === "all" || tab.value === "healthcare" ? filters.hospitalLevel : "all", paymentType: tab.value === "healthcare" ? filters.paymentType : "all" })}
+            className={cn("inline-flex min-h-11 shrink-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary", filters.facilityType === tab.value ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+            <tab.icon className="hidden size-4 shrink-0 sm:block" />
+            {tab.value === "all" ? "全部" : facilityTypeLabel(taxonomy, tab.value as FacilityType)}
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input aria-label="搜尋店家、醫師、服務分類或地址" placeholder="店家、醫師、服務分類或地址" value={filters.search} onChange={(event) => update({ search: event.target.value })} className="h-12 rounded-xl bg-secondary/50 pl-11 text-base" />
+        </div>
+        <div className="flex gap-2">
+          <Select value={filters.city} onValueChange={(city) => update({ city })}>
+            <SelectTrigger className="!h-12 min-w-0 flex-1 rounded-xl sm:w-40" aria-label="縣市"><SelectValue /></SelectTrigger>
+            <SelectContent className="max-h-80">{CITY_OPTIONS.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
+          </Select>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild><Button variant="outline" className="h-12 rounded-xl md:hidden"><SlidersHorizontal className="size-4" />篩選{advancedCount > 0 && <span className="rounded-full bg-primary px-2 text-primary-foreground">{advancedCount}</span>}</Button></SheetTrigger>
+            <SheetContent side="bottom" className="max-h-[85dvh] rounded-t-3xl" showCloseButton={false}>
+              <SheetHeader><div className="flex items-center justify-between"><SheetTitle>篩選店家</SheetTitle><SheetClose asChild><Button variant="ghost" size="icon" aria-label="關閉篩選"><X /></Button></SheetClose></div><SheetDescription>條件即時套用，可選擇多個服務分類。</SheetDescription></SheetHeader>
+              <div className="overflow-y-auto px-6 pb-4">{advancedFields}</div>
+              <SheetFooter className="border-t pb-[calc(1.5rem+env(safe-area-inset-bottom))]"><div className="flex gap-3"><Button variant="outline" className="h-12" onClick={clearAdvanced}>重設篩選</Button><SheetClose asChild><Button className="h-12 flex-1">查看 {resultCount} 間店家</Button></SheetClose></div></SheetFooter>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+      <details className="hidden rounded-xl border-t pt-3 md:block">
+        <summary className="cursor-pointer text-sm font-medium text-muted-foreground">更多篩選{advancedCount > 0 ? `（${advancedCount}）` : ""}</summary>
+        <div className="pt-4">{advancedFields}</div>
+      </details>
+      {chips.length > 0 && <div className="flex gap-2 overflow-x-auto pb-1" aria-label="已套用的篩選">
+        {chips.map((chip, index) => <button key={`${chip.label}-${index}`} onClick={chip.remove} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full bg-accent px-3 text-sm text-accent-foreground" aria-label={`移除 ${chip.label}`}>{chip.label}<X className="size-3.5" /></button>)}
+        <Button variant="ghost" className="h-9 shrink-0" onClick={() => onFiltersChange({ search: "", city: "all", hospitalLevel: "all", facilityType: "all", serviceCategories: [], paymentType: "all" })}>清除全部</Button>
+      </div>}
     </div>
   );
 }

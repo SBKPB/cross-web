@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { Flower2, LayoutGrid, Search, Sparkles, Stethoscope, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { categoriesFor, facilityTypeLabel } from "@/lib/api/service-categories";
 import { useServiceTaxonomy } from "@/lib/hooks/use-service-taxonomy";
@@ -43,9 +44,10 @@ export function HomeSearchCard({ availableClinics }: { availableClinics: Landing
   const submit = (event: FormEvent) => { event.preventDefault(); search(); };
 
   return (
-    <div className="rounded-3xl bg-card p-3 shadow-xl shadow-primary/5 ring-1 ring-border/70 sm:p-5">
-      <div className="mb-4 flex gap-1 overflow-x-auto rounded-2xl bg-secondary/70 p-1" role="group" aria-label="服務類型">
-        {TABS.map((tab) => <button key={tab.value} type="button" aria-pressed={activeTab === tab.value} onClick={() => { setActiveTab(tab.value); setCategory("all"); }} className={cn("inline-flex min-h-11 shrink-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-primary", activeTab === tab.value ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-card hover:text-foreground")}><tab.icon className="hidden size-4 shrink-0 sm:block" />{tab.value === "all" ? "全部" : facilityTypeLabel(taxonomy, tab.value)}</button>)}
+    <Card className="gap-0 rounded-3xl py-0 shadow-xl shadow-slate-900/5 ring-1 ring-border/70">
+      <CardContent className="p-4 sm:p-6">
+      <div className="mb-5 flex gap-0.5 overflow-x-auto border-b border-border pb-4 sm:gap-1" role="group" aria-label="服務類型">
+        {TABS.map((tab) => <button key={tab.value} type="button" aria-pressed={activeTab === tab.value} onClick={() => { setActiveTab(tab.value); setCategory("all"); }} className={cn("inline-flex min-h-11 shrink-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-2 text-sm font-semibold sm:px-3 transition-colors focus-visible:outline-2 focus-visible:outline-primary", activeTab === tab.value ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-card hover:text-foreground")}><tab.icon className="hidden size-4 shrink-0 sm:block" />{tab.value === "all" ? "全部" : facilityTypeLabel(taxonomy, tab.value)}</button>)}
       </div>
       <form onSubmit={submit} className="grid gap-3 md:grid-cols-[minmax(220px,2fr)_1fr_1fr_auto] md:items-end">
         <label className="space-y-1.5 text-sm font-medium"><span>想找什麼？</span><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="店家、醫師、服務分類或地址" className="h-12 rounded-xl bg-background text-base" /></label>
@@ -56,6 +58,7 @@ export function HomeSearchCard({ availableClinics }: { availableClinics: Landing
         <Button type="submit" className="h-12 rounded-xl px-6 text-base"><Search className="size-4" />搜尋店家</Button>
       </form>
       {shortcuts.length > 0 ? <div className="mt-4 flex flex-wrap items-center gap-2"><span className="text-sm text-muted-foreground">目前可找</span>{shortcuts.map((item) => <button key={item.code} type="button" onClick={() => search(item.code, "")} className="min-h-9 rounded-full bg-secondary px-3 text-sm hover:bg-accent hover:text-primary">{item.label}</button>)}</div> : (activeTab !== "all" || city !== "all") && <p className="mt-4 text-sm leading-relaxed text-muted-foreground" role="status">這個類型或地區目前尚無合作店家。可切換「全部」或選擇其他地區。</p>}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

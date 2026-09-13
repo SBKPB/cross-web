@@ -34,31 +34,29 @@ const FAQS = [
 
 export function FaqSection() {
   return (
-    // 背景改回 background：上一區的支撐細帶已是 bg-muted/40，
-    // 兩區同底色會連成一塊分不出段落。
-    <section className="bg-background py-20">
-      <div className="container mx-auto max-w-3xl px-4">
-        <div className="mb-12 text-center">
-          <p className="text-sm font-semibold tracking-wide text-primary">FAQ</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            常見問題
+    <section id="faq" className="home-container scroll-mt-24 pb-16 sm:pb-24" aria-labelledby="faq-title">
+      <div className="grid gap-8 lg:grid-cols-[0.8fr_1.7fr] lg:gap-16">
+        <div>
+          <p className="home-eyebrow">GOOD TO KNOW / 常見問題</p>
+          <h2 id="faq-title" className="home-heading mt-3">
+            第一次使用？<br />先了解，再安心預約。
           </h2>
-          <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-            第一次用 Cross？這些問題先看一下
+          <p className="mt-5 text-sm leading-7 text-muted-foreground">
+            費用、帳號與預約異動，<br />你想知道的事，整理在這裡。
           </p>
         </div>
 
         <Accordion
           type="single"
           collapsible
-          className="overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-foreground/5"
+          className="border-t border-border"
         >
           {FAQS.map((faq, i) => (
             <AccordionItem key={faq.q} value={`item-${i}`}>
-              <AccordionTrigger className="px-6 text-left">
+              <AccordionTrigger className="py-6 text-left text-base leading-7 hover:text-primary hover:no-underline">
                 {faq.q}
               </AccordionTrigger>
-              <AccordionContent className="px-6">{faq.a}</AccordionContent>
+              <AccordionContent className="pr-6 pb-6 text-sm leading-7 text-muted-foreground">{faq.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

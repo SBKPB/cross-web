@@ -2,6 +2,34 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* 首頁專用版面節奏，不影響院所與管理後台。 */
+@utility home-container {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 4vw, 40px);
+}
+
+@utility home-section {
+  padding-block: clamp(56px, 7vw, 96px);
+}
+
+@utility home-eyebrow {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+}
+
+@utility home-heading {
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
 /* dark 變體：同時匹配 .dark 本身（掛在 <html> 上）與其後代，next-themes 才能正確驅動 */
 @custom-variant dark (&:where(.dark, .dark *));
 

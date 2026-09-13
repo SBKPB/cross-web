@@ -1,59 +1,32 @@
-import { CalendarCheck, MapPin, ShieldCheck, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, CalendarDays, Search, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DEMO_CLINIC_ID } from "@/lib/clinic-discovery";
 
-const FEATURES = [
-  {
-    icon: MapPin,
-    title: "一站找服務",
-    // 細帶每格只有一行的高度，文案控制在單行內以免該格變高、整排參差
-    desc: "看診、醫美、美容一次找",
-  },
-  {
-    icon: CalendarCheck,
-    title: "24 小時預約",
-    desc: "不用等電話開放時間",
-  },
-  {
-    icon: ShieldCheck,
-    title: "預約管理",
-    desc: "查詢預約、提前取消",
-  },
-  {
-    icon: Sparkles,
-    title: "平台免費",
-    desc: "看診費用依店家規定",
-  },
+const STEPS = [
+  { title: "找到適合的服務", description: "依地區與服務分類搜尋，先了解店家、專業團隊和服務費用。", icon: Search, detail: "不用登入，就能開始探索" },
+  { title: "選一個方便的時間", description: "開通線上預約的店家，可直接查看服務、人員與目前開放的時段。", icon: CalendarDays, detail: "依店家即時開放的時段選擇" },
+  { title: "登入，確認預約", description: "選好時段後再登入，確認預約對象與資料，送出後到「我的預約」查看。", icon: Check, detail: "預約資訊，隨時回來查看" },
 ];
 
-/**
- * 支撐訊息細帶（原本是「Cross 有什麼不一樣」整區）。
- *
- * 改成帶狀的原因：首頁原本有三組視覺上完全同構的卡片區（分類 / 三步驟 / 特色）——
- * 一樣的 rounded-3xl、一樣的 size-12 圖示磚、一樣的 hover 位移，使用者滑到第三組
- * 就會判定「看過了」而略過。這區的內容是輔助說明而非主要內容，降成一條細帶後，
- * 卡片語彙就只保留給真正的內容（診所卡），階層才成立。
- *
- * 同批一併刪除「三步完成預約」：搜尋 → 挑選 → 預約是不證自明的流程，
- * 用三張整高卡片教這件事只是佔位。
- */
 export function FeaturesSection() {
   return (
-    <section className="border-y border-border bg-muted/40 py-12">
-      <div className="container mx-auto px-4">
-        <ul className="mx-auto grid max-w-5xl gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f) => (
-            <li key={f.title} className="flex items-start gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <f.icon className="size-[18px]" />
-              </span>
-              <div className="min-w-0">
-                <p className="font-semibold text-foreground">{f.title}</p>
-                <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
-                  {f.desc}
-                </p>
-              </div>
+    <section id="how-it-works" className="scroll-mt-16 bg-[#eef3f8] dark:bg-[#142238]" aria-labelledby="steps-title">
+      <div className="home-container home-section">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div><p className="home-eyebrow">HOW IT WORKS / 預約很簡單</p><h2 id="steps-title" className="home-heading mt-3">把時間留給生活，<br />把預約交給 Cross。</h2></div>
+          <Button asChild variant="outline" className="h-12 w-fit rounded-full border-primary/20 bg-transparent px-6 text-primary"><Link href={`/booking/${DEMO_CLINIC_ID}`}>試走一次預約流程 <ArrowUpRight className="size-4" /></Link></Button>
+        </div>
+        <ol className="mt-12 grid gap-8 md:grid-cols-3 md:gap-10">
+          {STEPS.map((step, index) => (
+            <li key={step.title} className="relative border-t border-primary/20 pt-6">
+              <div className="flex items-center justify-between"><span className="text-5xl font-light tracking-tight text-primary/65">0{index + 1}</span><step.icon className="size-7 stroke-[1.4] text-primary" /></div>
+              <h3 className="mt-6 text-xl font-semibold">{step.title}</h3>
+              <p className="mt-3 max-w-sm text-sm leading-7 text-muted-foreground">{step.description}</p>
+              <p className="mt-5 flex items-center gap-2 text-xs font-medium text-primary"><span className="size-1 rounded-full bg-primary" />{step.detail}</p>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
     </section>
   );

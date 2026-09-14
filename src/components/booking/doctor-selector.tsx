@@ -23,15 +23,15 @@ export function DoctorSelector({
   return (
     <div className="space-y-7 px-4">
       <div className="space-y-1">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           選擇看診人員
-        </h1>
+        </h2>
         <p className="text-sm text-muted-foreground">
           可指定特定人員，或交由系統安排
         </p>
       </div>
 
-      <div className="rounded-3xl bg-card p-4 shadow-sm ring-1 ring-foreground/5 sm:p-5">
+      <div className="rounded-3xl bg-card p-4 border border-border/80 sm:p-5">
         <div className="-mx-1 overflow-x-auto px-1">
           <div className="flex snap-x snap-mandatory gap-2 pb-1">
             {allOptions.map((doctor) => (

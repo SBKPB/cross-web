@@ -30,11 +30,12 @@ export function ServiceCard({
   return (
     <button
       type="button"
+      aria-pressed={isSelected}
       onClick={() => onSelect(service)}
       className={cn(
         "group w-full rounded-3xl bg-card p-5 text-left transition-all",
-        "shadow-sm ring-1 ring-foreground/5",
-        "hover:-translate-y-0.5 hover:shadow-md",
+        "border border-border/80",
+        "hover:border-primary/40",
         "active:translate-y-0",
         isSelected && "shadow-md",
       )}

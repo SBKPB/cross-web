@@ -45,15 +45,15 @@ const SOURCES: { label: string; from: string }[] = [
 export function PatientView() {
   return (
     <section className="border-t border-border bg-muted/30">
-      <div className="container mx-auto px-4 py-16 sm:py-20">
+      <div className="home-container py-16 sm:py-20">
         <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               民眾眼中的你
             </h2>
             <p className="mt-3 leading-relaxed text-muted-foreground">
-              右邊不是示意圖。那是民眾在 Cross
-              搜尋時看到的同一張卡片、同一個元件——你上架後就長這樣。
+              這是合作店家的展示範例。整理好服務、團隊與營業時間，
+              讓顧客在搜尋時更容易認識你。
             </p>
             <ul className="mt-6 space-y-3">
               {SOURCES.map((s) => (
@@ -71,7 +71,7 @@ export function PatientView() {
           </div>
 
           {/* 展示用途：不可點，真正入口是頁面下方的申請表 */}
-          <div aria-hidden className="pointer-events-none select-none">
+          <div inert aria-hidden className="pointer-events-none select-none">
             <ClinicCard clinic={SAMPLE_CLINIC} />
           </div>
         </div>

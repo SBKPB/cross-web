@@ -14,13 +14,12 @@ export function BookingCard({ clinicId, className }: BookingCardProps) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-blue-700 p-6 text-primary-foreground shadow-lg shadow-primary/25",
+        "relative overflow-hidden rounded-3xl bg-[#163b85] p-6 text-white",
         className,
       )}
     >
-      <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-white/10 blur-2xl" />
       <h3 className="relative text-lg font-bold">線上預約</h3>
-      <p className="relative mt-1 text-sm leading-relaxed text-primary-foreground/85">
+      <p className="relative mt-1 text-sm leading-relaxed text-blue-100">
         先選服務與時段，確認後再登入預約。
       </p>
 
@@ -36,7 +35,7 @@ export function BookingCard({ clinicId, className }: BookingCardProps) {
         </Link>
       </Button>
 
-      <div className="relative mt-4 flex flex-col gap-2 text-xs text-primary-foreground/85">
+      <div className="relative mt-4 flex flex-col gap-2 text-xs text-blue-100">
         <span className="flex items-center gap-1.5">
           <Clock className="size-3.5" />
           24 小時皆可線上預約

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowUpRight,
   Clock,
   Crown,
   Flower2,
@@ -11,6 +12,7 @@ import {
   Store,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -95,14 +97,14 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
 
   return (
     <Card
-      onClick={onClick}
       className={cn(
-        "relative cursor-pointer transition-all duration-200 ease-out",
-        "hover:-translate-y-1 hover:shadow-xl hover:ring-primary/20",
+        "relative h-full rounded-3xl border border-border/80 shadow-none ring-0 transition-colors",
+        "hover:border-primary/35",
         className,
       )}
     >
       <CardHeader>
+        <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-accent/60 text-2xl font-medium text-primary" aria-hidden="true">{clinic.clinic_name.slice(0, 1)}</div>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-2">
             {/* 服務類型 / 醫療分級 badges */}
@@ -140,7 +142,7 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
 
             {/* 診所名稱 */}
             <CardTitle className="text-lg leading-tight">
-              {clinic.clinic_name}
+              {onClick ? <button type="button" onClick={onClick} className="text-left hover:text-primary">{clinic.clinic_name}</button> : clinic.clinic_name}
             </CardTitle>
 
             {/* 評分（改放描述位置，而不是右上角） */}
@@ -172,7 +174,7 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-1 flex-col gap-4">
         {/* 服務子類別標籤（看診 / 醫美 / 美容 / 其他皆顯示，label 取自 taxonomy） */}
         {displayDepartments.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
@@ -205,6 +207,9 @@ export function ClinicCard({ clinic, className, onClick }: ClinicCardProps) {
               <span>{todayHours}</span>
             </div>
           )}
+        </div>
+        <div className="mt-auto border-t border-border/70 pt-4">
+          {onClick ? <Button onClick={onClick} variant="ghost" className="h-10 w-full justify-between rounded-full px-0 text-primary">查看店家資訊 <ArrowUpRight className="size-4" /></Button> : <span className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-primary">查看店家資訊 <ArrowUpRight className="size-4" /></span>}
         </div>
       </CardContent>
     </Card>

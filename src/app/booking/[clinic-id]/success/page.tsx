@@ -42,9 +42,9 @@ export default function SuccessPage({ params }: SuccessPageProps) {
   }, [bookingId]);
 
   return (
-    <div className="min-h-screen bg-muted/40 pb-24">
+    <div className="mx-auto min-h-[70vh] max-w-3xl bg-background pb-24">
       {/* Header */}
-      <div className="bg-card px-4 py-3">
+      <div className="px-4 py-6">
         <Link
           href={`/clinic/${clinicId}`}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

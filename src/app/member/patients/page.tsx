@@ -90,17 +90,17 @@ export default function MemberPatientsPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[60vh] items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[60vh] bg-background">
       {/* Header */}
       <div className="border-b border-border/60 bg-background/80 px-4 py-4 backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-2xl items-center justify-between">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/member"
@@ -121,7 +121,7 @@ export default function MemberPatientsPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl space-y-3 px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-4xl space-y-3 px-4 py-6 sm:px-6">
         {/* 看診人達上限提示 */}
         {!isLoading && !canAddPatient && (
           <p className="rounded-2xl bg-muted/60 px-4 py-3 text-center text-xs text-muted-foreground">

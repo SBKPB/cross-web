@@ -31,11 +31,11 @@ export function BookingSection({
   return (
     <section
       className={cn(
-        "rounded-3xl bg-card p-5 shadow-sm ring-1 ring-foreground/5 sm:p-6",
+        "rounded-3xl border border-border/80 bg-card p-5 sm:p-7",
         className,
       )}
     >
-      <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="mb-6 flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           {index !== undefined && (
             <span

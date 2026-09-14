@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { JoinForm } from "@/components/join/join-form";
 import { SiteFooter } from "@/components/home/site-footer";
 import { SiteHeader } from "@/components/home/site-header";
+import { PageIntro } from "@/components/public/page-intro";
 
 export const metadata: Metadata = {
   title: "申請加入 Cross",
@@ -21,9 +22,10 @@ export const metadata: Metadata = {
  */
 export default function JoinApplyPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="public-page flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="flex-1">
+        <PageIntro compact eyebrow="CROSS PARTNERS / 開始申請" title="成為 Cross 合作夥伴" description="填寫店家資料、驗證信箱，通過審核後即可開始設定你的預約服務。" />
         <div className="container mx-auto max-w-2xl px-4 py-10 sm:py-14">
           <Link
             href="/join"

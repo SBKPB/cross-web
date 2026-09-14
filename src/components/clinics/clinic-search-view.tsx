@@ -138,7 +138,7 @@ export function ClinicSearchView({ initialFilters }: ClinicSearchViewProps) {
   return (
     <div className="space-y-5">
       {/* 黏性工具列：捲動時固定於頁首下方，方便隨時調整篩選 */}
-      <div className="-mx-4 bg-background/95 px-4 py-3 md:sticky md:top-16 md:z-30 md:backdrop-blur">
+      <div className="py-1">
         <ClinicToolbar filters={filters} onFiltersChange={setFilters} resultCount={filteredClinics.length} />
       </div>
 

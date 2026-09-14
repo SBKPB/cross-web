@@ -274,3 +274,30 @@
     backdrop-filter: none;
   }
 }
+
+/* 民眾端與合作夥伴頁共用的品牌樣式，避免改動管理後台。 */
+@layer components {
+  .public-page [data-slot="card"] {
+    border-radius: 1.5rem;
+    box-shadow: none;
+    border: 1px solid var(--border);
+  }
+  .public-page [data-slot="input"],
+  .public-page [data-slot="select-trigger"],
+  .public-page [data-slot="textarea"] {
+    border-radius: 0.875rem;
+  }
+  .public-page [data-slot="button"] {
+    border-radius: 999px;
+  }
+  .public-page [data-slot="badge"] {
+    border-radius: 999px;
+  }
+  .public-page :is(section, h2, div)[id] {
+    scroll-margin-top: 6.5rem;
+  }
+  .public-page .policy-body > section + section {
+    border-top: 1px solid var(--border);
+    padding-top: 1.75rem;
+  }
+}

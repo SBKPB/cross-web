@@ -1,12 +1,16 @@
+import { PublicFrame } from "@/components/public/public-frame";
+import { PageIntro } from "@/components/public/page-intro";
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="mx-auto max-w-2xl px-4">
-        <h1 className="mb-6 text-2xl font-bold">隱私權政策</h1>
+    <PublicFrame>
+      <PageIntro eyebrow="CROSS / 使用說明與政策" title="隱私權政策" />
+      <div className="home-container py-10 sm:py-14">
+      <div className="mx-auto max-w-3xl">
 
-        <div className="space-y-6 rounded-lg bg-white p-6 text-sm leading-relaxed text-slate-700">
+
+        <div className="policy-body space-y-7 rounded-3xl border border-border bg-card p-6 text-base leading-8 text-muted-foreground sm:p-9">
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               1. 資料蒐集
             </h2>
             <p>
@@ -16,7 +20,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               2. 資料使用
             </h2>
             <p>您的個人資料僅用於以下目的：</p>
@@ -28,7 +32,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               3. 資料保護
             </h2>
             <p>
@@ -38,7 +42,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               4. 資料分享
             </h2>
             <p>
@@ -47,7 +51,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               5. 您的權利
             </h2>
             <p>
@@ -56,7 +60,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               6. 政策更新
             </h2>
             <p>
@@ -65,10 +69,11 @@ export default function PrivacyPage() {
           </section>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           最後更新日期：2026 年 2 月
         </p>
       </div>
-    </div>
+      </div>
+    </PublicFrame>
   );
 }

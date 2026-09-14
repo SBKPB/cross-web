@@ -1,14 +1,18 @@
+import { PublicFrame } from "@/components/public/public-frame";
+import { PageIntro } from "@/components/public/page-intro";
 import Link from "next/link";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="mx-auto max-w-2xl px-4">
-        <h1 className="mb-6 text-2xl font-bold">服務條款</h1>
+    <PublicFrame>
+      <PageIntro eyebrow="CROSS / 使用說明與政策" title="服務條款" />
+      <div className="home-container py-10 sm:py-14">
+      <div className="mx-auto max-w-3xl">
 
-        <div className="space-y-6 rounded-lg bg-white p-6 text-sm leading-relaxed text-slate-700">
+
+        <div className="policy-body space-y-7 rounded-3xl border border-border bg-card p-6 text-base leading-8 text-muted-foreground sm:p-9">
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               1. 服務說明
             </h2>
             <p>
@@ -17,7 +21,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               2. 預約規則
             </h2>
             <ul className="list-inside list-disc space-y-1">
@@ -28,7 +32,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               3. 使用者責任
             </h2>
             <p>
@@ -37,7 +41,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               4. 服務變更
             </h2>
             <p>
@@ -46,7 +50,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               5. 免責聲明
             </h2>
             <p>
@@ -55,7 +59,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               6. 退款與訂閱取消
             </h2>
             <p>
@@ -68,7 +72,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-base font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-foreground">
               7. 條款修改
             </h2>
             <p>
@@ -77,10 +81,11 @@ export default function TermsPage() {
           </section>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           最後更新日期：2026 年 9 月 11 日
         </p>
       </div>
-    </div>
+      </div>
+    </PublicFrame>
   );
 }

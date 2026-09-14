@@ -172,17 +172,17 @@ export default function MemberAppointmentDetailPage({
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[60vh] items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted/40 pb-12">
+    <div className="min-h-[60vh] bg-background pb-12">
       {/* Header */}
       <div className="border-b border-border/60 bg-background/80 px-4 py-4 backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-2xl items-center gap-3">
+        <div className="mx-auto flex max-w-4xl items-center gap-3">
           <Link
             href="/member"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
@@ -194,7 +194,7 @@ export default function MemberAppointmentDetailPage({
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />

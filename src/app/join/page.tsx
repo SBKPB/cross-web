@@ -1,6 +1,7 @@
+import { JoinIntro } from "@/components/public/join-intro";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import {
   Accordion,
@@ -98,68 +99,14 @@ const FAQS = [
 
 export default function JoinPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="public-page flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
       <main className="flex-1">
-        {/* ===== Hero ===== */}
-        <section className="relative overflow-hidden bg-linear-to-b from-accent/50 via-background to-background">
-          <div className="pointer-events-none absolute -top-32 left-1/2 size-[640px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.4]"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, color-mix(in srgb, var(--primary) 22%, transparent) 1px, transparent 1px)",
-              backgroundSize: "22px 22px",
-              maskImage: "linear-gradient(to bottom, black, transparent 70%)",
-              WebkitMaskImage:
-                "linear-gradient(to bottom, black, transparent 70%)",
-            }}
-          />
-
-          <div className="container relative mx-auto px-4 pt-16 pb-14 text-center sm:pt-24 sm:pb-20">
-            <div
-              className="mx-auto max-w-3xl"
-              style={{ animation: "fadeInUp 0.5s ease-out both" }}
-            >
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-1.5 text-xs font-medium text-primary shadow-sm ring-1 ring-primary/15">
-                <Sparkles className="size-3.5" />
-                前 90 天免費試用
-              </span>
-              <h1 className="mt-5 text-4xl font-bold leading-[1.12] tracking-tight text-foreground sm:text-5xl">
-                讓更多人，
-                <br className="hidden sm:block" />
-                <span className="text-primary">找到你的診所與門市</span>
-              </h1>
-              <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                診所、醫美、美業店家都歡迎加入 Cross。線上接受預約、管理排程，
-                被正在尋找服務的民眾看見。
-              </p>
-              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Button asChild size="lg" className="group/cta w-full sm:w-auto">
-                  <Link href="/join/apply">
-                    立即申請加入
-                    <ArrowRight className="size-4 transition-transform group-hover/cta:translate-x-0.5" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                >
-                  <a href="#pricing">查看方案</a>
-                </Button>
-              </div>
-              <p className="mt-5 text-sm text-muted-foreground">
-                90 天免費全功能試用 · 專人協助上架 · 無需綁約
-              </p>
-            </div>
-          </div>
-        </section>
+        <JoinIntro />
 
         {/* ===== 功能介紹 ===== */}
-        <section id="features" className="container mx-auto px-4 py-16 sm:py-20">
+        <section id="features" className="home-container py-16 sm:py-20">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Cross 為診所做什麼
@@ -192,7 +139,7 @@ export default function JoinPage() {
           id="pricing"
           className="scroll-mt-20 border-t border-border"
         >
-          <div className="container mx-auto px-4 py-16 sm:py-20">
+          <div className="home-container py-16 sm:py-20">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 透明方案，先免費試用 90 天
@@ -215,7 +162,7 @@ export default function JoinPage() {
           id="apply"
           className="scroll-mt-20 border-t border-border bg-muted/30"
         >
-          <div className="container mx-auto px-4 py-16 sm:py-20">
+          <div className="home-container py-16 sm:py-20">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 三步驟，正式加入

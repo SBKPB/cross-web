@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Crown, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, Crown, MapPin, Phone } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { categoryLabel, type ServiceTaxonomy } from "@/lib/api/service-categories";
@@ -21,8 +21,9 @@ export function LandingClinicGrid({ clinics, taxonomy }: LandingClinicGridProps)
         <li key={clinic.id}>
           <Link
             href={`/clinic/${clinic.id}`}
-            className="group flex h-full flex-col gap-3 rounded-2xl bg-card p-5 ring-1 ring-border/60 transition hover:-translate-y-0.5 hover:shadow-lg hover:ring-primary/30"
+            className="group flex h-full flex-col gap-4 rounded-3xl border border-border/80 bg-card p-6 transition-colors hover:border-primary/40"
           >
+            <span aria-hidden="true" className="flex size-14 items-center justify-center rounded-2xl bg-accent/60 text-2xl text-primary">{clinic.name.slice(0, 1)}</span>
             <div className="flex items-center gap-1.5">
               {clinic.is_featured && (
                 <Badge className="gap-1 border-0 bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950">
@@ -59,6 +60,7 @@ export function LandingClinicGrid({ clinics, taxonomy }: LandingClinicGridProps)
                 </div>
               )}
             </div>
+            <span className="mt-2 inline-flex items-center justify-between border-t border-border pt-4 text-sm font-medium text-primary">認識店家 <ArrowUpRight className="size-4" /></span>
           </Link>
         </li>
       ))}

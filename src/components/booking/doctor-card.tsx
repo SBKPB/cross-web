@@ -23,6 +23,7 @@ export function DoctorCard({
   return (
     <button
       type="button"
+      aria-pressed={isSelected}
       onClick={() => onSelect(doctor)}
       className={cn(
         "flex w-28 shrink-0 snap-start flex-col items-center rounded-3xl p-3 transition-all",
@@ -46,7 +47,7 @@ export function DoctorCard({
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center bg-gradient-to-br from-primary/15 to-sky-200/50 text-primary">
+          <div className="flex size-full items-center justify-center bg-accent/60 text-primary">
             <User className="size-7" />
           </div>
         )}

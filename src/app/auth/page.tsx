@@ -79,7 +79,7 @@ function AuthContent() {
           <div className={cn(lumaIconBadge, "size-14")}>
             <Building2 className="size-6" />
           </div>
-          <CardTitle className="mt-3 text-2xl">登入 Cross</CardTitle>
+          <CardTitle className="mt-3 text-2xl"><h1>登入 Cross</h1></CardTitle>
           <CardDescription>
             {isBooking ? "登入後回到所選時段，確認看診對象後即可完成預約。" : "登入後即可預約看診、管理看診對象與查看預約紀錄"}
           </CardDescription>

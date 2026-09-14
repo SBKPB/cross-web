@@ -162,7 +162,7 @@ export default function MemberPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[60vh] items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
       </div>
     );
@@ -171,10 +171,10 @@ export default function MemberPage() {
   const displayName = user?.display_name || user?.email?.split("@")[0] || "會員";
 
   return (
-    <div className="min-h-screen bg-muted/40 pb-12">
-      <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-6">
+    <div className="min-h-[60vh] bg-background pb-12">
+      <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6">
         {/* Profile 卡 */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-blue-700 p-6 text-primary-foreground">
+        <div className="relative overflow-hidden rounded-3xl bg-[#163b85] p-6 text-primary-foreground">
           {/* 裝飾光暈 */}
           <div className="pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-24 -left-10 size-56 rounded-full bg-white/5 blur-2xl" />

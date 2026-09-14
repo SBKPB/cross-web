@@ -67,6 +67,7 @@ export function TimeSlotGrid({
                   <button
                     key={slot.id}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => !isDisabled && onSelectSlot(slot)}
                     disabled={isDisabled}
                     className={cn(

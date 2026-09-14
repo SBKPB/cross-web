@@ -45,8 +45,8 @@ export function StickySubmitButton({
           disabled={disabled || isLoading}
           className={cn(
             "group/button inline-flex h-12 w-full items-center justify-center gap-2",
-            "rounded-2xl text-base font-semibold",
-            "shadow-lg transition-all",
+            "rounded-full text-base font-semibold",
+            "shadow-sm transition-all",
             "hover:brightness-105 active:translate-y-px",
             "disabled:pointer-events-none disabled:opacity-50",
           )}

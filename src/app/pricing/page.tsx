@@ -1,6 +1,7 @@
+import { PageIntro } from "@/components/public/page-intro";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SiteFooter } from "@/components/home/site-footer";
@@ -30,29 +31,14 @@ const FAQS = [
 
 export default function PricingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="public-page flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
       <main className="flex-1">
-        {/* Hero */}
-        <section className="relative overflow-hidden bg-linear-to-b from-accent/50 via-background to-background">
-          <div className="pointer-events-none absolute -top-32 left-1/2 size-[640px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-          <div className="container relative mx-auto px-4 pt-16 pb-12 text-center sm:pt-24 sm:pb-16">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3.5 py-1.5 text-xs font-medium text-primary shadow-sm ring-1 ring-primary/15">
-              <Sparkles className="size-3.5" />
-              方案與定價
-            </span>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              選擇適合你的方案
-            </h1>
-            <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              所有方案都享 90 天免費試用，依診所規模彈性選擇，隨時可升級。
-            </p>
-          </div>
-        </section>
+        <PageIntro eyebrow="PLANS / 依照你的步調成長" title="找到適合你的方案" description="從建立專屬店家頁，到線上預約與日常管理，依需求選擇適合的功能。" />
 
         {/* 方案卡 */}
-        <section className="container mx-auto px-4 pb-8">
+        <section className="home-container pt-10 pb-8 sm:pt-14">
           <PricingTable />
           <p className="mt-6 text-center text-xs text-muted-foreground">
             價格已含稅；年繳一次支付、等於付 10 個月。新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
@@ -87,8 +73,8 @@ export default function PricingPage() {
         </section>
 
         {/* CTA */}
-        <section className="container mx-auto px-4 pb-20">
-          <div className="relative overflow-hidden rounded-[2rem] bg-primary px-6 py-12 text-center text-primary-foreground sm:py-16">
+        <section className="home-container pb-20">
+          <div className="relative overflow-hidden rounded-[2rem] bg-[#163b85] px-6 py-12 text-center text-white sm:py-16">
             <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-3xl" />
             <h2 className="relative text-2xl font-bold tracking-tight sm:text-3xl">
               準備好讓更多人找到你了嗎？

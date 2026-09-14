@@ -65,7 +65,7 @@ function FooterLinkItem({ link, home = false }: { link: FooterLink; home?: boole
   );
 }
 
-export function SiteFooter({ home = false }: { home?: boolean }) {
+export function SiteFooter({ home = true }: { home?: boolean }) {
   const year = new Date().getFullYear();
 
   return (

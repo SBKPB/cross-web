@@ -124,20 +124,20 @@ function CompleteProfileContent() {
 
   if (authLoading || isCheckingProfile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[70vh] items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-[70vh] items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg">
         <CardHeader className="items-center text-center">
           <div className={cn(lumaIconBadge, "size-14")}>
             <UserPlus className="size-6" />
           </div>
-          <CardTitle className="mt-3 text-xl">建立個人資料</CardTitle>
+          <CardTitle className="mt-3 text-xl"><h1>建立個人資料</h1></CardTitle>
           <CardDescription>
             {user?.email
               ? `${user.email}，請填寫以下資料完成註冊`
@@ -281,7 +281,7 @@ export default function CompleteProfilePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex min-h-[70vh] items-center justify-center bg-background">
           <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
         </div>
       }

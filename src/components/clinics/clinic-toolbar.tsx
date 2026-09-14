@@ -88,12 +88,12 @@ export function ClinicToolbar({ filters, onFiltersChange, resultCount, className
   );
 
   return (
-    <div className={cn("space-y-3 rounded-3xl bg-card p-3 shadow-sm ring-1 ring-border/60 sm:p-4", className)}>
-      <div role="group" aria-label="服務類型" className="flex gap-1 overflow-x-auto rounded-2xl bg-secondary p-1">
+    <div className={cn("space-y-4 rounded-3xl border border-border/80 bg-card p-3 sm:p-5", className)}>
+      <div role="group" aria-label="服務類型" className="flex gap-0.5 overflow-x-auto border-b border-border/70 pb-4 sm:gap-1">
         {TABS.map((tab) => (
           <button key={tab.value} type="button" aria-pressed={filters.facilityType === tab.value}
             onClick={() => update({ facilityType: tab.value, serviceCategories: [], hospitalLevel: tab.value === "all" || tab.value === "healthcare" ? filters.hospitalLevel : "all", paymentType: tab.value === "healthcare" ? filters.paymentType : "all" })}
-            className={cn("inline-flex min-h-11 shrink-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary", filters.facilityType === tab.value ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+            className={cn("inline-flex min-h-11 shrink-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-2 text-sm font-medium sm:px-3 transition-colors focus-visible:outline-2 focus-visible:outline-primary", filters.facilityType === tab.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
             <tab.icon className="hidden size-4 shrink-0 sm:block" />
             {tab.value === "all" ? "全部" : facilityTypeLabel(taxonomy, tab.value as FacilityType)}
           </button>

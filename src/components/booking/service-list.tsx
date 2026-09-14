@@ -39,7 +39,7 @@ export function ServiceList({
   if (services.length === 0) {
     return (
       <div className="px-4">
-        <div className="flex flex-col items-center gap-3 rounded-3xl bg-card p-10 text-center shadow-sm ring-1 ring-foreground/5">
+        <div className="flex flex-col items-center gap-3 rounded-3xl bg-card p-10 text-center border border-border/80">
           <span className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
             <Sparkles className="size-6" />
           </span>
@@ -54,9 +54,9 @@ export function ServiceList({
   return (
     <div className="space-y-7 px-4">
       <div className="space-y-1">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           選擇服務項目
-        </h1>
+        </h2>
         <p className="text-sm text-muted-foreground">
           請選擇您本次想預約的服務
         </p>

@@ -486,10 +486,10 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
 
       {/* Hero：裝飾性 banner + 院所識別卡 */}
       <ClinicDetailHeader clinic={clinic} />
-      {isDemoClinic(clinicId) && <div className="container mx-auto px-4 pt-6"><p className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed">示範院所：本頁的團隊、地址、費用與班表僅供功能展示，不提供實際看診服務。</p></div>}
+      {isDemoClinic(clinicId) && <div className="home-container pt-6"><p className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm leading-relaxed">示範院所：本頁的團隊、地址、費用與班表僅供功能展示，不提供實際看診服務。</p></div>}
 
       {/* 桌機雙欄：主內容 + 黏性側欄 */}
-      <div className="container mx-auto px-4 pt-6 sm:px-6 sm:pt-8">
+      <div className="home-container pt-6 sm:pt-8">
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
           {/* ===== 主內容 ===== */}
           <div className="space-y-6">
@@ -507,23 +507,23 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
 
             {/* 團隊成員（點擊顯示詳情） */}
             {clinic.members && clinic.members.length > 0 && (
-              <DoctorTeamSection
+              <div id="team"><DoctorTeamSection
                 members={clinic.members}
                 details={doctorDetails}
-              />
+              /></div>
             )}
 
             {/* 服務項目 */}
             {clinic.services && clinic.services.length > 0 && (
-              <ServicePreviewList
+              <div id="services"><ServicePreviewList
                 services={clinic.services}
                 paymentType={clinic.payment_type}
-              />
+              /></div>
             )}
           </div>
 
           {/* ===== 側欄（桌機黏性） ===== */}
-          <aside className="space-y-6 lg:sticky lg:top-6">
+          <aside className="space-y-6 lg:sticky lg:top-28">
             {/* 線上預約為付費功能：未開通的院所改顯示現場預約（電話由後台勾選才顯示） */}
             {clinic.online_booking_enabled ? (
               <BookingCard clinicId={clinicId} className="hidden lg:block" />
@@ -533,7 +533,7 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
                 phoneBookingEnabled={clinic.phone_booking_enabled}
               />
             )}
-            <ClinicContactInfo clinic={clinic} />
+            <div id="contact"><ClinicContactInfo clinic={clinic} /></div>
             {clinic.business_hours && clinic.business_hours.length > 0 && (
               <BusinessHoursSection businessHours={clinic.business_hours} />
             )}

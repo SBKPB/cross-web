@@ -207,7 +207,7 @@ export function BookingFlow({
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-32">
+    <div className="flex min-h-[75vh] flex-col bg-background pb-32">
       {/* Clinic Header */}
       <ClinicHeader clinic={clinicConfig} />
       <div className="mx-auto mt-5 w-full max-w-2xl px-4">
@@ -218,7 +218,7 @@ export function BookingFlow({
       </div>
 
       {/* Stepper — sticky 在頂部 */}
-      <div className="sticky top-0 z-20 mt-6 border-y border-border/60 bg-background/80 backdrop-blur-lg">
+      <div className="sticky top-16 z-20 sm:top-20 mt-6 border-y border-border/60 bg-background/80 backdrop-blur-lg">
         <BookingStepper
           currentStep={currentStep}
           onStepClick={handleStepClick}
@@ -257,9 +257,9 @@ export function BookingFlow({
         {currentStep === 3 && (
           <div className="space-y-5 px-4">
             <div className="space-y-1">
-              <h1 className="text-xl font-bold tracking-tight text-foreground">
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                 確認預約資訊
-              </h1>
+              </h2>
               <p className="text-sm text-muted-foreground">
                 選擇合適的時段，再確認看診對象
               </p>

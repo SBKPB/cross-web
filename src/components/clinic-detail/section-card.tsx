@@ -22,11 +22,11 @@ export function SectionCard({
   return (
     <section
       className={cn(
-        "rounded-3xl bg-card p-5 shadow-sm ring-1 ring-foreground/5 sm:p-6",
+        "rounded-3xl border border-border/80 bg-card p-5 sm:p-7",
         className,
       )}
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2.5 text-base font-semibold text-foreground">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Icon className="size-[18px]" />

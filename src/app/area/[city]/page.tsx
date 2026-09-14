@@ -118,7 +118,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <div className="home-container py-10 sm:py-14">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -137,11 +137,11 @@ export default async function AreaPage({ params }: AreaPageProps) {
         <span className="text-foreground">{city}</span>
       </nav>
 
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+      <header className="mb-8 rounded-3xl bg-[#eff4fa] p-6 dark:bg-[#142238] sm:p-10">
+        <h1 className="text-3xl font-semibold leading-snug tracking-tight text-foreground sm:text-4xl">
           {city}診所推薦
         </h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">
+        <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
           {city}共有 <strong className="text-foreground">{clinics.length}</strong>{" "}
           家診所提供線上預約掛號服務。你可以在此查看
           {cityCategories.length > 0 && (

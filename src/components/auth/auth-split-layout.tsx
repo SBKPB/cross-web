@@ -34,6 +34,28 @@ const COPY = {
  * - 手機：僅置中表單（品牌側欄隱藏）
  */
 export function AuthSplitLayout({ variant, children }: AuthSplitLayoutProps) {
+  if (variant === "consumer") {
+    return (
+      <div className="public-page grid min-h-screen bg-background lg:grid-cols-[1.05fr_1fr]">
+        <aside className="relative hidden min-h-screen flex-col justify-between overflow-hidden bg-[#102647] p-12 text-white lg:flex">
+          <Image src="/images/cross-care-hero.webp" alt="" fill priority sizes="52vw" className="object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#102647] via-[#102647]/15 to-[#102647]/35" />
+          <Link href="/" className="relative flex w-fit items-center gap-3 text-xl font-semibold"><Image src="/cross-icon.png" alt="" width={36} height={36} className="rounded-xl" />Cross</Link>
+          <div className="relative max-w-md pb-3">
+            <p className="text-xs font-medium tracking-[0.16em] text-blue-100">YOUR EVERYDAY CARE</p>
+            <h2 className="mt-4 text-4xl font-semibold leading-snug tracking-tight">留點時間，<br />好好照顧自己。</h2>
+            <p className="mt-5 text-base leading-8 text-blue-100">從找到服務到管理預約，<br />每一次安排，都更從容。</p>
+          </div>
+        </aside>
+        <main className="relative flex min-h-screen flex-col items-center justify-center px-5 py-20 sm:px-10">
+          <Link href="/" className="absolute top-7 left-6 inline-flex min-h-10 items-center gap-2 text-sm text-muted-foreground hover:text-primary">← 返回 Cross 首頁</Link>
+          {children}
+          <p className="mt-7 text-xs text-muted-foreground">Cross · 你的健康日常</p>
+        </main>
+      </div>
+    );
+  }
+
   const copy = COPY[variant];
 
   return (

@@ -60,7 +60,7 @@ export function SuccessCard({
       </div>
 
       {/* Booking Details */}
-      <div className="overflow-hidden rounded-4xl bg-card shadow-md ring-1 ring-foreground/5">
+      <div className="overflow-hidden rounded-3xl border border-border/80 bg-card">
         {/* Clinic */}
         <div className="border-b border-border/60 p-5">
           <h2 className="font-semibold text-foreground">

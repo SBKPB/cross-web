@@ -25,7 +25,7 @@ export default async function AreaIndexPage() {
   const cities = citiesWithCounts(clinics);
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <div className="home-container py-10 sm:py-14">
       <nav className="mb-4 text-sm text-muted-foreground" aria-label="麵包屑">
         <Link href="/" className="hover:text-primary">
           首頁
@@ -34,11 +34,11 @@ export default async function AreaIndexPage() {
         <span className="text-foreground">地區</span>
       </nav>
 
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+      <header className="mb-8 rounded-3xl bg-[#eff4fa] p-6 dark:bg-[#142238] sm:p-10">
+        <h1 className="text-3xl font-semibold leading-snug tracking-tight text-foreground sm:text-4xl">
           各縣市診所一覽
         </h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">
+        <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
           選擇你所在的縣市，查看該地區可線上預約掛號的診所與各科別門診資訊。
         </p>
       </header>
@@ -51,7 +51,7 @@ export default async function AreaIndexPage() {
             <li key={city}>
               <Link
                 href={`/area/${encodeURIComponent(city)}`}
-                className="flex items-center justify-between gap-2 rounded-2xl bg-card px-4 py-3 ring-1 ring-border/60 transition hover:ring-primary/40"
+                className="flex items-center justify-between gap-2 rounded-3xl border border-border/80 bg-card px-5 py-6 transition hover:border-primary/40 hover:bg-accent/20"
               >
                 <span className="flex items-center gap-2 font-medium text-foreground">
                   <MapPin className="size-4 text-primary" />

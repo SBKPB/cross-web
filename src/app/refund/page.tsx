@@ -1,3 +1,4 @@
+import { PageIntro } from "@/components/public/page-intro";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -27,13 +28,11 @@ export const metadata: Metadata = {
 
 export default function RefundPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="public-page flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
+      <PageIntro eyebrow="CROSS / 訂閱與退款" title="退款政策" />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:py-16">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          退款政策
-        </h1>
         <p className="mt-3 text-base leading-relaxed text-muted-foreground">
           本政策適用於由 Cross 收取的院所月繳及年繳訂閱費用。
           依法或依雙方個別書面約定享有更有利的退款權利者，優先適用該規定或約定。
@@ -42,8 +41,12 @@ export default function RefundPage() {
           最後更新日期：<time dateTime="2026-09-11">2026 年 9 月 11 日</time>
         </p>
 
+        <nav aria-label="退款政策章節" className="mt-6 flex flex-wrap gap-2 text-sm">
+          {[{ id: "subscription-cancellation", label: "取消續訂" }, { id: "refund-eligibility", label: "退款資格" }, { id: "refund-request", label: "如何申請" }, { id: "patient-fees", label: "院所費用" }].map((item) => <a key={item.id} href={`#${item.id}`} className="rounded-full border border-border bg-card px-4 py-2.5 text-primary hover:bg-accent">{item.label}</a>)}
+        </nav>
+
         <Card className="mt-8">
-          <CardContent className="space-y-8 text-base leading-8 text-muted-foreground">
+          <CardContent className="policy-body space-y-8 text-base leading-8 text-muted-foreground">
             <section aria-labelledby="free-trial">
               <h2 id="free-trial" className="mb-2 text-lg font-semibold text-foreground">
                 1. 免費試用

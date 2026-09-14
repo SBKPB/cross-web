@@ -70,6 +70,7 @@ export function DatePicker({
       <div className="flex items-center justify-between">
         <button
           type="button"
+          aria-label="上個月"
           onClick={() => setCurrentMonthIndex((i) => i - 1)}
           disabled={!hasPrev}
           className={cn(
@@ -86,6 +87,7 @@ export function DatePicker({
         </span>
         <button
           type="button"
+          aria-label="下個月"
           onClick={() => setCurrentMonthIndex((i) => i + 1)}
           disabled={!hasNext}
           className={cn(
@@ -109,6 +111,7 @@ export function DatePicker({
             <button
               key={dateInfo.date}
               type="button"
+              aria-pressed={isSelected}
               onClick={() => !isDisabled && onSelectDate(dateInfo.date)}
               disabled={isDisabled}
               className={cn(

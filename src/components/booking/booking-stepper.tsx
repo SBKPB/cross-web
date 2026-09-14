@@ -30,6 +30,8 @@ export function BookingStepper({
             {/* Step Circle */}
             <button
               type="button"
+              aria-label={`第 ${step} 步：${label}`}
+              aria-current={isCurrent ? "step" : undefined}
               onClick={() => isClickable && onStepClick(step as 1 | 2 | 3)}
               disabled={!isClickable}
               className={cn(

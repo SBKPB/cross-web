@@ -48,14 +48,14 @@ export default function MemberFavoritesPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[60vh] items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[60vh] bg-background">
       {/* Header */}
       <div className="border-b border-border/60 bg-background/80 px-4 py-4 backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-5xl items-center gap-3">

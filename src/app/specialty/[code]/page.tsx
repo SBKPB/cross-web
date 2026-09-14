@@ -138,7 +138,7 @@ export default async function SpecialtyPage({ params }: SpecialtyPageProps) {
   const cities = citiesWithCounts(clinics).slice(0, 12);
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <div className="home-container py-10 sm:py-14">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -158,11 +158,11 @@ export default async function SpecialtyPage({ params }: SpecialtyPageProps) {
         <span className="text-foreground">{label}</span>
       </nav>
 
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+      <header className="mb-8 rounded-3xl bg-[#eff4fa] p-6 dark:bg-[#142238] sm:p-10">
+        <h1 className="text-3xl font-semibold leading-snug tracking-tight text-foreground sm:text-4xl">
           {label}診所推薦
         </h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">
+        <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
           共 <strong className="text-foreground">{clinics.length}</strong> 家
           {label}診所可線上預約掛號。比較各院所的門診時間、醫師團隊與服務項目，
           挑選最適合你的{label}診所並直接線上預約。

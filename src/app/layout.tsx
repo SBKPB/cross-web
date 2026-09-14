@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
 
 // 英數字使用 Inter（更現代的 sans-serif）
 const inter = Inter({
@@ -106,7 +107,7 @@ export default function RootLayout({
       >
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSONLD) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(SITE_JSONLD) }}
         />
         <Providers>{children}</Providers>
       </body>

@@ -2,6 +2,7 @@ import { cache } from "react";
 import { isDemoClinic } from "@/lib/clinic-discovery";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
 import {
   AnnouncementsSection,
   ClinicDetailHeader,
@@ -479,7 +480,7 @@ export default async function ClinicDetailPage({ params }: ClinicDetailPageProps
       <TrackView clinicId={clinic.id} />
       {!isDemoClinic(clinicId) && <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />}
       {/* 記錄一次瀏覽（登入會員，跨裝置同步；純副作用） */}
       <RecordView clinicId={clinicId} />

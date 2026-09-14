@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
 
 import { LandingClinicGrid } from "@/components/seo/landing-clinic-grid";
 import {
@@ -121,7 +122,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
     <div className="home-container py-10 sm:py-14">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       {/* 麵包屑 */}

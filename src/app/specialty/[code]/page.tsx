@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { serializeJsonLd } from "@/lib/seo/serialize-json-ld";
 
 import { LandingClinicGrid } from "@/components/seo/landing-clinic-grid";
 import {
@@ -142,7 +143,7 @@ export default async function SpecialtyPage({ params }: SpecialtyPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildJsonLd(code, label, clinics)),
+          __html: serializeJsonLd(buildJsonLd(code, label, clinics)),
         }}
       />
 

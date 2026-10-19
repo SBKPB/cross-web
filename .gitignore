@@ -50,3 +50,6 @@ next-env.d.ts
 # sveltekit
 /.svelte-kit/
 /.vercel/
+
+# 比對工具輸出（截圖）
+/scripts/parity/out/

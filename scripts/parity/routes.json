@@ -1,0 +1,8 @@
+{
+  "static": [
+    { "path": "/terms", "auth": false },
+    { "path": "/privacy", "auth": false },
+    { "path": "/refund", "auth": false },
+    { "path": "/pricing", "auth": false }
+  ]
+}

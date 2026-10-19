@@ -20,8 +20,8 @@ const notoSansTC = Noto_Sans_TC({
 });
 
 const SITE_NAME = "Cross";
-const SITE_TITLE = "Cross | 線上預約看診";
-const SITE_DESC = "搜尋全台診所，24 小時線上掛號，不用再打電話排隊。";
+const SITE_TITLE = "Cross | AIoT 健康資料連接平台";
+const SITE_DESC = "讓設備、醫療軟體與健康資料更容易連接。探索 Cross 的原生 App、資料 API 與開發者沙盒。";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cross.twinhao.com"),
@@ -32,6 +32,10 @@ export const metadata: Metadata = {
   description: SITE_DESC,
   applicationName: SITE_NAME,
   keywords: [
+    "AIoT",
+    "健康資料",
+    "醫療設備串接",
+    "開發者 API",
     "線上預約",
     "線上掛號",
     "看診預約",

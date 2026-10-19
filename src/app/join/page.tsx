@@ -1,228 +1,169 @@
-import { JoinIntro } from "@/components/public/join-intro";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  Cpu,
+  Hospital,
+  Workflow,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  BookingDemo,
-  ExposureDemo,
-  ReminderDemo,
-  RiskDemo,
-  ScheduleDemo,
-  StaffDemo,
-} from "@/components/join/feature-demos";
-import { PatientView } from "@/components/join/patient-view";
-import { SiteFooter } from "@/components/home/site-footer";
+import { Card, CardContent } from "@/components/ui/card";
 import { SiteHeader } from "@/components/home/site-header";
-import { PricingTable } from "@/components/pricing/pricing-table";
+import { SiteFooter } from "@/components/home/site-footer";
+import { partnerContact, partnerEmail } from "@/lib/developers";
 
 export const metadata: Metadata = {
-  title: "夥伴加入",
+  title: "Design Partner 共同合作",
   description:
-    "診所、醫美診所、美業店家加入 Cross 預約平台：線上 24 小時預約、排程班表管理、App 推播提醒、人員與服務管理，觸及全台尋找醫療與美容服務的民眾。",
+    "Cross 募集 3–5 家醫療院所、健康服務機構與設備夥伴，共同設計並量化驗證資料與預約工作流程。",
+  alternates: { canonical: "/join" },
 };
-
-const FEATURES: {
-  demo: () => React.JSX.Element;
-  title: string;
-  description: string;
-}[] = [
-  {
-    demo: BookingDemo,
-    title: "24 小時線上預約",
-    description: "櫃檯下班了預約還在進來，不再漏接電話、不佔用人力。",
-  },
-  {
-    demo: ScheduleDemo,
-    title: "排程與班表管理",
-    description: "只標休假，其餘自動視為看診；要精細排診也排得出來。",
-  },
-  {
-    demo: ReminderDemo,
-    title: "App 自動提醒",
-    description: "看診前一天自動推播，病人記得來，你少一個空檔。",
-  },
-  {
-    demo: StaffDemo,
-    title: "人員與服務管理",
-    description: "醫師、美容師、服務項目與價格集中維護，改一次全站同步。",
-  },
-  {
-    demo: RiskDemo,
-    title: "爽約風險分析",
-    description: "系統挑出高風險的那幾筆，讓你提前一通電話補回來。",
-  },
-  {
-    demo: ExposureDemo,
-    title: "分眾精準曝光",
-    description: "看診 / 醫美 / 美容 / 其他分流，被正在找你的客群看見。",
-  },
-];
-
-const STEPS = [
-  { title: "填寫申請", description: "分三段填寫商家資料，約需 2 分鐘。" },
-  {
-    title: "輸入驗證碼",
-    description: "輸入寄到信箱的 6 位數驗證碼並設定密碼，後台立即開通。",
-  },
-  {
-    title: "審核上架",
-    description: "先進後台整理資料；審核通過即可上架，開始接受預約。",
-  },
-];
-
-const FAQS = [
-  {
-    q: "加入 Cross 需要費用嗎？",
-    a: "民眾端使用免費；診所端依方案訂閱，月費 NT$3,000 起，且新加入享 90 天免費全功能試用。完整方案可參考上方「方案與定價」，營運團隊也會在聯繫時為您說明最適合的選擇。",
-  },
-  {
-    q: "診所、醫美、美業都能加入嗎？",
-    a: "都可以。Cross 同時收錄健保看診、自費門診、醫美與美容 / 美業（及其他健康服務），會依類型分流曝光給對應的民眾。",
-  },
-  {
-    q: "需要更換現有的看診 / 管理系統嗎？",
-    a: "不需要。Cross 主要負責「線上預約與排程曝光」，可與您現有的院內作業並行使用。",
-  },
-  {
-    q: "上架要多久？",
-    a: "送出申請、輸入信箱驗證碼後，後台立即開通，馬上就能整理院所資料；上架到民眾端需通過審核，通常數個工作天內完成。",
-  },
-];
 
 export default function JoinPage() {
   return (
-    <div className="public-page flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
-
       <main className="flex-1">
-        <JoinIntro />
-
-        {/* ===== 功能介紹 ===== */}
-        <section id="features" className="home-container py-16 sm:py-20">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Cross 為診所做什麼
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              把預約、排程與提醒都搬到線上，讓你專注在服務本身。
-            </p>
+        <section className="border-b border-border bg-card">
+          <div className="home-container grid gap-10 py-14 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20 lg:py-20">
+            <div>
+              <p className="home-eyebrow">CROSS DESIGN PARTNER PROGRAM</p>
+              <h1 className="mt-5 text-4xl font-semibold leading-[1.3] tracking-tight sm:text-5xl">
+                從你的工作流程，
+                <br />
+                <span className="text-primary">一起把連接做好。</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground">
+                募集 3–5
+                家醫療院所、健康服務機構與設備夥伴。先選一個場景，共同導入、驗證與調整，讓實際改善決定產品的下一步。
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <a href={partnerContact}>
+                    聯絡合作 <ArrowUpRight aria-hidden="true" />
+                  </a>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href="/developers">
+                    先試開發者沙盒 <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
+              <p className="mt-4 text-xs leading-6 text-muted-foreground">
+                {partnerEmail} · 點擊聯絡合作會開啟你的郵件程式
+              </p>
+            </div>
+            <Card className="gap-0 self-center py-0 shadow-sm">
+              <CardContent className="p-7">
+                <p className="home-eyebrow">以成果共同驗證</p>
+                <h2 className="mt-4 text-xl font-semibold">免費共同導入試點</h2>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                  工作範圍、設備串接與試點期間，在合作前共同確認。額外硬體或客製整合需求另議。
+                </p>
+                <ul className="mt-5 space-y-3">
+                  {[
+                    "先記錄目前流程與成本",
+                    "以合成資料驗證接入方式",
+                    "比較導入後的實際改善",
+                  ].map((text) => (
+                    <li key={text} className="flex gap-2 text-sm">
+                      <Check
+                        className="mt-0.5 size-4 shrink-0 text-primary"
+                        aria-hidden="true"
+                      />
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           </div>
-          <div className="mx-auto mt-10 grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-3xl bg-card p-5 shadow-sm ring-1 ring-foreground/5 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/15"
-              >
-                <f.demo />
-                <h3 className="mt-4 font-semibold text-foreground">{f.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {f.description}
+        </section>
+        <section className="home-container py-14 sm:py-20">
+          <p className="home-eyebrow">WHO WE BUILD WITH</p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+            從一個場景開始。
+          </h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: Hospital,
+                title: "醫療與健康服務機構",
+                text: "減少預約、資料轉抄或人工處理，保留既有作業系統。",
+              },
+              {
+                icon: Cpu,
+                title: "設備與硬體廠商",
+                text: "提供機型、封包或 SDK 規格，先把一條量測路徑接起來。",
+              },
+              {
+                icon: Workflow,
+                title: "醫療軟體夥伴",
+                text: "從明確的接收流程開始，依需求建立 API 或交換 adapter。",
+              },
+            ].map((item) => (
+              <Card key={item.title} className="gap-0 py-0 shadow-sm">
+                <CardContent className="p-7">
+                  <item.icon
+                    className="size-6 text-primary"
+                    aria-hidden="true"
+                  />
+                  <h3 className="mt-5 font-semibold">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                    {item.text}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+        <section className="border-y border-border bg-card">
+          <div className="home-container grid gap-10 py-14 md:grid-cols-2">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                先有基線，再看改善。
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                每個試點定義相同的觀測方式與期間。若沒有明確改善，就繼續調整產品與流程。
+              </p>
+            </div>
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-sm font-semibold text-primary">
+                  設備與資料流程
+                </h3>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                  接入時間、接收與補傳結果、資料衝突、人工處理次數。
                 </p>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ===== 民眾眼中的你（用真的 ClinicCard 當證據） ===== */}
-        <PatientView />
-
-        {/* ===== 方案與定價 ===== */}
-        <section
-          id="pricing"
-          className="scroll-mt-20 border-t border-border"
-        >
-          <div className="home-container py-16 sm:py-20">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                透明方案，先免費試用 90 天
-              </h2>
-              <p className="mt-3 text-muted-foreground">
-                所有方案都享 90 天免費全功能試用，確認合適再付費，隨時可升級。
-              </p>
-            </div>
-            <div className="mt-12">
-              <PricingTable ctaHref="/join/apply" />
-            </div>
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              價格已含稅；年繳一次支付、等於付 10 個月。新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
-            </p>
-          </div>
-        </section>
-
-        {/* ===== 申請區：說明流程，表單在 /join/apply ===== */}
-        <section
-          id="apply"
-          className="scroll-mt-20 border-t border-border bg-muted/30"
-        >
-          <div className="home-container py-16 sm:py-20">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                三步驟，正式加入
-              </h2>
-              <p className="mt-3 text-muted-foreground">
-                填表約 2 分鐘，輸入信箱驗證碼後台立即開通；審核通過即可上架。
-              </p>
-            </div>
-            <ol className="mx-auto mt-10 grid max-w-4xl gap-6 sm:grid-cols-3">
-              {STEPS.map((step, i) => (
-                <li
-                  key={step.title}
-                  className="rounded-2xl border border-border bg-card p-6 shadow-sm"
-                >
-                  <span className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm">
-                    {i + 1}
-                  </span>
-                  <h3 className="mt-4 font-semibold text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                    {step.description}
-                  </p>
-                </li>
-              ))}
-            </ol>
-            <div className="mt-10 flex flex-col items-center gap-3">
-              <Button size="lg" className="group/apply h-12 px-8 text-base" asChild>
-                <Link href="/join/apply">
-                  開始申請
-                  <ArrowRight className="size-4 transition-transform group-hover/apply:translate-x-0.5" />
-                </Link>
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                免費方案不需信用卡，隨時可升級。
-              </p>
+              <div>
+                <h3 className="text-sm font-semibold text-primary">預約流程</h3>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                  預約完成率、No-show rate、行政工時、人工處理次數。
+                </p>
+              </div>
             </div>
           </div>
         </section>
-
-        {/* ===== 診所常見問題 ===== */}
-        <section className="container mx-auto max-w-3xl px-4 py-16 sm:py-20">
-          <div className="mb-8 text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              診所常見問題
-            </h2>
+        <section className="home-container py-14">
+          <div className="flex flex-col justify-between gap-6 rounded-3xl bg-accent/30 p-7 sm:p-10 md:flex-row md:items-center">
+            <div>
+              <h2 className="text-xl font-semibold">已經有預約服務需求？</h2>
+              <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                現有院所申請與 Web
+                預約流程仍可使用。設備廠商請從上方合作聯絡開始。
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link href="/join/apply">
+                院所預約申請 <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
           </div>
-          <Accordion type="single" collapsible className="bg-card">
-            {FAQS.map((faq, i) => (
-              <AccordionItem key={faq.q} value={`item-${i}`}>
-                <AccordionTrigger className="px-6 text-left">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent className="px-6">{faq.a}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
         </section>
       </main>
-
       <SiteFooter />
     </div>
   );

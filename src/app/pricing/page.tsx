@@ -1,102 +1,117 @@
-import { PageIntro } from "@/components/public/page-intro";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-
+import { ArrowRight, Braces, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SiteFooter } from "@/components/home/site-footer";
+import { Card, CardContent } from "@/components/ui/card";
 import { SiteHeader } from "@/components/home/site-header";
-import { PricingTable } from "@/components/pricing/pricing-table";
+import { SiteFooter } from "@/components/home/site-footer";
+import { partnerContact } from "@/lib/developers";
 
 export const metadata: Metadata = {
-  title: "方案與定價",
+  title: "Cross 方案與合作",
   description:
-    "Cross 診所方案與定價：免費建立院所資訊頁，標準方案開通線上預約與提醒，專業方案再加客戶分析與爽約風險評分，付費方案皆享 90 天免費試用。",
+    "Cross 預約工作流程單一方案 NT$3,000／月，設備、HIS 與客製整合依範圍報價。Design Partner 共同驗證實際流程。",
+  alternates: { canonical: "/pricing" },
 };
-
-const FAQS = [
-  {
-    q: "可以先試用嗎？",
-    a: "可以。新加入的診所都享 90 天免費全功能試用，由專人協助上架，確認合適再選擇付費方案。",
-  },
-  {
-    q: "方案可以隨時調整嗎？",
-    a: "可以。隨著營運規模成長，方案可彈性升級或調整，聯繫營運團隊即可協助處理。",
-  },
-  {
-    q: "費用怎麼計算？",
-    a: "標示價格已含稅，可選月繳或年繳。年繳一次支付、等於付 10 個月，相當於省下 2 個月費用。實際開通與計費方式會在專人聯繫時為您說明清楚。",
-  },
-];
 
 export default function PricingPage() {
   return (
-    <div className="public-page flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
-
       <main className="flex-1">
-        <PageIntro eyebrow="PLANS / 依照你的步調成長" title="找到適合你的方案" description="從建立專屬店家頁，到線上預約與日常管理，依需求選擇適合的功能。" />
-
-        {/* 方案卡 */}
-        <section className="home-container pt-10 pb-8 sm:pt-14">
-          <PricingTable />
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            價格已含稅；年繳一次支付、等於付 10 個月。新加入享 90 天免費試用，實際開通與計費方式由專人聯繫時說明。
+        <section className="home-container py-14 sm:py-20">
+          <p className="home-eyebrow">CROSS / PLANS & COLLABORATION</p>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
+            先選流程，再確認範圍。
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground">
+            預約工作流程使用單一 Cross
+            方案。API、設備與既有系統整合，依實際接入需求共同確認。
           </p>
-          <p className="mt-3 text-center text-sm text-muted-foreground">
-            訂閱取消與退費申請方式，請參閱
-            <Link href="/refund" className="ml-1 text-primary underline underline-offset-4">
+          <div className="mt-10 grid max-w-5xl gap-6 md:grid-cols-2">
+            <Card className="gap-0 py-0">
+              <CardContent className="p-8">
+                <p className="text-lg font-semibold">Cross</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  預約參考應用與日常工作流程
+                </p>
+                <p className="mt-7 text-4xl font-semibold tracking-tight">
+                  NT$3,000
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    ／月
+                  </span>
+                </p>
+                <ul className="mt-7 space-y-4">
+                  {[
+                    "Web 預約與院所服務頁",
+                    "排程、人員與服務管理",
+                    "預約紀錄與既有提醒流程",
+                  ].map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 text-sm"
+                    >
+                      <Check
+                        className="size-4 shrink-0 text-primary"
+                        aria-hidden="true"
+                      />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button asChild className="mt-8 w-full">
+                  <Link href="/join/apply">
+                    院所預約申請 <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
+                <p className="mt-4 text-xs leading-6 text-muted-foreground">
+                  開通與計費內容由團隊確認；本頁不提供直接付款。
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="gap-0 bg-accent/20 py-0 shadow-sm">
+              <CardContent className="p-8">
+                <Braces className="size-6 text-primary" aria-hidden="true" />
+                <h2 className="mt-5 text-xl font-semibold">
+                  API／HIS／設備整合
+                </h2>
+                <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                  依機型、接收規格與工作流程另外報價。本機開發者沙盒可先驗證事件接收與原生讀回，不代表所有正式整合已提供。
+                </p>
+                <Button asChild variant="outline" className="mt-7">
+                  <a href={partnerContact}>
+                    討論整合需求 <ArrowRight aria-hidden="true" />
+                  </a>
+                </Button>
+                <h2 className="mt-9 border-t border-border pt-6 text-lg font-semibold">
+                  Design Partner Program
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                  募集 3–5
+                  家共同開發夥伴，免費導入試點並一起驗證成果。範圍、期間與額外整合先共同確認。
+                </p>
+                <Link
+                  href="/join"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary"
+                >
+                  了解合作計畫{" "}
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+          <p className="mt-8 text-sm text-muted-foreground">
+            既有訂閱的取消與退款，請參閱
+            <Link
+              href="/refund"
+              className="ml-1 text-primary underline underline-offset-4"
+            >
               退款政策
             </Link>
             。
           </p>
         </section>
-
-        {/* FAQ */}
-        <section className="container mx-auto max-w-3xl px-4 py-16 sm:py-20">
-          <h2 className="mb-8 text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            關於方案的常見問題
-          </h2>
-          <div className="space-y-3">
-            {FAQS.map((faq) => (
-              <div
-                key={faq.q}
-                className="rounded-2xl bg-card p-5 shadow-sm ring-1 ring-foreground/5"
-              >
-                <h3 className="font-semibold text-foreground">{faq.q}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {faq.a}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="home-container pb-20">
-          <div className="relative overflow-hidden rounded-[2rem] bg-[#163b85] px-6 py-12 text-center text-white sm:py-16">
-            <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-3xl" />
-            <h2 className="relative text-2xl font-bold tracking-tight sm:text-3xl">
-              準備好讓更多人找到你了嗎？
-            </h2>
-            <p className="relative mx-auto mt-3 max-w-md text-primary-foreground/80">
-              填寫加入申請、輸入信箱驗證碼，後台立即開通；上架到民眾端通過審核即可。
-            </p>
-            <Button
-              asChild
-              size="lg"
-              variant="secondary"
-              className="group/cta relative mt-7"
-            >
-              <Link href="/join">
-                立即申請加入
-                <ArrowRight className="size-4 transition-transform group-hover/cta:translate-x-0.5" />
-              </Link>
-            </Button>
-          </div>
-        </section>
       </main>
-
       <SiteFooter />
     </div>
   );

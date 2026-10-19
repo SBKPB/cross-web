@@ -2,25 +2,42 @@
 // 比較 HTTP 狀態、<title>、description／robots／googlebot／keywords、canonical、全部 og:*、twitter:*
 // 與每段 JSON-LD；有任何差異就印出並 exit 1。
 //
-// 用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>]
-// 預覽受 Vercel Deployment Protection 保護時，設環境變數 VERCEL_AUTOMATION_BYPASS_SECRET；
-// 密鑰只會帶給預覽來源（每一跳轉址各自判斷），不會送往基準或第三方。
+// 用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>] [--routes <檔案>]
+// - 兩邊都以 Googlebot UA 抓取：Next 16 對一般 UA 會把 metadata 串流到 <body>，只有爬蟲才保證放在 <head>。
+// - meta 以「屬性:名稱」為鍵比對（property:og:title 與 name:og:title 視為不同）。
+// - 每個請求 30 秒逾時（環境變數 PARITY_FETCH_TIMEOUT_MS 可改），逾時的路由列為差異並以 exit 1 結束。
+// - 預覽受 Vercel Deployment Protection 保護時，設環境變數 VERCEL_AUTOMATION_BYPASS_SECRET；
+//   密鑰只會帶給預覽來源（每一跳轉址各自判斷），不會送往基準或第三方。
+// - --routes 預設為同資料夾的 routes.json（測試用來換成假路由）。
+//
+// auth 路由（routes.json 的 auth: true）這支會略過，只用 screenshot.mjs 比對，而且一律 local-vs-local：
+// 基準與預覽必須接同一個後端才能共用 token。沒有 --target-local 參數，等效用法是
+//   基準：舊 Next（../web-next-ref）BACKEND_URL=http://localhost:8001 pnpm start -p 3101
+//   預覽：本 repo pnpm build && BACKEND_URL=http://localhost:8001 pnpm preview --port 4173
+//   PARITY_TOKEN=… PARITY_REFRESH_TOKEN=… node scripts/parity/screenshot.mjs --base http://localhost:3101 --preview http://localhost:4173 --group <群組>
+// token 由本地 dev DB 測試帳號登入取得（後端 http://localhost:8001）；不要對 Vercel preview（接正式後端）跑 auth 路由。
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual, parseArgs } from "node:util";
 
 const PROD = "https://cross.twinhao.com";
+const GOOGLEBOT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+const TIMEOUT_MS = Number(process.env.PARITY_FETCH_TIMEOUT_MS ?? 30_000);
 const { values: args } = parseArgs({
   options: {
     base: { type: "string", default: "http://localhost:3100" },
     preview: { type: "string" },
     group: { type: "string" },
+    routes: { type: "string", default: fileURLToPath(new URL("./routes.json", import.meta.url)) },
   },
 });
 if (!args.preview) {
-  console.error("用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>]");
+  console.error(
+    "用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>] [--routes <檔案>]",
+  );
   process.exit(2);
 }
-const routes = JSON.parse(readFileSync(new URL("./routes.json", import.meta.url), "utf8"));
+const routes = JSON.parse(readFileSync(args.routes, "utf8"));
 if (args.group && !routes[args.group]) {
   console.error(`routes.json 沒有群組「${args.group}」`);
   process.exit(2);
@@ -29,14 +46,27 @@ const base = new URL(args.base).origin;
 const preview = new URL(args.preview).origin;
 const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
-/** 不自動跟隨轉址，每一跳都重新判斷是否帶密鑰（fetch 跨來源轉址會沿用自訂標頭） */
-async function get(url, follow) {
+/**
+ * 不自動跟隨轉址，每一跳都重新判斷是否帶密鑰（fetch 跨來源轉址會沿用自訂標頭）。
+ * 回傳 { res, text }：逾時涵蓋到讀完 body（signal 會中斷 body 串流），逾時的錯誤訊息含網址。
+ */
+async function get(url, { follow = false, body = true } = {}) {
   for (let hop = 0; ; hop++) {
-    const headers = BYPASS && new URL(url).origin === preview ? { "x-vercel-protection-bypass": BYPASS } : {};
-    const res = await fetch(url, { redirect: "manual", headers });
-    const location = res.headers.get("location");
-    if (!follow || !location || hop === 5) return res;
-    await res.body?.cancel();
+    const headers = { "user-agent": GOOGLEBOT };
+    if (BYPASS && new URL(url).origin === preview) headers["x-vercel-protection-bypass"] = BYPASS;
+    let location;
+    try {
+      const res = await fetch(url, { redirect: "manual", headers, signal: AbortSignal.timeout(TIMEOUT_MS) });
+      location = res.headers.get("location");
+      if (!follow || !location || hop === 5) {
+        const text = body ? await res.text() : (await res.body?.cancel(), "");
+        return { res, text };
+      }
+      await res.body?.cancel();
+    } catch (e) {
+      if (e?.name === "TimeoutError") throw new Error(`逾時（${TIMEOUT_MS / 1000} 秒）：${url}`);
+      throw e;
+    }
     url = new URL(location, url).href;
   }
 }
@@ -61,11 +91,11 @@ const IMAGES = new Set(["og:image", "twitter:image"]);
 
 /** 抓一頁並抽出要比對的標籤（以「鍵=值」字串表示，方便做集合比對）、分享圖網址與 JSON-LD */
 async function snapshot(origin, path) {
-  const res = await get(origin + path, false);
+  const { res, text } = await get(origin + path);
   // 站台網址一律換成正式網址再比（canonical、og:url 等），切換後兩邊就是同一個網域；
   // lookahead 避免 http://x:3100 誤換到 http://x:31000 之類的前綴
   const own = new RegExp(`${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w.:-])`, "g");
-  const html = (await res.text()).replace(own, PROD);
+  const html = text.replace(own, PROD);
   const location = res.headers.get("location");
   const entries = [`HTTP=${res.status}${location ? ` → ${location.replace(own, PROD)}` : ""}`];
   const images = [];
@@ -74,12 +104,25 @@ async function snapshot(origin, path) {
   for (const m of head.matchAll(/<title\b[^>]*>([\s\S]*?)<\/title>/gi)) entries.push(`title=${decode(m[1])}`);
   for (const m of head.matchAll(/<(meta|link)\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)) {
     const a = attrs(m[0]);
-    const key = m[1].toLowerCase() === "link" ? (a.rel === "canonical" ? "canonical" : null) : (a.property ?? a.name);
-    if (!key || !(key === "canonical" || NAMES.has(key) || /^(og|twitter):/.test(key))) continue;
-    const value = key === "canonical" ? a.href : a.content;
+    let key;
+    let value;
+    let name;
+    if (m[1].toLowerCase() === "link") {
+      if (a.rel !== "canonical") continue;
+      key = "canonical";
+      value = a.href;
+    } else {
+      // 鍵帶上屬性：property="og:title" 與 name="og:title" 對爬蟲不一定等價，要能比出差異
+      const attr = a.property !== undefined ? "property" : a.name !== undefined ? "name" : null;
+      if (!attr) continue;
+      name = a[attr];
+      if (!(NAMES.has(name) || /^(og|twitter):/.test(name))) continue;
+      key = `${attr}:${name}`;
+      value = a.content;
+    }
     // R6：分享圖只比「有沒有」，網址另外檢查能否取得
-    if (IMAGES.has(key)) images.push([key, value]);
-    entries.push(`${key}=${IMAGES.has(key) ? "<圖片>" : value}`);
+    if (IMAGES.has(name)) images.push([key, value]);
+    entries.push(`${key}=${IMAGES.has(name) ? "<圖片>" : value}`);
   }
   const jsonLd = [...html.matchAll(/<script\b[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => {
     try {
@@ -96,9 +139,8 @@ async function checkImage(origin, [key, value]) {
   const u = new URL(value, origin);
   const url = u.origin === PROD ? origin + u.pathname + u.search : u.href;
   try {
-    const res = await get(url, true);
+    const { res } = await get(url, { follow: true, body: false });
     const type = res.headers.get("content-type") ?? "";
-    await res.body?.cancel();
     return res.status === 200 && type.startsWith("image/") ? null : `${key} 無法取得：${url} → ${res.status} ${type}`;
   } catch (e) {
     return `${key} 無法取得：${url} → ${e.message}`;

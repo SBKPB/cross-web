@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { api, ApiError } from "../src/lib/api/client.ts";
+import { api, ApiError, MissingFetchError } from "../src/lib/api/client.ts";
 import { FALLBACK_TAXONOMY, serviceCategoriesApi } from "../src/lib/api/service-categories.ts";
 import { getAllClinics } from "../src/lib/seo/landing-data.ts";
 
@@ -60,7 +60,8 @@ test("server 端未傳 fetch 會丟出非 ApiError 的錯誤，且不送出請�
   globalThis.fetch = async () => { called++; return json({}); };
   t.after(() => { globalThis.fetch = realFetch; });
 
-  const isGuardError = (e) => !(e instanceof ApiError) && /未傳入 SvelteKit 的 fetch/.test(e.message);
+  const isGuardError = (e) =>
+    e instanceof MissingFetchError && !(e instanceof ApiError) && /未傳入 SvelteKit 的 fetch/.test(e.message);
   await assert.rejects(api.get("/api/v1/ping"), isGuardError);
   await assert.rejects(serviceCategoriesApi.get(), isGuardError);
   await assert.rejects(getAllClinics(), isGuardError);
@@ -74,4 +75,14 @@ test("有傳 fetch 但後端失敗時，fallback 行為照舊", async () => {
   assert.equal(await serviceCategoriesApi.get({ fetch: offline }), FALLBACK_TAXONOMY);
   assert.deepEqual(await getAllClinics({ fetch: down }), []);
   assert.deepEqual(await getAllClinics({ fetch: offline }), []);
+});
+
+// 舊版兩個包裝是 catch {} 全吞：非 ApiError 的錯誤（例如 200 但 body 不是 JSON、回傳格式不對）也要降級，
+// 只有「server 端漏傳 fetch」這種程式錯誤例外（上一個 server 端測試涵蓋）
+test("非 ApiError 的錯誤（壞 JSON、格式不對）同樣回 fallback", async () => {
+  const html = async () => new Response("<!doctype html><title>502</title>", { status: 200 });
+  const notArray = async () => json({ unexpected: true });
+  assert.equal(await serviceCategoriesApi.get({ fetch: html }), FALLBACK_TAXONOMY);
+  assert.deepEqual(await getAllClinics({ fetch: html }), []);
+  assert.deepEqual(await getAllClinics({ fetch: notArray }), []);
 });

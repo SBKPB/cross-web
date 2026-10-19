@@ -2,12 +2,13 @@
 	import "../app.css";
 	import { onMount } from "svelte";
 	import { ModeWatcher } from "mode-watcher";
-	import { afterNavigate, beforeNavigate } from "$app/navigation";
+	import { beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { env } from "$env/dynamic/public";
 	import { setAuth } from "$lib/auth/auth.svelte";
 	import SessionExpiredDialog from "$lib/components/auth/SessionExpiredDialog.svelte";
 	import Seo, { SITE_NAME, SITE_URL } from "$lib/components/Seo.svelte";
+	import { createSmoothScrollPause } from "$lib/navigation/smooth-scroll";
 	import { jsonLdScript } from "$lib/seo/serialize-json-ld";
 
 	let { children } = $props();
@@ -15,16 +16,9 @@
 	const auth = setAuth();
 	onMount(() => auth.init());
 
-	// 對應舊版 <html data-scroll-behavior="smooth">：換頁時暫停 CSS 平滑捲動，新頁面直接回到頂端，
-	// 不會從上一頁的位置慢慢滑上去；同頁 #錨點 連結仍維持平滑捲動。
-	beforeNavigate(({ to }) => {
-		if (to && to.url.pathname !== page.url.pathname) {
-			document.documentElement.style.scrollBehavior = "auto";
-		}
-	});
-	afterNavigate(() => {
-		document.documentElement.style.scrollBehavior = "";
-	});
+	// 對應舊版 <html data-scroll-behavior="smooth">：除了同 path + search 的純 hash 導航外，換頁期間暫停 CSS 平滑捲動，
+	// 新頁面直接回到頂端，不會從上一頁的位置慢慢滑上去；navigation.complete settle 時還原（含被取消或中止）。
+	beforeNavigate(createSmoothScrollPause(() => document.documentElement));
 
 	// 全站結構化資料：Organization + WebSite（@id 互相連結）
 	const SITE_JSONLD = {

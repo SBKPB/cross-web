@@ -138,17 +138,19 @@ export function getAuth(): Auth {
  * - 後台帳號（系統管理員 / 院所使用者）→ 導回其後台首頁，避免後台帳號出現在民眾端
  *
  * 需在元件初始化時呼叫。
- * @param nextPath 未登入時登入完成後要返回的路徑
+ * @param nextPath 回傳「未登入時登入完成後要返回的路徑」的 getter，例如 `() => "/member/appointments/" + id`。
+ *   在 $effect 內讀取：路徑改變（例如 [id] 參數換了）時守衛會重跑，對應舊版 useEffect 依賴 nextPath。
  * @returns ready — 是否已確認為「可顯示民眾端內容」的狀態，用來 gate 畫面與資料請求
  */
-export function requireMember(nextPath: string): { readonly ready: boolean } {
+export function requireMember(nextPath: () => string): { readonly ready: boolean } {
 	const auth = getAuth();
 	const ready = $derived(!auth.isLoading && auth.isAuthenticated && !canAccessAdmin(auth.user));
 
 	$effect(() => {
+		const next = nextPath();
 		if (auth.isLoading) return;
 		if (!auth.isAuthenticated) {
-			goto(`/auth?next=${encodeURIComponent(nextPath)}`, { replaceState: true });
+			goto(`/auth?next=${encodeURIComponent(next)}`, { replaceState: true });
 			return;
 		}
 		if (canAccessAdmin(auth.user)) {
@@ -163,7 +165,7 @@ export function requireMember(nextPath: string): { readonly ready: boolean } {
 	};
 }
 
-/** 系統管理員頁面守衛（移植自 use-require-system-admin.ts）。需在元件初始化時呼叫。 */
+/** 系統管理員頁面守衛（移植自 use-require-system-admin.ts，舊版就沒有參數）。需在元件初始化時呼叫。 */
 export function requireSystemAdmin(): void {
 	const auth = getAuth();
 

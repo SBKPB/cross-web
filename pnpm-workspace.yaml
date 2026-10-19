@@ -1,5 +1,8 @@
 packages:
   - .
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+# 只允許 esbuild 執行安裝腳本（下載平台二進位檔），其餘依賴一律不跑，且 pnpm install 不再報 ERR_PNPM_IGNORED_BUILDS。
+# pnpm 11 起讀 allowBuilds；onlyBuiltDependencies 給仍讀舊鍵的 pnpm 10（例如 Vercel 依 lockfile v9 選用的版本）。
+allowBuilds:
+  esbuild: true
+onlyBuiltDependencies:
+  - esbuild

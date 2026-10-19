@@ -1,51 +1,46 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
+import { createServer } from "node:http";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright-core";
+import { BYPASS_HEADER, BYPASS_PERMISSIONS, routeBypass } from "../scripts/parity/bypass.mjs";
+import { buildProblem, CHROME, startPreview } from "./support/built-app.mjs";
 
 // 既有使用者主題偏好（Review Focus 2）：localStorage.theme 已存的值必須在首屏就套用，
 // 不能等 hydration 才切換（否則深色使用者會先閃一下白）。
-// 對 `pnpm build` 的產物跑 `vite preview`；設 THEME_TEST_URL 則改打該網址（例如 preview 部署）。
-const CHROME =
-  process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+// 對 `pnpm build` 的產物跑 `vite preview`（產物不存在或比來源舊就明確失敗）；設 THEME_TEST_URL 則改打該網址（例如 preview 部署）。
 const PORT = Number(process.env.THEME_TEST_PORT ?? 4319);
-const BASE = process.env.THEME_TEST_URL ?? `http://localhost:${PORT}`;
+const REMOTE = process.env.THEME_TEST_URL;
 const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
-const missing = !existsSync(CHROME)
-  ? `找不到 Chrome：${CHROME}`
-  : !process.env.THEME_TEST_URL && !existsSync(".svelte-kit/output/client")
-    ? "沒有建置產物，請先執行 pnpm build"
-    : null;
+const noChrome = existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}`;
+const problem = REMOTE ? null : buildProblem();
 
-let server;
+let preview;
 let browser;
+let base;
 
 before(async () => {
-  if (missing) return;
-  if (!process.env.THEME_TEST_URL) {
-    server = spawn("pnpm", ["exec", "vite", "preview", "--port", String(PORT), "--strictPort"], {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("vite preview 啟動逾時")), 30_000);
-      server.stdout.on("data", (chunk) => {
-        if (String(chunk).includes(`${PORT}`)) {
-          clearTimeout(timer);
-          resolve();
-        }
-      });
-      server.on("exit", (code) => reject(new Error(`vite preview 結束（${code}）`)));
-    });
-  }
+  if (noChrome) return;
   browser = await chromium.launch({ executablePath: CHROME });
+  if (REMOTE) base = new URL(REMOTE).origin;
+  else if (!problem) {
+    preview = await startPreview(PORT);
+    base = preview.origin;
+  }
 });
 
 after(async () => {
   await browser?.close();
-  server?.kill();
+  preview?.stop();
 });
+
+/** 測試用 context：bypass 密鑰只帶給受測站台 origin（與 screenshot.mjs 同一套做法，見 bypass.mjs） */
+async function newContext(origin, secret, options = {}) {
+  const context = await browser.newContext({ ...options, permissions: BYPASS_PERMISSIONS });
+  if (secret) await routeBypass(context, origin, secret);
+  return context;
+}
 
 // [localStorage.theme, 系統偏好, 預期是否為深色]；系統偏好刻意與儲存值相反，證明是儲存值生效
 const CASES = [
@@ -57,34 +52,30 @@ const CASES = [
 for (const [stored, colorScheme, expectDark] of CASES) {
   test(
     `localStorage.theme=${stored}（系統 ${colorScheme}）首屏即${expectDark ? "" : "不"}套用 .dark`,
-    { skip: missing ?? false },
+    { skip: noChrome },
     async () => {
-      const context = await browser.newContext({ colorScheme });
-      if (BYPASS) {
-        // bypass 密鑰只帶給受測站台本身，不能用 extraHTTPHeaders（會一併送往 Google Fonts 等第三方）
-        await context.route(`${new URL(BASE).origin}/**`, (route) =>
-          route.continue({
-            headers: { ...route.request().headers(), "x-vercel-protection-bypass": BYPASS },
-          }),
-        );
-      }
+      if (problem) assert.fail(problem);
+      const context = await newContext(base, BYPASS, { colorScheme });
       const page = await context.newPage();
-      await page.goto(`${BASE}/`);
+      await page.goto(`${base}/`);
       await page.evaluate((t) => localStorage.setItem("theme", t), stored);
 
-      // 記錄 <body> 剛插入時（首次可繪製前）與 DOMContentLoaded 時 <html> 的 dark class
+      // 記錄 <body> 剛插入時（首次可繪製前）與 DOMContentLoaded 時 <html> 的 dark class 與 color-scheme
       await page.addInitScript(() => {
         // init script 執行時 documentElement 可能還不存在，故觀察 document 本身
-        const isDark = () => document.documentElement.classList.contains("dark");
+        const snapshot = () => ({
+          dark: document.documentElement.classList.contains("dark"),
+          colorScheme: document.documentElement.style.colorScheme,
+        });
         const observer = new MutationObserver(() => {
           if (document.body) {
-            window.atBody = isDark();
+            window.atBody = snapshot();
             observer.disconnect();
           }
         });
         observer.observe(document, { childList: true, subtree: true });
         document.addEventListener("DOMContentLoaded", () => {
-          window.atDCL = isDark();
+          window.atDCL = snapshot();
         });
       });
       // 擋掉 SvelteKit 的 client JS：只靠 <head> 內同步腳本也必須正確，證明不依賴 hydration
@@ -92,8 +83,42 @@ for (const [stored, colorScheme, expectDark] of CASES) {
 
       await page.reload();
       const result = await page.evaluate(() => ({ atBody: window.atBody, atDCL: window.atDCL }));
-      assert.deepEqual(result, { atBody: expectDark, atDCL: expectDark });
+      // color-scheme 決定原生表單元件、捲軸的配色；淺色偏好在系統深色時也必須是 light
+      const expected = { dark: expectDark, colorScheme: expectDark ? "dark" : "light" };
+      assert.deepEqual(result, { atBody: expected, atDCL: expected });
       await context.close();
     },
   );
 }
+
+// 受測站轉址到第三方時，密鑰不能跟著轉址送出（route.continue 的標頭覆寫會沿用到轉址後的請求）
+test("bypass 密鑰只送受測站：302 到第三方本地 server 時第三方收不到", { skip: noChrome }, async () => {
+  const SECRET = "theme-test-secret";
+  const seen = { target: [], third: [] };
+  const listen = async (handler) => {
+    const server = createServer(handler);
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    return { server, origin: `http://127.0.0.1:${server.address().port}` };
+  };
+  const third = await listen((req, res) => {
+    seen.third.push({ path: req.url, bypass: req.headers[BYPASS_HEADER] });
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" }).end("<!doctype html><h1>第三方</h1>");
+  });
+  const target = await listen((req, res) => {
+    seen.target.push({ path: req.url, bypass: req.headers[BYPASS_HEADER] });
+    res.writeHead(302, { location: `${third.origin}/landing` }).end();
+  });
+  try {
+    const context = await newContext(target.origin, SECRET);
+    const page = await context.newPage();
+    await page.goto(`${target.origin}/`);
+    assert.equal(page.url(), `${third.origin}/landing`);
+    await context.close();
+    assert.deepEqual(seen.target, [{ path: "/", bypass: SECRET }]);
+    assert.ok(seen.third.some((r) => r.path === "/landing"), JSON.stringify(seen.third));
+    assert.ok(seen.third.every((r) => r.bypass === undefined), `第三方收到密鑰：${JSON.stringify(seen.third)}`);
+  } finally {
+    target.server.close();
+    third.server.close();
+  }
+});

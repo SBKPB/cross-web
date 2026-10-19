@@ -1,4 +1,4 @@
-import { api, ApiError } from "../api/client.ts";
+import { api, MissingFetchError } from "../api/client.ts";
 import { parseCityFromAddress } from "../constants/clinic-constants.ts";
 import { isDemoClinic } from "../clinic-discovery.ts";
 import type { FacilityType, PaymentType } from "../types/clinic.ts";
@@ -45,7 +45,8 @@ export async function getAllClinics(opts?: { fetch?: typeof globalThis.fetch }):
       is_featured: c.is_featured ?? false,
     }));
   } catch (e) {
-    if (!(e instanceof ApiError)) throw e; // 漏傳 fetch 等程式錯誤不降級（見 client.ts）
+    // 與舊版相同：任何錯誤都回空清單；唯獨 server 端漏傳 fetch 是程式錯誤，必須穿透（見 client.ts）
+    if (e instanceof MissingFetchError) throw e;
     return [];
   }
 }

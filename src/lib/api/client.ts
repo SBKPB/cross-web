@@ -34,6 +34,17 @@ class ApiError extends Error {
   }
 }
 
+/**
+ * server 端呼叫沒傳 SvelteKit 的 fetch（相對路徑必定打不到代理）。這是程式錯誤，
+ * serviceCategoriesApi.get / getAllClinics 等「任何錯誤都降級」的包裝必須讓它穿透，不能靜默吞掉。
+ */
+class MissingFetchError extends Error {
+  constructor(endpoint: string) {
+    super(`[api] server 端呼叫 ${endpoint} 未傳入 SvelteKit 的 fetch`);
+    this.name = "MissingFetchError";
+  }
+}
+
 // ---------- Silent refresh：dedupe 並行 refresh 請求 ----------
 // 多個 request 同時 401 時，只跑一次 /auth/refresh，其他人 await 同一個 promise
 let refreshPromise: Promise<boolean> | null = null;
@@ -81,10 +92,10 @@ async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  // server 端沒傳 SvelteKit 的 fetch：相對路徑必定打不到代理。丟一般 Error（非 ApiError），
+  // server 端沒傳 SvelteKit 的 fetch：相對路徑必定打不到代理。丟 MissingFetchError（非 ApiError），
   // 讓 serviceCategoriesApi.get / getAllClinics 的 fallback 不會把漏傳靜默吞掉
   if (typeof window === "undefined" && !options.fetch) {
-    throw new Error(`[api] server 端呼叫 ${endpoint} 未傳入 SvelteKit 的 fetch`);
+    throw new MissingFetchError(endpoint);
   }
   const { params, _retried, fetch: fetchImpl = globalThis.fetch, ...fetchOptions } = options;
 
@@ -198,4 +209,4 @@ export const api = {
     request<T>(endpoint, { ...options, method: "DELETE" }),
 };
 
-export { ApiError };
+export { ApiError, MissingFetchError };

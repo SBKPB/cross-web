@@ -1,4 +1,4 @@
-import { api, ApiError } from "./client.ts";
+import { api, MissingFetchError } from "./client.ts";
 import type { FacilityType, PaymentType } from "../types/clinic.ts";
 
 // ========== 服務分類字彙（單一來源，對應後端 GET /api/v1/service-categories） ==========
@@ -103,7 +103,8 @@ export const serviceCategoriesApi = {
       // server 端 load 傳入 SvelteKit 的 fetch（見 client.ts）
       return await api.get<ServiceTaxonomy>("/api/v1/service-categories", opts);
     } catch (e) {
-      if (!(e instanceof ApiError)) throw e; // 漏傳 fetch 等程式錯誤不降級（見 client.ts）
+      // 與舊版相同：任何錯誤都降級；唯獨 server 端漏傳 fetch 是程式錯誤，必須穿透（見 client.ts）
+      if (e instanceof MissingFetchError) throw e;
       return FALLBACK_TAXONOMY;
     }
   },

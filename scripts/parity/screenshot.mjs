@@ -2,11 +2,16 @@
 // 存到 <out>/<群組>/<路由>.<情境>.{base,preview,diff}.png，並印出像素差異比例（供人工確認）。
 //
 // 用法：node scripts/parity/screenshot.mjs --preview <url> [--base <url>] [--group <群組>] [--out <資料夾>] [--routes <檔案>]
-// - auth 路由需設 PARITY_TOKEN（access token），可再設 PARITY_REFRESH_TOKEN；只注入基準與預覽來源的
+// - auth 路由需設 PARITY_TOKEN（access token）與 PARITY_REFRESH_TOKEN；只注入基準與預覽來源的
 //   localStorage.access_token／refresh_token。沒設 PARITY_TOKEN 就略過。
+// - auth 路由一律 local-vs-local：基準與預覽必須接同一個後端才能共用 token。沒有 --target-local 參數，等效用法是
+//     基準：舊 Next（../web-next-ref）BACKEND_URL=http://localhost:8001 pnpm start -p 3101
+//     預覽：本 repo pnpm build && BACKEND_URL=http://localhost:8001 pnpm preview --port 4173
+//     PARITY_TOKEN=… PARITY_REFRESH_TOKEN=… node scripts/parity/screenshot.mjs --base http://localhost:3101 --preview http://localhost:4173 --group <群組>
+//   token 由本地 dev DB 測試帳號登入取得（後端 http://localhost:8001）；不要對 Vercel preview（接正式後端）跑 auth 路由。
 // - 最後停留的路徑和要求的不同（例如 token 過期被導去 /auth）就列為錯誤，不算差異比例。
-// - 預覽受 Vercel Deployment Protection 保護時設 VERCEL_AUTOMATION_BYPASS_SECRET；密鑰只加在送往預覽來源的請求，
-//   不用 extraHTTPHeaders（會送往 Google Fonts 等第三方），也不用 route.continue（標頭會沿用到跨來源轉址）。
+// - 預覽受 Vercel Deployment Protection 保護時設 VERCEL_AUTOMATION_BYPASS_SECRET；密鑰只加在送往預覽來源的請求
+//   （做法見 bypass.mjs：不用 extraHTTPHeaders，也不用 route.continue）。
 // - 像素比對在瀏覽器的 canvas 裡做，不另裝影像套件。
 // - --routes 預設為同資料夾的 routes.json（測試用來換成假路由）。
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -14,6 +19,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright-core";
+import { BYPASS_PERMISSIONS, routeBypass } from "./bypass.mjs";
 
 const CHROME =
   process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -56,28 +62,10 @@ const TOLERANCE = 8;
 const browser = await chromium.launch({ executablePath: CHROME });
 
 async function shot(origin, path, variant, options, auth) {
-  // route.fulfill 回應的頁面會被 Chrome 視為公網來源，連 loopback（本機基準、測試用伺服器）會被
-  // Local Network Access 擋下，所以允許 local-network-access
-  const context = await browser.newContext({
-    ...options,
-    deviceScaleFactor: 1,
-    permissions: ["local-network-access"],
-  });
+  // 密鑰只帶給預覽來源（見 bypass.mjs）；route.fulfill 的頁面連 loopback 需要 local-network-access 權限
+  const context = await browser.newContext({ ...options, deviceScaleFactor: 1, permissions: BYPASS_PERMISSIONS });
   if (BYPASS) {
-    // route.fetch 不跟隨轉址：轉址交回瀏覽器重新發請求，每一跳再由這個條件決定是否帶密鑰
-    await context.route(
-      (url) => url.origin === preview,
-      async (route) => {
-        const headers = { ...route.request().headers(), "x-vercel-protection-bypass": BYPASS };
-        try {
-          await route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-        } catch {
-          // 錯誤訊息的 call log 會列出所有請求標頭（含密鑰），只印網址
-          console.log(`預覽請求失敗：${route.request().url()}`);
-          await route.abort().catch(() => {});
-        }
-      },
-    );
+    await routeBypass(context, preview, BYPASS, { onError: (url) => console.log(`預覽請求失敗：${url}`) });
   }
   await context.addInitScript(
     ({ origins, theme, token, refresh }) => {

@@ -1,4 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["sin1"]
+  "framework": "sveltekit",
+  "regions": ["sin1"],
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://cross-backend-vrqytyiqxq-de.a.run.app/api/v1/:path*"
+    }
+  ]
 }

@@ -1,0 +1,302 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* 首頁專用版面節奏，不影響院所與管理後台。 */
+@utility home-container {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 4vw, 40px);
+}
+
+@utility home-section {
+  padding-block: clamp(56px, 7vw, 96px);
+}
+
+@utility home-eyebrow {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+}
+
+@utility home-heading {
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+/* dark 變體：同時匹配 .dark 本身（掛在 <html> 上）與其後代，next-themes 才能正確驅動 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), var(--font-noto-sans-tc), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* Luma radius scale — exponential, 圓到具有「macOS Tahoe 感」 */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --radius: 0.625rem;
+  /* shadcn/Luma tokens 指向 Cross 的 n-* 品牌色，讓 Luma 元件繼承 Cross 配色 */
+  --background: #f8fafc;           /* n-main */
+  --foreground: #0f172a;           /* n-heading */
+  --card: #ffffff;                 /* n-card */
+  --card-foreground: #0f172a;      /* n-heading */
+  --popover: #ffffff;              /* n-dialog */
+  --popover-foreground: #0f172a;   /* n-heading */
+  --primary: #1d4ed8;              /* n-brand */
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;            /* n-section */
+  --secondary-foreground: #334155; /* n-body */
+  --muted: #f1f5f9;                /* n-section */
+  --muted-foreground: #586273;     /* n-secondary（加深：在 bg-muted 上達 WCAG AA ≥4.5:1） */
+  --accent: #dbeafe;               /* n-brand-soft */
+  --accent-foreground: #1d4ed8;    /* n-brand */
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #e2e8f0;               /* n-border */
+  --input: #e2e8f0;                /* n-border（Luma input 用 bg-input/50，會變成 #e2e8f0 半透明） */
+  --ring: #1d4ed8;                 /* n-brand */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  /* Aurora 後台側欄：白底、品牌藍 active（呼應首頁白 header） */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #334155;          /* slate-700 導覽文字 */
+  --sidebar-primary: #1d4ed8;             /* 品牌藍 */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eff4ff;              /* active 淡藍底 */
+  --sidebar-accent-foreground: #1d4ed8;   /* active 藍字 */
+  --sidebar-border: #e5eaf2;
+  --sidebar-ring: #1d4ed8;
+}
+
+/* 深色模式沿用亮色的 slate + 品牌藍語意，只是把明度反過來。
+   關鍵：--primary 在深色改用「亮藍」而非原廠灰階（原本是近白色 oklch(0.922 0 0)，
+   會讓 text-primary 的強調字、搜尋按鈕、作用中 tab 全部變成白底白字）。
+   亮藍當底時前景要用深色，故 --primary-foreground 同步改深。 */
+.dark {
+  --background: #0f172a;           /* slate-900，對應亮色 n-main */
+  --foreground: #f1f5f9;           /* slate-100 */
+  --card: #1e293b;                 /* slate-800，比背景亮一階（與亮色同邏輯） */
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #60a5fa;              /* blue-400；在 slate-900 上 7.4:1，當文字也讀得到 */
+  --primary-foreground: #0b1220;   /* 亮藍底上的深色前景（白字只有 2.3:1，不可用） */
+  --secondary: #1e293b;
+  --secondary-foreground: #cbd5e1;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;     /* slate-400，在 card/background 上皆 ≥6:1 */
+  --accent: #1e3a8a;               /* blue-900，對應亮色 n-brand-soft */
+  --accent-foreground: #bfdbfe;    /* blue-200 */
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #334155;               /* slate-700 */
+  --input: #334155;
+  --ring: #60a5fa;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #1e293b;
+  --sidebar-foreground: #cbd5e1;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #0b1220;
+  --sidebar-accent: #1e3a8a;
+  --sidebar-accent-foreground: #bfdbfe;
+  --sidebar-border: #334155;
+  --sidebar-ring: #60a5fa;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* === Brand Theme === */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Radix Accordion 動畫（tailwind v4 無預設） */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+.animate-accordion-down { animation: accordion-down 0.2s ease-out; }
+.animate-accordion-up { animation: accordion-up 0.2s ease-out; }
+
+/* === Aurora 後台 === */
+/* 內容區頂部 airy 柔光暈（呼應首頁 hero 的明亮空氣感） */
+.admin-canvas {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--primary) 6%, transparent),
+    transparent 320px
+  );
+}
+
+/* === /join 功能迷你 demo 的循環動畫 ===
+   一個共用 keyframe：淡入上移 → 停留 → 淡出重來。各元素只改 animation-delay
+   形成順序感（同 duration 故長期不會走鐘）。只在 motion-safe 下套用，
+   偏好減少動態時元素維持原樣即可，不需另外還原 opacity。 */
+@keyframes demo-step {
+  0%, 6% { opacity: 0; transform: translateY(4px); }
+  14%, 88% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(4px); }
+}
+
+/* 風險條：從 0 長到各自寬度（寬度由 --demo-w 帶入） */
+@keyframes demo-grow {
+  0%, 10% { width: 0; }
+  30%, 88% { width: var(--demo-w); }
+  100% { width: 0; }
+}
+
+/* === 玻璃層（民眾端）===
+   克制版 glassmorphism：只用在「結構性／浮動」表面（頁首、hero 搜尋卡、
+   底部固定列、dialog 遮罩），**不用在內容承載面**（診所卡、表格、輸入框、
+   狀態藥丸）——半透明會讓文字對比隨背景浮動，這站上有病患姓名與電話，
+   可讀性不能拿去換質感。
+
+   saturate 是關鍵：只有 blur 會得到一片乳白，把背後顏色的飽和度拉高才像
+   真的玻璃透出後面的東西。 */
+.glass {
+  background: color-mix(in srgb, var(--card) 68%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  /* 上緣亮邊：模擬光打在玻璃厚度上，是「有厚度」與「只是半透明」的差別 */
+  border: 1px solid color-mix(in srgb, #ffffff 55%, transparent);
+  box-shadow:
+    0 8px 32px -8px color-mix(in srgb, var(--foreground) 12%, transparent),
+    inset 0 1px 0 0 color-mix(in srgb, #ffffff 45%, transparent);
+}
+
+.dark .glass {
+  background: color-mix(in srgb, var(--card) 62%, transparent);
+  border-color: color-mix(in srgb, #ffffff 10%, transparent);
+  box-shadow:
+    0 8px 32px -8px rgb(0 0 0 / 0.45),
+    inset 0 1px 0 0 color-mix(in srgb, #ffffff 8%, transparent);
+}
+
+/* 頁首／底部固定列：貼邊元素只需要一條邊，不要四邊框 */
+.glass-bar {
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(180%);
+}
+.dark .glass-bar {
+  background: color-mix(in srgb, var(--background) 68%, transparent);
+}
+
+/* 不支援 backdrop-filter 的環境（部分 Android WebView、舊 Firefox）：
+   退成不透明，否則會變成一片洗白的半透明色、文字直接不可讀。 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--card); }
+  .glass-bar { background: var(--background); }
+}
+
+/* 使用者要求減少透明效果時一律給實色（macOS/iOS 的「降低透明度」、Windows 的
+   透明效果開關都會送出這個）。這不是可選的貼心，是 a11y 設定。 */
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .glass-bar {
+    background: var(--background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* 民眾端與合作夥伴頁共用的品牌樣式，避免改動管理後台。 */
+@layer components {
+  .public-page [data-slot="card"] {
+    border-radius: 1.5rem;
+    box-shadow: none;
+    border: 1px solid var(--border);
+  }
+  .public-page [data-slot="input"],
+  .public-page [data-slot="select-trigger"],
+  .public-page [data-slot="textarea"] {
+    border-radius: 0.875rem;
+  }
+  .public-page [data-slot="button"] {
+    border-radius: 999px;
+  }
+  .public-page [data-slot="badge"] {
+    border-radius: 999px;
+  }
+  .public-page :is(section, h2, div)[id] {
+    scroll-margin-top: 6.5rem;
+  }
+  .public-page .policy-body > section + section {
+    border-top: 1px solid var(--border);
+    padding-top: 1.75rem;
+  }
+}

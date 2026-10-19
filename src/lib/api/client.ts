@@ -81,6 +81,11 @@ async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
+  // server 端沒傳 SvelteKit 的 fetch：相對路徑必定打不到代理。丟一般 Error（非 ApiError），
+  // 讓 serviceCategoriesApi.get / getAllClinics 的 fallback 不會把漏傳靜默吞掉
+  if (typeof window === "undefined" && !options.fetch) {
+    throw new Error(`[api] server 端呼叫 ${endpoint} 未傳入 SvelteKit 的 fetch`);
+  }
   const { params, _retried, fetch: fetchImpl = globalThis.fetch, ...fetchOptions } = options;
 
   let url = `${API_BASE_URL}${endpoint}`;

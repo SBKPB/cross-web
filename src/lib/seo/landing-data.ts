@@ -1,4 +1,4 @@
-import { api } from "../api/client.ts";
+import { api, ApiError } from "../api/client.ts";
 import { parseCityFromAddress } from "../constants/clinic-constants.ts";
 import { isDemoClinic } from "../clinic-discovery.ts";
 import type { FacilityType, PaymentType } from "../types/clinic.ts";
@@ -44,7 +44,8 @@ export async function getAllClinics(opts?: { fetch?: typeof globalThis.fetch }):
       phone: c.phone ?? null,
       is_featured: c.is_featured ?? false,
     }));
-  } catch {
+  } catch (e) {
+    if (!(e instanceof ApiError)) throw e; // 漏傳 fetch 等程式錯誤不降級（見 client.ts）
     return [];
   }
 }

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { api } from "../src/lib/api/client.ts";
+import { api, ApiError } from "../src/lib/api/client.ts";
+import { FALLBACK_TAXONOMY, serviceCategoriesApi } from "../src/lib/api/service-categories.ts";
+import { getAllClinics } from "../src/lib/seo/landing-data.ts";
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -49,4 +51,27 @@ test("並行三個 401 只呼叫一次 /auth/refresh", async (t) => {
   assert.deepEqual(authHeaders, ["Bearer old", "Bearer old", "Bearer old", "Bearer new", "Bearer new", "Bearer new"]);
   assert.equal(store.get("access_token"), "new");
   assert.equal(store.get("refresh_token"), "r2");
+});
+
+// server 端（無 window）漏傳 SvelteKit fetch：相對路徑必定打不到代理，須大聲失敗，不能被 fallback 吞掉
+test("server 端未傳 fetch 會丟出非 ApiError 的錯誤，且不送出請求", async (t) => {
+  const realFetch = globalThis.fetch;
+  let called = 0;
+  globalThis.fetch = async () => { called++; return json({}); };
+  t.after(() => { globalThis.fetch = realFetch; });
+
+  const isGuardError = (e) => !(e instanceof ApiError) && /未傳入 SvelteKit 的 fetch/.test(e.message);
+  await assert.rejects(api.get("/api/v1/ping"), isGuardError);
+  await assert.rejects(serviceCategoriesApi.get(), isGuardError);
+  await assert.rejects(getAllClinics(), isGuardError);
+  assert.equal(called, 0);
+});
+
+test("有傳 fetch 但後端失敗時，fallback 行為照舊", async () => {
+  const down = async () => json({ detail: "boom" }, 500);
+  const offline = async () => { throw new TypeError("fetch failed"); };
+  assert.equal(await serviceCategoriesApi.get({ fetch: down }), FALLBACK_TAXONOMY);
+  assert.equal(await serviceCategoriesApi.get({ fetch: offline }), FALLBACK_TAXONOMY);
+  assert.deepEqual(await getAllClinics({ fetch: down }), []);
+  assert.deepEqual(await getAllClinics({ fetch: offline }), []);
 });

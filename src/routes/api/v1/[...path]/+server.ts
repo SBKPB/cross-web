@@ -56,3 +56,6 @@ export const PATCH = handler;
 export const DELETE = handler;
 export const HEAD = handler;
 export const OPTIONS = handler;
+
+// 不對 /api/v1 做尾斜線正規化（否則會 308 改寫路徑）
+export const trailingSlash = 'ignore';

@@ -59,10 +59,15 @@ for (const [stored, colorScheme, expectDark] of CASES) {
     `localStorage.theme=${stored}（系統 ${colorScheme}）首屏即${expectDark ? "" : "不"}套用 .dark`,
     { skip: missing ?? false },
     async () => {
-      const context = await browser.newContext({
-        colorScheme,
-        extraHTTPHeaders: BYPASS ? { "x-vercel-protection-bypass": BYPASS } : {},
-      });
+      const context = await browser.newContext({ colorScheme });
+      if (BYPASS) {
+        // bypass 密鑰只帶給受測站台本身，不能用 extraHTTPHeaders（會一併送往 Google Fonts 等第三方）
+        await context.route(`${new URL(BASE).origin}/**`, (route) =>
+          route.continue({
+            headers: { ...route.request().headers(), "x-vercel-protection-bypass": BYPASS },
+          }),
+        );
+      }
       const page = await context.newPage();
       await page.goto(`${BASE}/`);
       await page.evaluate((t) => localStorage.setItem("theme", t), stored);

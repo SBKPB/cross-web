@@ -1,11 +1,14 @@
 // 截圖比對：每條路由以 淺色 1280／深色 1280／淺色 375 三種情境，各截「基準」與「預覽」整頁圖，
 // 存到 <out>/<群組>/<路由>.<情境>.{base,preview,diff}.png，並印出像素差異比例（供人工確認）。
 //
-// 用法：node scripts/parity/screenshot.mjs --preview <url> [--base <url>] [--group <群組>] [--out <資料夾>]
-// - auth 路由需設 PARITY_TOKEN（access token），只注入基準與預覽來源的 localStorage.access_token；沒設就略過。
+// 用法：node scripts/parity/screenshot.mjs --preview <url> [--base <url>] [--group <群組>] [--out <資料夾>] [--routes <檔案>]
+// - auth 路由需設 PARITY_TOKEN（access token），可再設 PARITY_REFRESH_TOKEN；只注入基準與預覽來源的
+//   localStorage.access_token／refresh_token。沒設 PARITY_TOKEN 就略過。
+// - 最後停留的路徑和要求的不同（例如 token 過期被導去 /auth）就列為錯誤，不算差異比例。
 // - 預覽受 Vercel Deployment Protection 保護時設 VERCEL_AUTOMATION_BYPASS_SECRET；密鑰只加在送往預覽來源的請求，
 //   不用 extraHTTPHeaders（會送往 Google Fonts 等第三方），也不用 route.continue（標頭會沿用到跨來源轉址）。
 // - 像素比對在瀏覽器的 canvas 裡做，不另裝影像套件。
+// - --routes 預設為同資料夾的 routes.json（測試用來換成假路由）。
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,16 +22,17 @@ const { values: args } = parseArgs({
     base: { type: "string", default: "http://localhost:3100" },
     preview: { type: "string" },
     group: { type: "string" },
+    routes: { type: "string", default: fileURLToPath(new URL("./routes.json", import.meta.url)) },
     out: { type: "string", default: fileURLToPath(new URL("./out", import.meta.url)) },
   },
 });
 if (!args.preview) {
   console.error(
-    "用法：node scripts/parity/screenshot.mjs --preview <url> [--base <url>] [--group <群組>] [--out <資料夾>]",
+    "用法：node scripts/parity/screenshot.mjs --preview <url> [--base <url>] [--group <群組>] [--out <資料夾>] [--routes <檔案>]",
   );
   process.exit(2);
 }
-const routes = JSON.parse(readFileSync(new URL("./routes.json", import.meta.url), "utf8"));
+const routes = JSON.parse(readFileSync(args.routes, "utf8"));
 if (args.group && !routes[args.group]) {
   console.error(`routes.json 沒有群組「${args.group}」`);
   process.exit(2);
@@ -37,6 +41,9 @@ const base = new URL(args.base).origin;
 const preview = new URL(args.preview).origin;
 const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const TOKEN = process.env.PARITY_TOKEN;
+const REFRESH = process.env.PARITY_REFRESH_TOKEN;
+// 錯誤訊息可能夾帶請求標頭（Playwright 的 call log），印出前遮掉密鑰與 token
+const redact = (text) => [BYPASS, TOKEN, REFRESH].reduce((t, v) => (v ? t.replaceAll(v, "***") : t), text);
 
 const VARIANTS = [
   ["light", { viewport: { width: 1280, height: 800 }, colorScheme: "light" }],
@@ -62,17 +69,29 @@ async function shot(origin, path, variant, options, auth) {
       (url) => url.origin === preview,
       async (route) => {
         const headers = { ...route.request().headers(), "x-vercel-protection-bypass": BYPASS };
-        await route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
+        try {
+          await route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
+        } catch {
+          // 錯誤訊息的 call log 會列出所有請求標頭（含密鑰），只印網址
+          console.log(`預覽請求失敗：${route.request().url()}`);
+          await route.abort().catch(() => {});
+        }
       },
     );
   }
   await context.addInitScript(
-    ({ origins, theme, token }) => {
+    ({ origins, theme, token, refresh }) => {
       if (!origins.includes(location.origin)) return;
       localStorage.setItem("theme", theme);
       if (token) localStorage.setItem("access_token", token);
+      if (refresh) localStorage.setItem("refresh_token", refresh);
     },
-    { origins: [base, preview], theme: variant === "dark" ? "dark" : "light", token: auth ? TOKEN : null },
+    {
+      origins: [base, preview],
+      theme: variant === "dark" ? "dark" : "light",
+      token: auth ? TOKEN : null,
+      refresh: auth ? REFRESH : null,
+    },
   );
   const page = await context.newPage();
   try {
@@ -80,7 +99,10 @@ async function shot(origin, path, variant, options, auth) {
     await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready.then(() => {}));
     const png = await page.screenshot({ fullPage: true, animations: "disabled" });
-    return { png, status: res?.status() };
+    // 伺服器或前端轉址（例如 token 失效導去 /auth）後的實際路徑
+    const finalPath = new URL(page.url()).pathname;
+    const moved = finalPath === new URL(path, origin).pathname ? null : finalPath;
+    return { png, status: res?.status(), moved };
   } finally {
     await context.close();
   }
@@ -146,7 +168,7 @@ for (const [group, list] of Object.entries(args.group ? { [args.group]: routes[a
   console.log(`\n[${group}]`);
   for (const route of list) {
     if (route.auth && !TOKEN) {
-      console.log(`${route.path}  略過（auth 路由需設 PARITY_TOKEN）`);
+      console.log(`${route.path}  略過（auth 路由需設 PARITY_TOKEN，最好也設 PARITY_REFRESH_TOKEN）`);
       continue;
     }
     for (const [variant, options] of VARIANTS) {
@@ -155,6 +177,12 @@ for (const [group, list] of Object.entries(args.group ? { [args.group]: routes[a
           shot(base, route.path, variant, options, route.auth),
           shot(preview, route.path, variant, options, route.auth),
         ]);
+        if (b.moved || p.moved) {
+          errors++;
+          const to = (side, s) => `${side}${s.moved ? `轉址到 ${s.moved}` : "未轉址"}`;
+          console.log(`${route.path}  ${variant.padEnd(5)}  → ${to("基準", b)}，${to("預覽", p)}`);
+          continue;
+        }
         const { ratio, diff } = await pixelDiff(b.png, p.png);
         const name = `${slug(route.path)}.${variant}`;
         writeFileSync(join(dir, `${name}.base.png`), b.png);
@@ -165,7 +193,7 @@ for (const [group, list] of Object.entries(args.group ? { [args.group]: routes[a
         );
       } catch (e) {
         errors++;
-        console.log(`${route.path}  ${variant.padEnd(5)}  失敗：${e.message}`);
+        console.log(`${route.path}  ${variant.padEnd(5)}  失敗：${redact(e.message)}`);
       }
     }
   }

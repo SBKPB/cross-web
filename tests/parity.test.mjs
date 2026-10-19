@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -33,6 +33,14 @@ function handler(side) {
     if (path === "/redir-img") return res.writeHead(302, { location: `${origins.third}/img.png` }).end();
     if (path.startsWith("/opengraph-image")) return res.writeHead(200, { "content-type": "image/png" }).end(PNG);
     if (path === "/missing.png") return res.writeHead(404).end();
+    // 連線直接中斷：讓預覽的 route.fetch 失敗（錯誤訊息的 call log 會列出所有請求標頭）
+    if (path === "/boom.css" || (path === "/boom-doc" && side === "preview")) return req.socket.destroy();
+    // 需登入頁：token 不對就像舊版／新版 app 一樣導去 /auth
+    if (path === "/member") {
+      return res.writeHead(200, { "content-type": "text/html; charset=utf-8" }).end(`<!doctype html><html><head><script>
+if (localStorage.getItem("access_token") !== "tok" || localStorage.getItem("refresh_token") !== "ref") location.replace("/auth");
+</script></head><body style="margin:0;font:32px sans-serif"><h1>會員中心</h1></body></html>`);
+    }
 
     const d = drift && side === "preview";
     // 基準與預覽的 og:image 網址刻意不同（R6：只比存在與否、能否取得）；預覽的會轉址到第三方
@@ -48,6 +56,7 @@ ${d && path === "/terms" ? "" : `<meta property="og:title" content="條款">`}
 <meta property="og:image" content="${ogImage}">
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="${origins.third}/font.css">
+${path === "/sub-fail" ? `<link rel="stylesheet" href="${self}/boom.css">` : ""}
 </head><body style="margin:0;font:32px sans-serif">
 <h1>${d && path === "/terms" ? "完全不同的內容" : "服務條款"}</h1>
 <img src="${self}/redir-img" width="40" height="40">
@@ -69,13 +78,13 @@ before(async () => {
 
 after(() => servers.forEach((s) => s.close()));
 
-function run(script, args) {
+function run(script, args, env = {}) {
   for (const list of Object.values(seen)) list.length = 0;
   return new Promise((resolve) => {
     execFile(
       process.execPath,
       [`scripts/parity/${script}`, "--base", origins.base, "--preview", origins.preview, ...args],
-      { env: { ...process.env, VERCEL_AUTOMATION_BYPASS_SECRET: SECRET } },
+      { env: { ...process.env, VERCEL_AUTOMATION_BYPASS_SECRET: SECRET, ...env } },
       (err, stdout, stderr) => resolve({ code: err ? err.code : 0, stdout, stderr }),
     );
   });
@@ -139,4 +148,55 @@ test("screenshot：三種情境各存基準／預覽／差異圖，算出像素�
   } finally {
     rmSync(out, { recursive: true, force: true });
   }
+});
+
+// 用暫存的 routes.json 跑 screenshot，回傳執行結果
+async function screenshotWith(routes, env) {
+  const dir = mkdtempSync(join(tmpdir(), "parity-"));
+  try {
+    writeFileSync(join(dir, "routes.json"), JSON.stringify(routes));
+    return await run("screenshot.mjs", ["--routes", join(dir, "routes.json"), "--out", dir], env);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test("screenshot：預覽請求失敗時只印網址，密鑰不會出現在輸出", {
+  skip: existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}`,
+}, async () => {
+  drift = false;
+  const { code, stdout, stderr } = await screenshotWith({
+    broken: [
+      { path: "/sub-fail", auth: false },
+      { path: "/boom-doc", auth: false },
+    ],
+  });
+  assert.ok(!(stdout + stderr).includes(SECRET), `輸出含密鑰：\n${stdout}\n${stderr}`);
+  assert.equal(code, 1, stdout + stderr);
+  assert.ok(seen.preview.some((r) => r.path === "/boom.css" && r.bypass === SECRET), "預覽應收到 /boom.css");
+  assert.match(stdout, new RegExp(`預覽請求失敗：${origins.preview}/boom\\.css`));
+  assert.match(stdout, new RegExp(`預覽請求失敗：${origins.preview}/boom-doc`));
+  for (const v of ["light", "dark", "375"]) {
+    assert.match(stdout, new RegExp(`/sub-fail\\s+${v}\\s+[\\d.]+%`));
+    assert.match(stdout, new RegExp(`/boom-doc\\s+${v}\\s+失敗`));
+  }
+});
+
+test("screenshot：auth 路由注入 access／refresh token，被導去別頁時列為錯誤", {
+  skip: existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}`,
+}, async () => {
+  drift = false;
+  const routes = { auth: [{ path: "/member", auth: true }] };
+  const ok = await screenshotWith(routes, { PARITY_TOKEN: "tok", PARITY_REFRESH_TOKEN: "ref" });
+  assert.equal(ok.code, 0, ok.stdout + ok.stderr);
+  for (const v of ["light", "dark", "375"]) assert.match(ok.stdout, new RegExp(`/member\\s+${v}\\s+0\\.00%`));
+  assert.doesNotMatch(ok.stdout, /轉址/);
+
+  // token 過期／無效：兩邊都導去 /auth，截圖會一模一樣，必須報錯而不是 0.00%
+  const bad = await screenshotWith(routes, { PARITY_TOKEN: "expired", PARITY_REFRESH_TOKEN: "ref" });
+  assert.equal(bad.code, 1, bad.stdout + bad.stderr);
+  for (const v of ["light", "dark", "375"]) {
+    assert.match(bad.stdout, new RegExp(`/member\\s+${v}\\s+→ 基準轉址到 /auth，預覽轉址到 /auth`));
+  }
+  assert.doesNotMatch(bad.stdout, /\/member\s+\S+\s+[\d.]+%/);
 });

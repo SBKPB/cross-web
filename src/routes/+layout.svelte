@@ -50,10 +50,7 @@
 
 <svelte:head>
 	<meta name="application-name" content={SITE_NAME} />
-	<meta
-		name="keywords"
-		content="AIoT,健康資料,醫療設備串接,開發者 API,線上預約,線上掛號,看診預約,診所預約,醫美預約,台灣診所,Cross"
-	/>
+	<!-- keywords 由 Seo 輸出（頁面可覆寫，預設為全站值） -->
 	<!-- 在 Vercel 設環境變數 NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION 後自動填入 GSC 驗證碼 -->
 	{#if env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
 		<meta name="google-site-verification" content={env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION} />

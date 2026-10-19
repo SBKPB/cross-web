@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* shadcn-svelte 元件用的 data-open／data-closed／data-checked 等 variant 與 no-scrollbar 等 utility（對應舊版 shadcn/tailwind.css） */
+@import "shadcn-svelte/tailwind.css";
 
 /* 首頁專用版面節奏，不影響院所與管理後台。 */
 @utility home-container {
@@ -176,13 +178,13 @@
   }
 }
 
-/* Radix Accordion 動畫（tailwind v4 無預設） */
+/* Bits UI Accordion 動畫（tailwind v4 無預設） */
 @keyframes accordion-down {
   from { height: 0; }
-  to { height: var(--radix-accordion-content-height); }
+  to { height: var(--bits-accordion-content-height); }
 }
 @keyframes accordion-up {
-  from { height: var(--radix-accordion-content-height); }
+  from { height: var(--bits-accordion-content-height); }
   to { height: 0; }
 }
 .animate-accordion-down { animation: accordion-down 0.2s ease-out; }

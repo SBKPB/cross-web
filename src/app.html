@@ -1,8 +1,22 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- 主題初始化：在任何內容繪製前依 localStorage「theme」（light|dark|system，與 next-themes、mode-watcher 共用）
+		     套用 <html class="dark">。放在 app.html 而非 ModeWatcher 的 head 注入，ssr=false 的頁面也不會閃白。 -->
+		<script>
+			(function () {
+				try {
+					var mode = localStorage.getItem('theme') || 'system';
+					var dark =
+						mode === 'dark' ||
+						(mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+					document.documentElement.classList.toggle('dark', dark);
+					document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+				} catch (e) {}
+			})();
+		</script>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
 		<link
@@ -10,14 +24,33 @@
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
 		/>
 		<style>
-			:root {
-				--font-inter: 'Inter';
-				--font-noto-sans-tc: 'Noto Sans TC';
+			/* 與舊版 next/font 產生的設定相同：字體變數掛在 body（不是 :root），fallback 為依 Arial 調整度量的本機字體。
+			   注意：<html> 上讀不到這兩個變數，Tailwind preflight 的 font-family 會退回系統字型堆疊並由 body 繼承，
+			   舊版實際呈現就是如此；改掛 :root 會讓全站字型變成 Inter，屬視覺改版，不在這次遷移範圍。 */
+			@font-face {
+				font-family: 'Inter Fallback';
+				src: local('Arial');
+				ascent-override: 90.44%;
+				descent-override: 22.52%;
+				line-gap-override: 0%;
+				size-adjust: 107.12%;
+			}
+			@font-face {
+				font-family: 'Noto Sans TC Fallback';
+				src: local('Arial');
+				ascent-override: 110.73%;
+				descent-override: 27.49%;
+				line-gap-override: 0%;
+				size-adjust: 104.76%;
+			}
+			body {
+				--font-inter: 'Inter', 'Inter Fallback';
+				--font-noto-sans-tc: 'Noto Sans TC', 'Noto Sans TC Fallback';
 			}
 		</style>
 		%sveltekit.head%
 	</head>
-	<body data-sveltekit-preload-data="hover">
+	<body class="antialiased" data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

@@ -11,7 +11,7 @@ const docs = [
   ["roadmap", "交付路線", "已完成的能力與後續交付順序。"],
 ];
 await mkdir("src/content/developers", { recursive: true });
-await mkdir("public/developers", { recursive: true });
+await mkdir("static/developers", { recursive: true });
 const content = await Promise.all(
   docs.map(async ([slug, title, description]) => ({
     slug,
@@ -35,11 +35,11 @@ for (const [origin, target] of [
   ["examples/javascript/upload.mjs", "upload.mjs"],
 ])
   await writeFile(
-    resolve("public/developers", target),
+    resolve("static/developers", target),
     await readFile(resolve(source, origin)),
   );
 await writeFile(
-  "public/developers/cross-developers-preview.zip",
+  "static/developers/cross-developers-preview.zip",
   await readFile("../docs/artifacts/cross-developers-preview-0.3.1.zip"),
 );
 console.log("已同步 6 份公開文件與明確列出的開發者資源。");

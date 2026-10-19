@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { serializeJsonLd } from "../src/lib/seo/serialize-json-ld.ts";
+import { jsonLdScript, serializeJsonLd } from "../src/lib/seo/serialize-json-ld.ts";
 
 test("店家 JSON-LD 的惡意內容無法建立額外 script 或 HTML 標籤", () => {
   for (const payload of [
@@ -10,8 +10,8 @@ test("店家 JSON-LD 的惡意內容無法建立額外 script 或 HTML 標籤", 
   ]) {
     const data = { name: payload, address: { streetAddress: payload } };
     const json = serializeJsonLd(data);
-    // Svelte 的 {@html} 原樣輸出，等同直接以字串組出 script 標籤
-    const html = `<script type="application/ld+json">${json}</script>`;
+    // Svelte 的 {@html} 原樣輸出 jsonLdScript 的結果
+    const html = jsonLdScript(data);
     assert.equal((html.match(/<\/script>/gi) ?? []).length, 1);
     assert.equal((html.match(/<script\b/gi) ?? []).length, 1);
     assert.equal(html.includes("<img"), false);

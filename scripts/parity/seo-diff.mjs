@@ -1,6 +1,6 @@
 // SEO 比對：對「基準」（預設本機舊版 Next，localhost:3100）與「預覽」逐條抓非 auth 路由，
 // 比較 HTTP 狀態、<title>、description／robots／googlebot／keywords、canonical、全部 og:*、twitter:*
-// 與每段 JSON-LD；有任何差異就印出並 exit 1。
+// 與每段 JSON-LD；有任何差異就印出並 exit 1。3xx 轉址（例如 /c/[code] 短網址）只比狀態碼與 Location。
 //
 // 用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>] [--routes <檔案>]
 //       node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] --sitemap [--group <群組>]
@@ -114,6 +114,8 @@ async function snapshot(origin, path) {
   const html = text.replace(own, PROD);
   const location = res.headers.get("location");
   const entries = [`HTTP=${res.status}${location ? ` → ${location.replace(own, PROD)}` : ""}`];
+  // 3xx 轉址只比狀態碼與 Location：瀏覽器與爬蟲都不看轉址回應的 body（舊版 Next 的 308 帶整份全站 <head>，SvelteKit 是空 body）
+  if (res.status >= 300 && res.status < 400) return { status: res.status, entries, images: [], jsonLd: [] };
   const images = [];
   const end = html.search(/<\/head>/i);
   const head = end < 0 ? html : html.slice(0, end);

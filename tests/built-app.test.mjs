@@ -226,3 +226,70 @@ test("換頁時暫停平滑捲動、完成後還原，新頁面直接在頂端",
     await browser.close();
   }
 });
+
+// 登入、會員、加入頁（Task 12）：舊版都是 client component，但 Next 仍伺服器端渲染「未登入／載入中」的外框
+// 並帶 root layout 的全站 <head>（3100 基準實測）。新版同樣 SSR 外框，登入狀態只在瀏覽器端判斷（SSR 不讀 localStorage）。
+const SITE_TITLE = "Cross | AIoT 健康資料連接平台";
+const SPINNER_60 =
+  '<div class="flex min-h-[60vh] items-center justify-center bg-background"><div class="size-8 animate-spin rounded-full border-4 border-muted border-t-primary"></div></div>';
+const memberNav = (current) =>
+  new RegExp(`<nav aria-label="會員功能"[\\s\\S]*?<a href="${current}" aria-current="page"`);
+for (const [path, cache, title, checks] of [
+  [
+    "/auth",
+    STATIC_PAGE_CACHE,
+    SITE_TITLE,
+    [
+      /<body[^>]*>[\s\S]*<div class="flex min-h-screen items-center justify-center bg-background"><div class="size-8 animate-spin rounded-full border-4 border-muted border-t-primary"><\/div><\/div>/,
+    ],
+  ],
+  [
+    "/auth?next=%2Fbooking%2Fx",
+    STATIC_PAGE_CACHE,
+    SITE_TITLE,
+    [/<div class="flex min-h-screen items-center justify-center bg-background"><div class="size-8 animate-spin/],
+  ],
+  [
+    "/auth/complete-profile",
+    STATIC_PAGE_CACHE,
+    SITE_TITLE,
+    [
+      /<main id="public-content" class="min-w-0 flex-1">[\s\S]*<div class="flex min-h-\[70vh\] items-center justify-center bg-background"><div class="size-8 animate-spin/,
+      /<footer/,
+    ],
+  ],
+  ["/member", STATIC_PAGE_CACHE, SITE_TITLE, [memberNav("/member"), SPINNER_60, /<footer/]],
+  ["/member/favorites", STATIC_PAGE_CACHE, SITE_TITLE, [memberNav("/member/favorites"), SPINNER_60]],
+  ["/member/patients", STATIC_PAGE_CACHE, SITE_TITLE, [memberNav("/member/patients"), SPINNER_60]],
+  ["/member/appointments/x", DYNAMIC_PAGE_CACHE, SITE_TITLE, [memberNav("/member"), SPINNER_60]],
+  ["/join", STATIC_PAGE_CACHE, "Design Partner 共同合作 | Cross", [/從你的工作流程，/, /院所預約申請/]],
+  ["/join/apply", STATIC_PAGE_CACHE, "申請加入 Cross | Cross", [/成為 Cross 合作夥伴/, /第 1 \/ 3 步 · 你經營的是哪一種？/]],
+  ["/join/verify", STATIC_PAGE_CACHE, "驗證信箱並設定密碼 | Cross", [/<div class="text-sm text-muted-foreground">載入中…<\/div>/]],
+]) {
+  test(`${path}：伺服器 HTML 為舊版的外框與快取標頭`, async () => {
+    if (problem) assert.fail(problem);
+    const res = await fetch(base + path);
+    const html = await res.text();
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("cache-control"), cache);
+    const end = html.indexOf("</head>");
+    assert.deepEqual([...html.slice(0, end).matchAll(/<title>([^<]*)<\/title>/g)].map((m) => m[1]), [title]);
+    for (const check of checks) {
+      if (typeof check === "string") assert.ok(html.slice(end).includes(check), `${path} 應含 ${check}`);
+      else assert.match(html.slice(end), check);
+    }
+  });
+}
+
+// /join/verify 的伺服器 HTML 不依 ?token= 而不同（舊版 Suspense 在伺服器端只輸出「載入中…」；新版回應進 CDN 快取一年，
+// 不能把某個 token 的內容快取給別人）
+test("/join/verify：伺服器 HTML 與 token 無關", async () => {
+  if (problem) assert.fail(problem);
+  const main = (html) => html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+  const [a, b] = await Promise.all(
+    ["/join/verify", "/join/verify?token=secret-token-123"].map((p) => fetch(base + p).then((r) => r.text())),
+  );
+  assert.doesNotMatch(b, /secret-token-123/);
+  assert.ok(main(a).includes("載入中…"));
+  assert.equal(main(b), main(a));
+});

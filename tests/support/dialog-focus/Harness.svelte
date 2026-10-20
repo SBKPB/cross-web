@@ -10,6 +10,17 @@
 		DialogTrigger,
 	} from "$lib/components/ui/dialog/index.js";
 	import {
+		AlertDialog,
+		AlertDialogAction,
+		AlertDialogCancel,
+		AlertDialogContent,
+		AlertDialogDescription,
+		AlertDialogFooter,
+		AlertDialogHeader,
+		AlertDialogTitle,
+		AlertDialogTrigger,
+	} from "$lib/components/ui/alert-dialog/index.js";
+	import {
 		Sheet,
 		SheetContent,
 		SheetDescription,
@@ -116,6 +127,33 @@
 			<DialogDescription>Radix 關閉時一律聚焦 Trigger，不是開啟前的焦點</DialogDescription>
 		</DialogContent>
 	</Dialog>
+{:else if scenario === "alert-dialog"}
+	<!-- 會員預約詳情的取消確認：由外部按鈕受控開啟，Action 不自動關閉（Radix 由呼叫端 preventDefault） -->
+	<AlertDialog bind:open>
+		<AlertDialogContent>
+			<AlertDialogHeader>
+				<AlertDialogTitle>確認取消預約</AlertDialogTitle>
+				<AlertDialogDescription>取消後此時段將釋出</AlertDialogDescription>
+			</AlertDialogHeader>
+			<a id="alert-link" href="/somewhere">連結</a>
+			<AlertDialogFooter>
+				<AlertDialogCancel id="alert-cancel">先不要</AlertDialogCancel>
+				<AlertDialogAction id="alert-action" onclick={(e) => e.preventDefault()}>確認取消</AlertDialogAction>
+			</AlertDialogFooter>
+		</AlertDialogContent>
+	</AlertDialog>
+{:else if scenario === "trigger-alert-dialog"}
+	<AlertDialog bind:open>
+		<AlertDialogTrigger id="trigger">開啟</AlertDialogTrigger>
+		<AlertDialogContent>
+			<AlertDialogTitle>有 Trigger 的確認對話框</AlertDialogTitle>
+			<AlertDialogDescription>關閉時焦點回到 Trigger</AlertDialogDescription>
+			<AlertDialogFooter>
+				<AlertDialogCancel id="alert-cancel">取消</AlertDialogCancel>
+				<AlertDialogAction id="alert-action">確定</AlertDialogAction>
+			</AlertDialogFooter>
+		</AlertDialogContent>
+	</AlertDialog>
 {:else if scenario === "sheet"}
 	<Sheet bind:open>
 		<SheetContent showCloseButton={false}>

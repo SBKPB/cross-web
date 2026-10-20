@@ -4,7 +4,8 @@ import globals from 'globals';
 import ts from 'typescript-eslint';
 
 export default ts.config(
-	{ ignores: ['.svelte-kit/', '.vercel/', 'build/', 'node_modules/', 'scripts/', 'tests/', 'static/'] },
+	// .superpowers/、.claude/ 為 git-ignored 的本機工作目錄（流程腳本、設定），不屬於專案原始碼
+	{ ignores: ['.svelte-kit/', '.vercel/', 'build/', 'node_modules/', 'scripts/', 'tests/', 'static/', '.superpowers/', '.claude/'] },
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,

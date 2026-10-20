@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
 	import { cn, type WithoutChild, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { radixAutoFocus } from "../dialog/radix-auto-focus.js";
 	import AlertDialogOverlay from "./alert-dialog-overlay.svelte";
 	import AlertDialogPortal from "./alert-dialog-portal.svelte";
 	import type { ComponentProps } from "svelte";
@@ -9,10 +10,15 @@
 		ref = $bindable(null),
 		class: className,
 		portalProps,
+		onOpenAutoFocus,
+		onCloseAutoFocus,
 		...restProps
 	}: WithoutChild<AlertDialogPrimitive.ContentProps> & {
 		portalProps?: WithoutChildrenOrChild<ComponentProps<typeof AlertDialogPortal>>;
 	} = $props();
+
+	// 開啟、關閉時的焦點規則與舊版 Radix AlertDialog 相同（開啟聚焦「取消」鈕，見 radix-auto-focus.ts）
+	const autoFocus = radixAutoFocus(() => ref, "alert-dialog");
 </script>
 
 <AlertDialogPortal {...portalProps}>
@@ -25,5 +31,7 @@
 			className
 		)}
 		{...restProps}
+		onOpenAutoFocus={(e) => autoFocus.onOpen(e, onOpenAutoFocus)}
+		onCloseAutoFocus={(e) => autoFocus.onClose(e, onCloseAutoFocus)}
 	/>
 </AlertDialogPortal>

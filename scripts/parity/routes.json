@@ -43,5 +43,36 @@
     { "path": "/booking/c406782c-628f-411c-890c-62a3dc4a5cf0", "auth": false },
     { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218/success", "auth": false },
     { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218/success?id=00000000-0000-0000-0000-000000000000&number=X", "auth": false }
+  ],
+  "auth": [
+    { "path": "/auth", "auth": false },
+    { "path": "/auth?next=%2Fbooking%2F18c0ca2b-5af2-46ff-943f-41314e37169b", "auth": false },
+    { "path": "/auth/complete-profile", "auth": false, "finalPath": "/auth" },
+    { "path": "/auth?next=%2Fmember%2Ffavorites", "auth": true, "finalPath": "/member/favorites" },
+    { "path": "/auth/complete-profile", "auth": true, "finalPath": "/member" }
+  ],
+  "member": [
+    { "path": "/member", "auth": false, "finalPath": "/auth" },
+    { "path": "/member/favorites", "auth": false, "finalPath": "/auth" },
+    { "path": "/member/patients", "auth": false, "finalPath": "/auth" },
+    { "path": "/member/appointments/00000000-0000-0000-0000-000000000000", "auth": false, "finalPath": "/auth" },
+    { "path": "/member", "auth": true },
+    { "path": "/member/favorites", "auth": true },
+    { "path": "/member/patients", "auth": true },
+    { "path": "/member/appointments/19a7314d-5b91-476e-8492-5185bf189a36", "auth": true },
+    { "path": "/member/appointments/c4138a93-6703-48ab-b98f-fae0f3064ad5", "auth": true },
+    { "path": "/member/appointments/00000000-0000-0000-0000-000000000000", "auth": true }
+  ],
+  "join": [
+    { "path": "/join", "auth": false },
+    { "path": "/join/apply", "auth": false },
+    { "path": "/join/verify", "auth": false },
+    { "path": "/join/verify?token=invalid-token-for-parity", "auth": false }
+  ],
+  "shortlink": [
+    { "path": "/c/c406782c", "auth": false, "expectStatus": 308, "finalPath": "/clinic/c406782c-628f-411c-890c-62a3dc4a5cf0" },
+    { "path": "/c/C406782C", "auth": false, "expectStatus": 308, "finalPath": "/clinic/c406782c-628f-411c-890c-62a3dc4a5cf0" },
+    { "path": "/c/zzzzzzzz", "auth": false, "expectStatus": 404 },
+    { "path": "/c/42399a23", "auth": false, "expectStatus": 404 }
   ]
 }

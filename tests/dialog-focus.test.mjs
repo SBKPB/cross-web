@@ -63,14 +63,14 @@ after(async () => {
 });
 
 /** 聚焦觸發鈕、按 Enter 開啟（與鍵盤使用者相同），等開啟時的自動聚焦跑完，回傳 page 與目前焦點的描述 */
-async function openWithKeyboard(scenario) {
+async function openWithKeyboard(scenario, role = "dialog") {
   const page = await browser.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error));
   await page.goto(`${origin}/?case=${scenario}`);
   await page.focus("#trigger");
   await page.keyboard.press("Enter");
-  await page.waitForSelector('[role="dialog"][data-state="open"]');
+  await page.waitForSelector(`[role="${role}"][data-state="open"]`);
   // Bits UI 與我們的自動聚焦都在下一個 frame 執行；多等幾個 frame 與一小段時間，確保焦點不會再移動
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await page.waitForTimeout(100);
@@ -79,8 +79,8 @@ async function openWithKeyboard(scenario) {
 }
 
 /** 等對話框移除、關閉時的焦點處理跑完，回傳目前焦點的描述 */
-async function closeAndDescribe(page) {
-  await page.waitForSelector('[role="dialog"]', { state: "detached" });
+async function closeAndDescribe(page, role = "dialog") {
+  await page.waitForSelector(`[role="${role}"]`, { state: "detached" });
   await page.waitForTimeout(100);
   return describeActive(page);
 }
@@ -186,5 +186,38 @@ test("呼叫端的 onCloseAutoFocus preventDefault 時關閉後不移動焦點",
   await page.keyboard.press("Escape");
   const after = await closeAndDescribe(page);
   assert.equal(after.tag, "BODY", JSON.stringify(after));
+  await page.close();
+});
+
+// 確認對話框（AlertDialog）與舊版 Radix AlertDialog 相同：開啟時聚焦「取消」鈕（Bits UI 預設聚焦內容容器），
+// 關閉時同 Dialog 規則（只還給自己的 Trigger，沒有就落到 body）；點遮罩不關閉
+test("確認對話框：以鍵盤開啟時聚焦「取消」鈕（Radix AlertDialog），Enter 即取消並關閉，焦點落到 body", { skip: noChrome }, async () => {
+  const { page, active } = await openWithKeyboard("alert-dialog", "alertdialog");
+  assert.equal(active.id, "alert-cancel", JSON.stringify(active));
+  assert.equal(active.focusVisible, true, "鍵盤開啟時取消鈕顯示焦點框（與舊版相同）");
+  await page.keyboard.press("Enter");
+  const after = await closeAndDescribe(page, "alertdialog");
+  assert.equal(after.tag, "BODY", JSON.stringify(after));
+  await page.close();
+});
+
+test("確認對話框：Action 不自動關閉（呼叫端自行處理）；點遮罩不關閉；Esc 關閉", { skip: noChrome }, async () => {
+  const { page } = await openWithKeyboard("alert-dialog", "alertdialog");
+  await page.click("#alert-action");
+  await page.mouse.click(5, 5);
+  await page.waitForTimeout(150);
+  assert.equal(await page.locator('[role="alertdialog"][data-state="open"]').count(), 1);
+  await page.keyboard.press("Escape");
+  const after = await closeAndDescribe(page, "alertdialog");
+  assert.equal(after.tag, "BODY", JSON.stringify(after));
+  await page.close();
+});
+
+test("有 Trigger 的確認對話框：開啟聚焦取消鈕，Esc 關閉後焦點回到 Trigger", { skip: noChrome }, async () => {
+  const { page, active } = await openWithKeyboard("trigger-alert-dialog", "alertdialog");
+  assert.equal(active.id, "alert-cancel", JSON.stringify(active));
+  await page.keyboard.press("Escape");
+  const after = await closeAndDescribe(page, "alertdialog");
+  assert.equal(after.id, "trigger", JSON.stringify(after));
   await page.close();
 });

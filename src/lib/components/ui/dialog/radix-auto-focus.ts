@@ -10,6 +10,9 @@
 // 關閉（Radix DialogContentModal）：只把焦點還給這個對話框的 Trigger；沒有 Trigger（由外部按鈕受控開啟，
 // 例如診所詳情、分享對話框）就不移動焦點，焦點隨被移除的內容落到 body。
 // Bits UI 預設是還給開啟前聚焦的元素。
+//
+// 確認對話框（Radix AlertDialog，variant "alert-dialog"）：開啟時改為聚焦「取消」鈕（AlertDialog.Cancel，
+// focus({ preventScroll: true })，沒有取消鈕就不移動焦點）；Bits UI 預設聚焦內容容器。關閉規則與 Dialog 相同。
 
 /** Radix getTabbableCandidates：不檢查可見性，focus 失敗（例如 display:none）就換下一個 */
 function tabbableCandidates(container: HTMLElement): HTMLElement[] {
@@ -47,12 +50,15 @@ export function focusFirstNonLink(container: HTMLElement): void {
 
 type AutoFocusHandler = ((event: Event) => void) | undefined;
 
+/** Bits 的 Dialog 與 AlertDialog 共用同一個 primitive，部件屬性名稱依 variant 而不同（data-dialog-trigger / data-alert-dialog-trigger） */
+type DialogVariant = "dialog" | "alert-dialog";
+
 /**
  * 每個 Content 元件實例建立一次，`getContainer` 回傳內容節點（bind:ref）。
  * 兩個處理器都先呼叫呼叫端傳入的同名處理器，它 preventDefault 就完全不動焦點（與 Bits、Radix 相同）；
  * 否則取消 Bits 的預設，改用 Radix 的規則。
  */
-export function radixAutoFocus(getContainer: () => HTMLElement | null) {
+export function radixAutoFocus(getContainer: () => HTMLElement | null, variant: DialogVariant = "dialog") {
 	return {
 		onOpen(event: Event, handler: AutoFocusHandler): void {
 			handler?.(event);
@@ -63,6 +69,11 @@ export function radixAutoFocus(getContainer: () => HTMLElement | null) {
 				const container = getContainer();
 				if (!container?.isConnected) return;
 				if (container.contains(container.ownerDocument.activeElement)) return;
+				if (variant === "alert-dialog") {
+					// Radix AlertDialogContent：cancelRef.current?.focus({ preventScroll: true })
+					container.querySelector<HTMLElement>("[data-alert-dialog-cancel]")?.focus({ preventScroll: true });
+					return;
+				}
 				focusFirstNonLink(container);
 			});
 		},
@@ -71,11 +82,11 @@ export function radixAutoFocus(getContainer: () => HTMLElement | null) {
 			if (event.defaultPrevented) return;
 			event.preventDefault();
 			// 關閉的當下內容節點仍在（Bits 先停用 FocusScope 才移除內容）。
-			// Bits Trigger 帶 data-dialog-trigger 與 aria-controls=<內容 id>（Dialog、Sheet 同一個 primitive）
+			// Bits Trigger 帶 data-<variant>-trigger 與 aria-controls=<內容 id>（Dialog、Sheet、AlertDialog 同一個 primitive）
 			const id = getContainer()?.id;
 			if (!id) return;
 			const trigger = document.querySelector<HTMLElement>(
-				`[data-dialog-trigger][aria-controls="${CSS.escape(id)}"]`
+				`[data-${variant}-trigger][aria-controls="${CSS.escape(id)}"]`
 			);
 			trigger?.focus();
 		},

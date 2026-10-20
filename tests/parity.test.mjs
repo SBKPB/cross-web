@@ -102,6 +102,13 @@ fetch("/api/v1/booking/clinics").then((r) => r.json()).then((list) => {
     if (path === "/api/v1/booking/clinics") {
       return res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify([{ id: "r1", name: "真實店家" }]));
     }
+    // 短網址：兩邊都 308 到同一頁，但轉址回應的 body 不同（舊版 Next 帶整份全站 <head>，SvelteKit 是空 body）；
+    // drift 時預覽轉去別頁
+    if (path === "/go") {
+      const location = drift && side === "preview" ? "/elsewhere" : "/target";
+      const body = side === "base" ? `<!doctype html><html><head><title>全站標題</title><meta name="description" content="全站描述"></head></html>` : "";
+      return res.writeHead(308, { location, "content-type": "text/html; charset=utf-8" }).end(body);
+    }
     // 需登入頁：token 不對就像舊版／新版 app 一樣導去 /auth
     if (path === "/member") {
       return res.writeHead(200, { "content-type": "text/html; charset=utf-8" }).end(`<!doctype html><html><head><script>
@@ -434,5 +441,39 @@ test("search-diff：真實資料模式打各自後端；結果順序不同列為
     assert.match(bad.stdout, /1 個案例：0 個一致、1 個不同/);
   } finally {
     drift = false;
+  }
+});
+
+test("seo-diff：3xx 轉址只比狀態碼與 Location（不比轉址回應 body 的 <head>）", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "parity-"));
+  try {
+    writeFileSync(join(dir, "routes.json"), JSON.stringify({ r: [{ path: "/go", expectStatus: 308 }] }));
+    drift = false;
+    const same = await run("seo-diff.mjs", ["--routes", join(dir, "routes.json")]);
+    assert.equal(same.code, 0, same.stdout + same.stderr);
+    assert.match(same.stdout, /✓ \/go/);
+    drift = true;
+    const moved = await run("seo-diff.mjs", ["--routes", join(dir, "routes.json")]);
+    assert.equal(moved.code, 1, moved.stdout + moved.stderr);
+    assert.match(moved.stdout, /- HTTP=308 → \/target/);
+    assert.match(moved.stdout, /\+ HTTP=308 → \/elsewhere/);
+  } finally {
+    drift = false;
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("screenshot：路由標了 finalPath 時，兩邊都轉到該頁才比對（例如未登入的會員頁導去 /auth）", {
+  skip: existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}`,
+}, async () => {
+  drift = false;
+  const ok = await screenshotWith({ g: [{ path: "/member", auth: false, finalPath: "/auth" }] });
+  assert.equal(ok.code, 0, ok.stdout + ok.stderr);
+  for (const v of ["light", "dark", "375"]) assert.match(ok.stdout, new RegExp(`/member\\s+${v}\\s+0\\.00%`));
+  // 沒轉到預期的頁就是錯誤
+  const bad = await screenshotWith({ g: [{ path: "/member", auth: false, finalPath: "/member" }] });
+  assert.equal(bad.code, 1, bad.stdout + bad.stderr);
+  for (const v of ["light", "dark", "375"]) {
+    assert.match(bad.stdout, new RegExp(`/member\\s+${v}\\s+→ 基準轉址到 /auth，預覽轉址到 /auth`));
   }
 });

@@ -3,6 +3,12 @@
 // 與每段 JSON-LD；有任何差異就印出並 exit 1。
 //
 // 用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>] [--routes <檔案>]
+//       node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] --sitemap [--group <群組>]
+// - --sitemap：比 /sitemap.xml 與 /robots.txt；沒給 --group 時只比這兩個，給了 --group 再加比該群組路由。
+//   兩邊都須回 200、content-type 媒體類型相同；
+//   sitemap 比對 <loc> 集合（多重集合，含重複）與順序、每個網址的 changefreq / priority、lastmod 有無與是否為 ISO 8601，
+//   lastmod 的「值」是各自的產生時間所以不比；最後把 lastmod 值遮掉後整份 XML 逐位元組比對。
+//   robots.txt 逐位元組比對。兩者都先把站台網址換成正式網址。
 // - 兩邊都以 bingbot UA 抓取。Next 16 只對符合 HTML_LIMITED_BOT_UA_RE（next/dist/shared/lib/router/utils/html-bots.js）
 //   的 UA 關閉串流 metadata、保證 metadata 在 <head>（server/lib/streaming-metadata.js 的 shouldServeStreamingMetadata）；
 //   其他 UA 一律可能把 metadata 串流到 <body>。Googlebot 不在這份清單：is-bot.js 把它歸為會執行 JS 的 'dom' bot，
@@ -33,11 +39,13 @@ const { values: args } = parseArgs({
     preview: { type: "string" },
     group: { type: "string" },
     routes: { type: "string", default: fileURLToPath(new URL("./routes.json", import.meta.url)) },
+    sitemap: { type: "boolean", default: false },
   },
 });
 if (!args.preview) {
   console.error(
-    "用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>] [--routes <檔案>]",
+    "用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>] [--routes <檔案>]\n" +
+      "      node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] --sitemap [--group <群組>]",
   );
   process.exit(2);
 }
@@ -93,12 +101,16 @@ const attrs = (tag) =>
 const NAMES = new Set(["description", "robots", "googlebot", "keywords"]);
 const IMAGES = new Set(["og:image", "twitter:image"]);
 
+/**
+ * 站台網址一律換成正式網址再比（canonical、og:url、sitemap 的 loc 等），切換後兩邊就是同一個網域；
+ * lookahead 避免 http://x:3100 誤換到 http://x:31000 之類的前綴
+ */
+const ownOrigin = (origin) => new RegExp(`${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w.:-])`, "g");
+
 /** 抓一頁並抽出要比對的標籤（以「鍵=值」字串表示，方便做集合比對）、分享圖網址與 JSON-LD */
 async function snapshot(origin, path) {
   const { res, text } = await get(origin + path);
-  // 站台網址一律換成正式網址再比（canonical、og:url 等），切換後兩邊就是同一個網域；
-  // lookahead 避免 http://x:3100 誤換到 http://x:31000 之類的前綴
-  const own = new RegExp(`${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w.:-])`, "g");
+  const own = ownOrigin(origin);
   const html = text.replace(own, PROD);
   const location = res.headers.get("location");
   const entries = [`HTTP=${res.status}${location ? ` → ${location.replace(own, PROD)}` : ""}`];
@@ -162,10 +174,112 @@ function minus(a, b, eq) {
   });
 }
 
+/** 抓純文字資源（sitemap / robots）：狀態、content-type 媒體類型、站台網址正規化後的內容 */
+async function fetchText(origin, path) {
+  const { res, text } = await get(origin + path);
+  const type = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+  return { status: res.status, type, text: text.replace(ownOrigin(origin), PROD) };
+}
+
+/** 兩邊都要 200，content-type 媒體類型相同（charset 等參數不比） */
+function compareResponse(b, p) {
+  const problems = [];
+  for (const [label, s] of [["基準", b], ["預覽", p]]) {
+    if (s.status !== 200) problems.push(`${label} HTTP ${s.status}，預期 200`);
+  }
+  if (b.type !== p.type) problems.push(`content-type ${b.type || "（無）"} → ${p.type || "（無）"}`);
+  return problems;
+}
+
+/** 逐行比對，列出不同的行（行號從 1 起） */
+function lineDiff(a, b) {
+  const [la, lb] = [a.split("\n"), b.split("\n")];
+  const out = [];
+  for (let i = 0; i < Math.max(la.length, lb.length); i++) {
+    if (la[i] === lb[i]) continue;
+    if (la[i] !== undefined) out.push(`- 第 ${i + 1} 行 ${JSON.stringify(la[i])}`);
+    if (lb[i] !== undefined) out.push(`+ 第 ${i + 1} 行 ${JSON.stringify(lb[i])}`);
+  }
+  return out;
+}
+
+// Next 以 Date#toISOString 輸出 lastmod；也接受 W3C Datetime 常見的時區寫法
+const ISO_8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
+
+function parseSitemap(xml) {
+  return [...xml.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((m) => {
+    const field = (tag) => m[1].match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`))?.[1];
+    return { loc: field("loc"), lastmod: field("lastmod"), changefreq: field("changefreq"), priority: field("priority") };
+  });
+}
+
+async function diffSitemap() {
+  const [b, p] = await Promise.all([fetchText(base, "/sitemap.xml"), fetchText(preview, "/sitemap.xml")]);
+  const problems = compareResponse(b, p);
+  const [bi, pi] = [parseSitemap(b.text), parseSitemap(p.text)];
+  const [bLocs, pLocs] = [bi.map((x) => x.loc), pi.map((x) => x.loc)];
+  const eq = (x, y) => x === y;
+  problems.push(...minus(bLocs, pLocs, eq).map((loc) => `- <loc> ${loc}`));
+  problems.push(...minus(pLocs, bLocs, eq).map((loc) => `+ <loc> ${loc}`));
+  const byLoc = new Map(pi.map((x) => [x.loc, x]));
+  for (const x of bi) {
+    const y = byLoc.get(x.loc);
+    if (!y) continue;
+    for (const f of ["changefreq", "priority"]) {
+      if (x[f] !== y[f]) problems.push(`${x.loc} ${f}：${x[f] ?? "（無）"} → ${y[f] ?? "（無）"}`);
+    }
+    const has = (v) => (v === undefined ? "（無）" : "有");
+    if (has(x.lastmod) !== has(y.lastmod)) problems.push(`${x.loc} lastmod：${has(x.lastmod)} → ${has(y.lastmod)}`);
+  }
+  for (const [label, items] of [["基準", bi], ["預覽", pi]]) {
+    for (const x of items) {
+      if (x.lastmod !== undefined && !ISO_8601.test(x.lastmod)) {
+        problems.push(`${label} ${x.loc} lastmod 不是 ISO 8601 時間：${x.lastmod}`);
+      }
+    }
+  }
+  // 集合相同才看順序與其餘位元組（集合不同時這兩項必然不同，不重複列）
+  if (!problems.length) {
+    const i = bLocs.findIndex((loc, k) => loc !== pLocs[k]);
+    if (i >= 0) problems.push(`網址順序不同：第 ${i + 1} 筆 基準 ${bLocs[i]}，預覽 ${pLocs[i]}`);
+  }
+  if (!problems.length) {
+    const mask = (t) => t.replace(/<lastmod>[^<]*<\/lastmod>/g, "<lastmod>…</lastmod>");
+    const diff = lineDiff(mask(b.text), mask(p.text));
+    if (diff.length) problems.push(`XML 內容不同（lastmod 以外）：${diff[0].replace(/^- /, "")}`, ...diff);
+  }
+  return { problems, count: bi.length };
+}
+
+async function diffRobots() {
+  const [b, p] = await Promise.all([fetchText(base, "/robots.txt"), fetchText(preview, "/robots.txt")]);
+  const problems = compareResponse(b, p);
+  if (b.text !== p.text) problems.push(...lineDiff(b.text, p.text));
+  return { problems };
+}
+
 console.log(`基準 ${base} ↔ 預覽 ${preview}（- 只在基準，+ 只在預覽）`);
 let failed = 0;
 let total = 0;
-for (const [group, list] of Object.entries(args.group ? { [args.group]: routes[args.group] } : routes)) {
+if (args.sitemap) {
+  console.log("\n[sitemap]");
+  for (const [path, check] of [["/sitemap.xml", diffSitemap], ["/robots.txt", diffRobots]]) {
+    total++;
+    let result;
+    try {
+      result = await check();
+    } catch (e) {
+      result = { problems: [`抓取失敗：${e.message}`] };
+    }
+    if (result.problems.length) failed++;
+    const note = result.count === undefined ? "" : `（${result.count} 個網址）`;
+    console.log(`${result.problems.length ? "✗" : "✓"} ${path}${note}`);
+    for (const line of result.problems) console.log(`    ${line}`);
+  }
+}
+// --sitemap 沒給 --group：只比 sitemap / robots，不跑 routes.json 的路由
+const groups = args.group ? { [args.group]: routes[args.group] } : args.sitemap ? {} : routes;
+for (const [group, list] of Object.entries(groups)) {
   console.log(`\n[${group}]`);
   for (const route of list.filter((r) => !r.auth)) {
     total++;

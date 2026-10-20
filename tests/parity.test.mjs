@@ -27,7 +27,42 @@ const NEXT_REF = resolve(process.env.NEXT_REF_DIR ?? "../web-next-ref");
 const seen = { base: [], preview: [], third: [] };
 const origins = {};
 let drift = false; // 開啟時預覽站在 static 四頁各製造一種差異
+// seo-diff --sitemap 的情境：false = 相同（只有 lastmod 時間與站台網址不同）；"content" / "order" / "bytes" = 預覽製造對應差異
+let sitemapDrift = false;
 const servers = [];
+
+/** 假 sitemap：照 Next resolveSitemap 的格式；網址用各站自己的來源（比對時應正規化成正式網址） */
+function sitemapXml(side) {
+  const self = origins[side];
+  const d = side === "preview" ? sitemapDrift : false;
+  const time = side === "base" ? "2026-10-19T19:48:02.423Z" : "2026-10-20T06:00:00.000Z";
+  let items = [
+    { loc: `${self}/`, lastmod: time, changefreq: "daily", priority: "1" },
+    { loc: `${self}/area/%E9%AB%98%E9%9B%84%E5%B8%82`, lastmod: time, changefreq: "weekly", priority: "0.7" },
+    { loc: `${self}/specialty/x`, lastmod: time, changefreq: "weekly", priority: "0.7" },
+  ];
+  if (d === "content") {
+    items = [
+      { ...items[0], priority: "0.9", lastmod: "not-a-date" },
+      { ...items[1], lastmod: undefined },
+      { loc: `${self}/clinic/extra`, lastmod: time, changefreq: "weekly", priority: "0.8" },
+    ];
+  }
+  if (d === "order") items = [items[0], items[2], items[1]];
+  const ns = d === "bytes" ? ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : "";
+  const body = items
+    .map(
+      (x) =>
+        `<url>\n<loc>${x.loc}</loc>\n${x.lastmod ? `<lastmod>${x.lastmod}</lastmod>\n` : ""}` +
+        `<changefreq>${x.changefreq}</changefreq>\n<priority>${x.priority}</priority>\n</url>\n`,
+    )
+    .join("");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${ns}>\n${body}</urlset>\n`;
+}
+
+const robotsTxt = (side) =>
+  `User-Agent: *\nAllow: /\nDisallow: ${side === "preview" && sitemapDrift === "content" ? "/apix/" : "/api/"}\n\n` +
+  `Host: ${origins[side]}\nSitemap: ${origins[side]}/sitemap.xml\n`;
 
 function handler(side) {
   return (req, res) => {
@@ -45,6 +80,11 @@ function handler(side) {
     if (path === "/hang") return;
     // 連線直接中斷：讓預覽的 route.fetch 失敗（錯誤訊息的 call log 會列出所有請求標頭）
     if (path === "/boom.css" || (path === "/boom-doc" && side === "preview")) return req.socket.destroy();
+    if (path === "/sitemap.xml") {
+      const type = side === "preview" && sitemapDrift === "content" ? "text/xml" : "application/xml";
+      return res.writeHead(200, { "content-type": type }).end(sitemapXml(side));
+    }
+    if (path === "/robots.txt") return res.writeHead(200, { "content-type": "text/plain" }).end(robotsTxt(side));
     // 需登入頁：token 不對就像舊版／新版 app 一樣導去 /auth
     if (path === "/member") {
       return res.writeHead(200, { "content-type": "text/html; charset=utf-8" }).end(`<!doctype html><html><head><script>
@@ -205,6 +245,57 @@ test("seo-diff：抓取逾時印出路由並以非 0 結束，其他路由照常
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("seo-diff --sitemap：網址、changefreq、priority 相同，只有 lastmod 時間與站台網址不同 → 0 差異，密鑰只送預覽", async () => {
+  sitemapDrift = false;
+  const { code, stdout, stderr } = await run("seo-diff.mjs", ["--sitemap"]);
+  assert.equal(code, 0, stdout + stderr);
+  assert.match(stdout, /✓ \/sitemap\.xml（3 個網址）/);
+  assert.match(stdout, /✓ \/robots\.txt/);
+  assert.deepEqual(seen.preview.map((r) => r.path).sort(), ["/robots.txt", "/sitemap.xml"]);
+  assert.ok(seen.preview.every((r) => r.bypass === SECRET), JSON.stringify(seen.preview));
+  assert.deepEqual(seen.base.map((r) => r.path).sort(), ["/robots.txt", "/sitemap.xml"]);
+  assert.ok(seen.base.every((r) => r.bypass === undefined), JSON.stringify(seen.base));
+});
+
+test("seo-diff --sitemap：偵測網址增減、priority、lastmod 缺漏或格式錯、content-type 與 robots.txt 逐行差異", async () => {
+  sitemapDrift = "content";
+  const { code, stdout } = await run("seo-diff.mjs", ["--sitemap"]);
+  assert.equal(code, 1, stdout);
+  assert.match(stdout, /✗ \/sitemap\.xml/);
+  assert.match(stdout, /content-type application\/xml → text\/xml/);
+  assert.match(stdout, /- <loc> https:\/\/cross\.twinhao\.com\/specialty\/x\n/);
+  assert.match(stdout, /\+ <loc> https:\/\/cross\.twinhao\.com\/clinic\/extra\n/);
+  assert.match(stdout, /https:\/\/cross\.twinhao\.com\/ priority：1 → 0\.9/);
+  assert.match(stdout, /https:\/\/cross\.twinhao\.com\/area\/%E9%AB%98%E9%9B%84%E5%B8%82 lastmod：有 → （無）/);
+  assert.match(stdout, /預覽 https:\/\/cross\.twinhao\.com\/ lastmod 不是 ISO 8601 時間：not-a-date/);
+  assert.match(stdout, /✗ \/robots\.txt\n\s+- 第 3 行 "Disallow: \/api\/"\n\s+\+ 第 3 行 "Disallow: \/apix\/"/);
+});
+
+test("seo-diff --sitemap --group：同一次執行比 sitemap / robots 與該群組路由（各自計數）", async () => {
+  drift = false;
+  sitemapDrift = false;
+  const { code, stdout, stderr } = await run("seo-diff.mjs", ["--sitemap", "--group", "static"]);
+  assert.equal(code, 0, stdout + stderr);
+  assert.match(stdout, /\[sitemap\]\n✓ \/sitemap\.xml（3 個網址）\n✓ \/robots\.txt/);
+  assert.match(stdout, /\[static\]\n✓ \/terms\n✓ \/privacy\n✓ \/refund\n✓ \/pricing/);
+  assert.match(stdout, /全部 6 條路由一致/);
+});
+
+test("seo-diff --sitemap：網址相同但順序不同、或 lastmod 以外的 XML 不同，都列為差異", async () => {
+  sitemapDrift = "order";
+  const order = await run("seo-diff.mjs", ["--sitemap"]);
+  assert.equal(order.code, 1, order.stdout);
+  assert.match(order.stdout, /網址順序不同：第 2 筆 基準 https:\/\/cross\.twinhao\.com\/area\/%E9%AB%98%E9%9B%84%E5%B8%82，預覽 https:\/\/cross\.twinhao\.com\/specialty\/x/);
+  assert.match(order.stdout, /✓ \/robots\.txt/);
+
+  sitemapDrift = "bytes";
+  const bytes = await run("seo-diff.mjs", ["--sitemap"]);
+  assert.equal(bytes.code, 1, bytes.stdout);
+  assert.match(bytes.stdout, /XML 內容不同（lastmod 以外）：第 2 行/);
+  assert.match(bytes.stdout, /xmlns:image/);
+  sitemapDrift = false;
 });
 
 test("比對工具頂部註解寫明 auth 路由是 local-vs-local（3101 ↔ 本地 preview，皆接 8001）", () => {

@@ -33,6 +33,23 @@ for (const path of ["/", "/terms", "/privacy", "/refund", "/pricing"]) {
   });
 }
 
+// 預約流程 ssr = false（沒有 server load 可 setHeaders）：舊版是動態渲染，3100 基準與正式站皆回 Next 動態頁標頭
+const DYNAMIC_PAGE_CACHE = "private, no-cache, no-store, max-age=0, must-revalidate";
+for (const path of [
+  "/booking/00000000-0000-0000-0000-000000000000",
+  "/booking/00000000-0000-0000-0000-000000000000/success?id=x",
+]) {
+  test(`${path} 帶動態頁快取標頭（不進 CDN、瀏覽器不快取）`, async () => {
+    if (problem) assert.fail(problem);
+    for (const method of ["GET", "HEAD"]) {
+      const res = await fetch(base + path, { method });
+      await res.body?.cancel();
+      assert.equal(res.status, 200, `${method} ${path}`);
+      assert.equal(res.headers.get("cache-control"), DYNAMIC_PAGE_CACHE, `${method} ${path}`);
+    }
+  });
+}
+
 test("快取標頭只加在靜態頁：不存在的路徑（404）不帶一年 s-maxage", async () => {
   if (problem) assert.fail(problem);
   const res = await fetch(`${base}/no-such-page-for-cache-test`);

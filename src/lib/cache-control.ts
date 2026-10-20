@@ -6,5 +6,11 @@ export const STATIC_PAGE_CACHE = "public, s-maxage=31536000, stale-while-revalid
 /** 診所詳情頁：CDN 快取 5 分鐘（後台改資料最慢 5 分鐘生效）；登入相關畫面都在瀏覽器端，回應與使用者無關 */
 export const CLINIC_PAGE_CACHE = "public, s-maxage=300, stale-while-revalidate";
 
-/** 診所專屬分享圖 og.png：CDN 快取一天 */
+/** 診所專屬分享圖 og.png：完整的卡片 CDN 快取一天 */
 export const CLINIC_OG_CACHE = "public, s-maxage=86400, stale-while-revalidate";
+
+/**
+ * 診所分享圖退化時（字型、後端、logo 暫時失敗，或退回品牌卡）：照舊版 opengraph-image 的標頭不進 CDN 快取，
+ * 下一次請求重新產生，避免一次暫時失敗把錯的卡釘在 CDN 上一天、被 LINE / FB 爬蟲抓走
+ */
+export const CLINIC_OG_DEGRADED_CACHE = "public, max-age=0, must-revalidate";

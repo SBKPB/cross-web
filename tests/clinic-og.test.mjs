@@ -2,12 +2,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { isRedirect } from "@sveltejs/kit";
-import { CLINIC_OG_CACHE } from "../src/lib/cache-control.ts";
+import { CLINIC_OG_CACHE, CLINIC_OG_DEGRADED_CACHE } from "../src/lib/cache-control.ts";
 
 // 診所專屬分享圖（移植自舊版 app/clinic/[clinic-id]/opengraph-image.tsx）：
 // - 1200×630 PNG；有 logo（PNG/JPEG/GIF）用 logo，否則十字記號；中文用 Noto Sans TC 子集
 // - 字型載入失敗退回 Latin（Cross / Online Clinic Booking）；任何意外退回漸層品牌卡，永不 500
 // - 後端只經 event.fetch（相對路徑走代理）；Google Fonts、logo 是外部網址，用全域 fetch（不帶 event 的 cookie）
+// - 只有「完整」的卡片才讓 CDN 快取一天；字型、後端、logo 暫時失敗或退回品牌卡時照舊版不快取
+//   （舊版 public, max-age=0, must-revalidate，每次重新產生），避免一次失敗把錯的卡釘在 CDN 上 24 小時
 const { GET } = await import("../src/routes/clinic/[id]/og.png/+server.ts");
 const { clinicCardElement, renderClinicOg } = await import("../src/lib/og/clinic-og.ts");
 
@@ -40,17 +42,21 @@ function mockExternal(t, { fonts = "ok", logo } = {}) {
     assert.ok(/^https?:\/\//.test(url) && !url.includes("/api/v1/"), `後端不應走全域 fetch：${url}`);
     if (url.startsWith(FONT_CSS_PREFIX)) {
       if (fonts === "fail") throw new TypeError("fetch failed");
+      if (fonts === "no-ttf") return new Response("@font-face { src: url(https://fonts.gstatic.com/s/sub.woff2) format('woff2'); }");
       return new Response("@font-face { src: url(https://fonts.gstatic.com/s/sub.ttf) format('truetype'); }");
     }
     if (url === "https://fonts.gstatic.com/s/sub.ttf") return new Response(FONT);
-    if (logo && url === logo.url) return new Response(logo.body, { headers: { "content-type": logo.type } });
+    if (logo && url === logo.url) {
+      if (logo.throws) throw new TypeError("fetch failed");
+      return new Response(logo.body, { status: logo.status ?? 200, headers: { "content-type": logo.type } });
+    }
     return new Response("not found", { status: 404 });
   });
   return calls;
 }
 
-/** 假的 event：fetch 只會被用來打 /api/v1（代理） */
-function event(clinics) {
+/** 假的 event：fetch 只會被用來打 /api/v1（代理）；status 模擬後端錯誤回應 */
+function event(clinics, { status = 200 } = {}) {
   const calls = [];
   return {
     calls,
@@ -59,7 +65,7 @@ function event(clinics) {
     fetch: async (url) => {
       calls.push(String(url));
       if (clinics instanceof Error) throw clinics;
-      return json(clinics);
+      return json(clinics, status);
     },
   };
 }
@@ -84,10 +90,83 @@ test("字型載入失敗、後端掛掉：仍回 200 PNG（退回 Latin 版面�
   const external = mockExternal(t, { fonts: "fail" });
   const res = await GET(event(new TypeError("fetch failed")));
   assert.equal(res.status, 200);
+  assert.equal(res.headers.get("content-type"), "image/png");
+  assert.equal(res.headers.get("cache-control"), CLINIC_OG_DEGRADED_CACHE, "退化卡不可進 CDN 快取一天");
   assert.deepEqual(pngSize(await res.arrayBuffer()), { width: 1200, height: 630 });
   const css = external.find((u) => u.startsWith(FONT_CSS_PREFIX));
   assert.ok(decodeURIComponent(css).includes("診所線上預約線上預約掛號"), css);
 });
+
+test("退化快取標頭照舊版：public, max-age=0, must-revalidate（不含 s-maxage）", () => {
+  assert.equal(CLINIC_OG_DEGRADED_CACHE, "public, max-age=0, must-revalidate");
+  assert.ok(!CLINIC_OG_DEGRADED_CACHE.includes("s-maxage"));
+});
+
+// 暫時性失敗：卡片內容不是這間診所「應有」的樣子 → 不可讓 CDN 快取一天
+const PNG_LOGO = "https://images.example.com/logo.png";
+const degradedCases = [
+  { name: "字型載入失敗（後端正常）→ Latin 卡", external: { fonts: "fail" }, clinics: [RAW] },
+  { name: "Google Fonts 回的 CSS 沒有 truetype 來源", external: { fonts: "no-ttf" }, clinics: [RAW] },
+  { name: "後端連不上（fetch 丟錯）→ 預設名稱", external: {}, clinics: new TypeError("fetch failed") },
+  { name: "後端回 502", external: {}, clinics: { detail: "bad gateway" }, status: 502 },
+  { name: "後端回 200 但不是陣列", external: {}, clinics: { detail: "oops" } },
+  {
+    name: "PNG logo 下載丟錯 → 十字記號",
+    external: { logo: { url: PNG_LOGO, throws: true } },
+    clinics: [{ ...RAW, logo: PNG_LOGO }],
+  },
+  {
+    name: "PNG logo 回 503 → 十字記號",
+    external: { logo: { url: PNG_LOGO, body: "x", type: "text/plain", status: 503 } },
+    clinics: [{ ...RAW, logo: PNG_LOGO }],
+  },
+  {
+    name: "渲染失敗 → 漸層品牌卡",
+    external: { logo: { url: PNG_LOGO, body: Buffer.from("not a png"), type: "image/png" } },
+    clinics: [{ ...RAW, logo: PNG_LOGO }],
+  },
+];
+for (const c of degradedCases) {
+  test(`退化不快取一天：${c.name}`, async (t) => {
+    mockExternal(t, c.external);
+    const e = event(c.clinics, { status: c.status });
+    const res = await GET(e);
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("content-type"), "image/png");
+    assert.equal(res.headers.get("cache-control"), CLINIC_OG_DEGRADED_CACHE);
+    assert.deepEqual(pngSize(await res.arrayBuffer()), { width: 1200, height: 630 });
+    const out = await renderClinicOg(ID, { backendFetch: event(c.clinics, { status: c.status }).fetch, externalFetch: globalThis.fetch });
+    assert.equal(out.degraded, true);
+  });
+}
+
+// 穩定狀態：每次產生都一樣的卡（院所不在清單、logo 是不支援的格式）→ 可以快取一天
+const stableCases = [
+  { name: "完整卡（有字型、有院所）", external: {}, clinics: [RAW] },
+  { name: "院所不在清單（後端正常）→ 預設名稱", external: {}, clinics: [{ ...RAW, id: "other" }] },
+  { name: "院所清單為空", external: {}, clinics: [] },
+  {
+    name: "PNG logo 嵌入",
+    external: { logo: { url: PNG_LOGO, body: PNG_1PX, type: "image/png" } },
+    clinics: [{ ...RAW, logo: PNG_LOGO }],
+  },
+  {
+    name: "AVIF logo（格式不支援，固定用十字記號）",
+    external: { logo: { url: "https://images.example.com/logo.avif", body: PNG_1PX, type: "image/avif" } },
+    clinics: [{ ...RAW, logo: "https://images.example.com/logo.avif" }],
+  },
+];
+for (const c of stableCases) {
+  test(`穩定卡快取一天：${c.name}`, async (t) => {
+    mockExternal(t, c.external);
+    const res = await GET(event(c.clinics));
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("cache-control"), CLINIC_OG_CACHE);
+    const out = await renderClinicOg(ID, { backendFetch: event(c.clinics).fetch, externalFetch: globalThis.fetch });
+    assert.equal(out.degraded, false);
+    assert.deepEqual(pngSize(out.png), { width: 1200, height: 630 });
+  });
+}
 
 test("logo 是 PNG 才嵌入；AVIF 等 Satori 不支援的格式退回十字記號", async (t) => {
   const logo = { url: "https://images.example.com/logo.png", body: PNG_1PX, type: "image/png" };
@@ -101,7 +180,7 @@ test("logo 是 PNG 才嵌入；AVIF 等 Satori 不支援的格式退回十字記
   mockExternal(t, { logo: avif });
   const withAvif = await renderClinicOg(ID, { backendFetch: event([{ ...RAW, logo: avif.url }]).fetch, externalFetch: globalThis.fetch });
   const without = await renderClinicOg(ID, { backendFetch: event([RAW]).fetch, externalFetch: globalThis.fetch });
-  assert.deepEqual(Buffer.from(withAvif), Buffer.from(without), "AVIF logo 應與沒有 logo 的圖相同");
+  assert.deepEqual(Buffer.from(withAvif.png), Buffer.from(without.png), "AVIF logo 應與沒有 logo 的圖相同");
 });
 
 test("渲染失敗（logo 標成 PNG 但內容壞掉）：退回漸層品牌卡，不丟錯", async (t) => {
@@ -113,7 +192,7 @@ test("渲染失敗（logo 標成 PNG 但內容壞掉）：退回漸層品牌卡�
   assert.deepEqual(pngSize(bytes), { width: 1200, height: 630 });
   // 與後端回空清單（無名稱、無 logo）的正常卡不同，證明走的是退回品牌卡
   const normal = await renderClinicOg(ID, { backendFetch: event([]).fetch, externalFetch: globalThis.fetch });
-  assert.notDeepEqual(bytes, Buffer.from(normal));
+  assert.notDeepEqual(bytes, Buffer.from(normal.png));
 });
 
 test("版面：有字型顯示診所名與副標（名稱超過 12 字縮小），沒字型顯示 Latin；有 logo 用 img", () => {

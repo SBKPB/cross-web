@@ -25,15 +25,18 @@ interface OgClinic {
   logo: string | null;
 }
 
-/** 院所清單（後端經 event.fetch 走代理）；任何錯誤回 null，卡片改用預設名稱 */
-async function getClinic(fetch: Fetch, id: string): Promise<OgClinic | null> {
+/**
+ * 院所清單（後端經 event.fetch 走代理）；找不到或任何錯誤時 clinic 為 null，卡片改用預設名稱。
+ * ok=false 表示後端暫時失敗（非 2xx、連線錯誤、回應格式不對），與「院所不在清單」分開，供呼叫端判斷能否長時間快取。
+ */
+async function getClinic(fetch: Fetch, id: string): Promise<{ clinic: OgClinic | null; ok: boolean }> {
   try {
     const res = await fetch("/api/v1/booking/clinics");
-    if (!res.ok) return null;
+    if (!res.ok) return { clinic: null, ok: false };
     const arr = (await res.json()) as OgClinic[];
-    return arr.find((c) => c.id === id) ?? null;
+    return { clinic: arr.find((c) => c.id === id) ?? null, ok: true };
   } catch {
-    return null;
+    return { clinic: null, ok: false };
   }
 }
 
@@ -54,19 +57,23 @@ async function loadTcSubset(fetch: Fetch, text: string): Promise<ArrayBuffer | n
   }
 }
 
-async function logoDataUrl(fetch: Fetch, logo: string | null): Promise<string | null> {
-  if (!logo) return null;
+/**
+ * logo 轉 data URL；拿不到時 logo 為 null，卡片改用品牌十字記號。
+ * ok=false 表示下載暫時失敗（非 2xx、連線錯誤）；沒有 logo 或格式不支援是固定結果，ok 仍為 true。
+ */
+async function logoDataUrl(fetch: Fetch, logo: string | null): Promise<{ logo: string | null; ok: boolean }> {
+  if (!logo) return { logo: null, ok: true };
   try {
     const r = await fetch(logo);
-    if (!r.ok) return null;
+    if (!r.ok) return { logo: null, ok: false };
     const ct = (r.headers.get("content-type") || "").toLowerCase();
     // Satori 僅可靠支援 PNG / JPEG / GIF；AVIF / WebP / SVG 會在渲染階段拋錯。
     // 診所 logo 目前以 AVIF 提供，故不支援的格式一律退回 null，改用品牌十字記號。
-    if (!/image\/(png|jpe?g|gif)/.test(ct)) return null;
+    if (!/image\/(png|jpe?g|gif)/.test(ct)) return { logo: null, ok: true };
     const buf = await r.arrayBuffer();
-    return `data:${ct};base64,${Buffer.from(buf).toString("base64")}`;
+    return { logo: `data:${ct};base64,${Buffer.from(buf).toString("base64")}`, ok: true };
   } catch {
-    return null;
+    return { logo: null, ok: false };
   }
 }
 
@@ -246,23 +253,31 @@ async function renderPng(element: OgNode, options: ConstructorParameters<typeof 
   return new ImageResponse(element as never, options).arrayBuffer();
 }
 
+/** 分享卡結果；degraded=true 表示這張卡受暫時失敗影響，不是該診所應有的樣子 */
+export interface ClinicOgResult {
+  png: ArrayBuffer;
+  degraded: boolean;
+}
+
 /**
  * 產生診所分享卡 PNG。後端資料經 backendFetch（event.fetch，走代理）；
  * Google Fonts 與 logo 是外部網址，用 externalFetch（全域 fetch，不帶這次請求的 cookie）。
  * 任何意外（字型 / 圖片 / 渲染）→ 安全退回 Latin 品牌卡，永不 500。
+ * degraded：字型載入失敗、後端暫時失敗、logo 下載失敗，或退回品牌卡時為 true，呼叫端據此不讓 CDN 長時間快取
+ * （舊版每次請求重新產生，暫時失敗下一次就恢復）。院所不在清單、logo 格式不支援是固定結果，不算退化。
  */
 export async function renderClinicOg(
   clinicId: string,
   { backendFetch, externalFetch }: { backendFetch: Fetch; externalFetch: Fetch },
-): Promise<ArrayBuffer> {
+): Promise<ClinicOgResult> {
   try {
-    const clinic = await getClinic(backendFetch, clinicId);
+    const { clinic, ok: clinicOk } = await getClinic(backendFetch, clinicId);
 
     const name = clinic?.name ?? "診所線上預約";
     const city = parseCityFromAddress(clinic?.address ?? undefined) ?? "";
     const subtitle = `${city ? `${city}・` : ""}線上預約掛號`;
 
-    const [fontData, logo] = await Promise.all([
+    const [fontData, { logo, ok: logoOk }] = await Promise.all([
       // 子集需含「實際會渲染」的所有字元：診所名/副標（中文）+ 頁尾品牌字（Latin
       // 「Cross」「cross.twinhao.com」）。否則 Latin 字在純中文子集下無字形 → 渲染失敗。
       loadTcSubset(externalFetch, `${name}${subtitle}線上預約掛號診所 Cross cross.twinhao.com`),
@@ -271,7 +286,7 @@ export async function renderClinicOg(
 
     const hasFont = !!fontData;
 
-    return await renderPng(clinicCardElement({ name, subtitle, logo, hasFont }), {
+    const png = await renderPng(clinicCardElement({ name, subtitle, logo, hasFont }), {
       ...OG_SIZE,
       // 載入失敗時「省略 fonts」讓 @vercel/og 用內建 Latin 字型（傳空陣列會讓
       // Satori 丟 No fonts are loaded）；此時版面走 Latin 分支。
@@ -281,7 +296,8 @@ export async function renderClinicOg(
           }
         : {}),
     });
+    return { png, degraded: !clinicOk || !hasFont || !logoOk };
   } catch {
-    return renderPng(fallbackCardElement(), { ...OG_SIZE });
+    return { png: await renderPng(fallbackCardElement(), { ...OG_SIZE }), degraded: true };
   }
 }

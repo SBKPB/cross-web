@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { after, before, test } from "node:test";
 
 // 比對工具（scripts/parity）本身的測試：用三個本機伺服器分別扮演「基準」「預覽」「第三方」，
@@ -17,6 +18,12 @@ const PNG = Buffer.from(
 );
 
 const GOOGLEBOT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+// 照抄 next@16.4.0 dist/shared/lib/router/utils/html-bots.js 的 HTML_LIMITED_BOT_UA_RE：
+// Next 16 只對符合這個 regex 的 UA 關閉串流 metadata（server/lib/streaming-metadata.js），其他 UA（含 Googlebot）都可能串流到 <body>。
+// 下方「以舊版 Next 實際函式驗證」的測試會比對這份副本與 ../web-next-ref 的原始碼是否一致。
+const HTML_LIMITED_BOT_UA_RE =
+  /[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight/i;
+const NEXT_REF = resolve(process.env.NEXT_REF_DIR ?? "../web-next-ref");
 const seen = { base: [], preview: [], third: [] };
 const origins = {};
 let drift = false; // 開啟時預覽站在 static 四頁各製造一種差異
@@ -59,8 +66,9 @@ ${d && path === "/terms" ? "" : `<meta property="og:title" content="條款">`}
 <meta ${ogUrlAttr}="og:url" content="${self}${path}">
 <meta property="og:image" content="${ogImage}">
 <meta name="twitter:card" content="summary">`;
-    // 模擬 Next 16 的串流 metadata：基準對一般 UA 把 metadata 放到 body，只有 Googlebot 等爬蟲才放在 <head>
-    const metaInHead = side !== "base" || req.headers["user-agent"] === GOOGLEBOT;
+    // 模擬 Next 16 的串流 metadata：基準只對 HTML-limited bot UA 把 metadata 放在 <head>，
+    // 其他 UA（一般瀏覽器、Googlebot）一律串流到 <body>；預覽（SvelteKit）不論 UA 都在 <head>
+    const metaInHead = side !== "base" || HTML_LIMITED_BOT_UA_RE.test(req.headers["user-agent"] ?? "");
     const html = `<!doctype html><html><head>
 ${metaInHead ? meta : ""}
 <link rel="stylesheet" href="${origins.third}/font.css">
@@ -115,7 +123,18 @@ function assertBypassScoped() {
   }
 }
 
-test("seo-diff：內容相同（圖片網址不同）→ 0 差異，密鑰只送預覽來源，兩邊都用 Googlebot UA", async () => {
+test("fixture：基準對一般 UA 與 Googlebot 把 metadata 串流到 <body>，只有 HTML-limited bot 放在 <head>", async () => {
+  const placement = async (ua) => {
+    const html = await (await fetch(`${origins.base}/terms`, { headers: { "user-agent": ua } })).text();
+    const head = html.slice(0, html.search(/<\/head>/i));
+    return head.includes("<title>") ? "head" : "body";
+  };
+  assert.equal(await placement(GOOGLEBOT), "body");
+  assert.equal(await placement("Mozilla/5.0 Chrome/140.0.0.0 Safari/537.36"), "body");
+  assert.equal(await placement("Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"), "head");
+});
+
+test("seo-diff：內容相同（圖片網址不同）→ 0 差異，密鑰只送預覽來源，兩邊都用 HTML-limited bot UA", async () => {
   drift = false;
   const { code, stdout, stderr } = await run("seo-diff.mjs", ["--group", "static"]);
   assert.equal(code, 0, stdout + stderr);
@@ -123,8 +142,33 @@ test("seo-diff：內容相同（圖片網址不同）→ 0 差異，密鑰只送
   assertBypassScoped();
   for (const side of ["base", "preview"]) {
     assert.ok(seen[side].length > 0);
-    assert.ok(seen[side].every((r) => r.ua === GOOGLEBOT), `${side} 收到非 Googlebot UA：${JSON.stringify(seen[side])}`);
+    assert.ok(
+      seen[side].every((r) => HTML_LIMITED_BOT_UA_RE.test(r.ua ?? "")),
+      `${side} 收到不在 HTML-limited bot 清單的 UA：${JSON.stringify(seen[side])}`,
+    );
   }
+});
+
+// 直接拿舊版 Next 的判定函式驗證：seo-diff 實際送出的 UA 必須讓 Next 關閉串流 metadata；
+// 同時確認 fixture 的 regex 副本與 Next 原始碼一致（Next 升級改清單時這裡會失敗）
+const streamingMetadataJs = join(NEXT_REF, "node_modules/next/dist/server/lib/streaming-metadata.js");
+test("seo-diff 的 UA 經舊版 Next 判定為不串流 metadata（Googlebot 則會串流）", {
+  skip: existsSync(streamingMetadataJs) ? false : `找不到舊版 Next：${streamingMetadataJs}（可設 NEXT_REF_DIR）`,
+}, async () => {
+  const require = createRequire(streamingMetadataJs);
+  const { shouldServeStreamingMetadata } = require(streamingMetadataJs);
+  const { HTML_LIMITED_BOT_UA_RE: nextRe } = require("../../shared/lib/router/utils/html-bots.js");
+  assert.equal(HTML_LIMITED_BOT_UA_RE.source, nextRe.source, "fixture 的 regex 副本與 Next 不一致");
+  assert.equal(HTML_LIMITED_BOT_UA_RE.flags, nextRe.flags);
+
+  drift = false;
+  const { code, stdout, stderr } = await run("seo-diff.mjs", ["--group", "static"]);
+  assert.equal(code, 0, stdout + stderr);
+  const uas = new Set([...seen.base, ...seen.preview].map((r) => r.ua));
+  assert.equal(uas.size, 1, `seo-diff 應只用一種 UA：${[...uas].join(" | ")}`);
+  const [ua] = uas;
+  assert.equal(shouldServeStreamingMetadata(ua, undefined), false, `Next 會對「${ua}」串流 metadata`);
+  assert.equal(shouldServeStreamingMetadata(GOOGLEBOT, undefined), true, "Googlebot 在 Next 16 應會串流 metadata");
 });
 
 test("seo-diff：偵測標籤缺漏、屬性不同、狀態碼、JSON-LD 與取不到的分享圖", async () => {

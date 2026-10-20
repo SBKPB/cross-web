@@ -3,7 +3,10 @@
 // 與每段 JSON-LD；有任何差異就印出並 exit 1。
 //
 // 用法：node scripts/parity/seo-diff.mjs --preview <url> [--base <url>] [--group <群組>] [--routes <檔案>]
-// - 兩邊都以 Googlebot UA 抓取：Next 16 對一般 UA 會把 metadata 串流到 <body>，只有爬蟲才保證放在 <head>。
+// - 兩邊都以 bingbot UA 抓取。Next 16 只對符合 HTML_LIMITED_BOT_UA_RE（next/dist/shared/lib/router/utils/html-bots.js）
+//   的 UA 關閉串流 metadata、保證 metadata 在 <head>（server/lib/streaming-metadata.js 的 shouldServeStreamingMetadata）；
+//   其他 UA 一律可能把 metadata 串流到 <body>。Googlebot 不在這份清單：is-bot.js 把它歸為會執行 JS 的 'dom' bot，
+//   待遇和一般瀏覽器相同，所以不能用 Googlebot UA。bingbot、facebookexternalhit 都在清單內。
 // - meta 以「屬性:名稱」為鍵比對（property:og:title 與 name:og:title 視為不同）。
 // - 每個請求 30 秒逾時（環境變數 PARITY_FETCH_TIMEOUT_MS 可改），逾時的路由列為差異並以 exit 1 結束。
 // - 預覽受 Vercel Deployment Protection 保護時，設環境變數 VERCEL_AUTOMATION_BYPASS_SECRET；
@@ -21,7 +24,8 @@ import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual, parseArgs } from "node:util";
 
 const PROD = "https://cross.twinhao.com";
-const GOOGLEBOT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+// 必須符合 Next 的 HTML-limited bot 清單（見頂部註解），舊版才會把 metadata 放在 <head>
+const CRAWLER_UA = "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)";
 const TIMEOUT_MS = Number(process.env.PARITY_FETCH_TIMEOUT_MS ?? 30_000);
 const { values: args } = parseArgs({
   options: {
@@ -52,7 +56,7 @@ const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
  */
 async function get(url, { follow = false, body = true } = {}) {
   for (let hop = 0; ; hop++) {
-    const headers = { "user-agent": GOOGLEBOT };
+    const headers = { "user-agent": CRAWLER_UA };
     if (BYPASS && new URL(url).origin === preview) headers["x-vercel-protection-bypass"] = BYPASS;
     let location;
     try {

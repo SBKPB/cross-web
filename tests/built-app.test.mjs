@@ -83,6 +83,58 @@ for (const [path, body] of [
   });
 }
 
+// 伺服器端渲染外框與骨架之後，院所資料仍在瀏覽器端抓（攔截 /api/v1，不連後端）：
+// hydration 後顯示預約流程且無錯誤；未開通線上預約的院所以 replace 導回院所頁（舊版 redirect() 串流後在瀏覽器端 replace，HTTP 仍是 200）
+test("預約頁 hydration 後在瀏覽器端載入院所資料；未開通線上預約以 replace 導回院所頁", { skip: existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}` }, async () => {
+  if (problem) assert.fail(problem);
+  const id = "11111111-2222-3333-4444-555555555555";
+  const config = (onlineBooking) => ({
+    id, clinic_name: "測試預約診所", logo: null, hero_banner: null, primary_color: "#1d4ed8", phone: "02-1234-5678",
+    address: "台北市信義區市府路1號", google_maps_url: null, payment_type: "both",
+    online_booking_enabled: onlineBooking, phone_booking_enabled: true, show_schedule: false,
+  });
+  const browser = await chromium.launch({ executablePath: CHROME });
+  try {
+    for (const onlineBooking of [true, false]) {
+      const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+      const problems = [];
+      page.on("pageerror", (e) => problems.push(`pageerror: ${e.message}`));
+      page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") problems.push(`${m.type()}: ${m.text()}`); });
+      const apiCalls = [];
+      await page.route(/\/api\/v1\//, (route) => {
+        const path = new URL(route.request().url()).pathname;
+        apiCalls.push(path);
+        const json = (body, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+        if (path.endsWith(`/clinics/${id}/config`)) return json(config(onlineBooking));
+        if (path.endsWith(`/clinics/${id}/services`)) return json([{ id: "s1", name: "一般門診諮詢", description: "", price: 0, duration_minutes: 15, category: "一般服務" }]);
+        if (path.endsWith(`/clinics/${id}/doctors`)) return json([{ id: "d1", name: "王醫師", title: "家醫科", specialties: [], is_bookable: true }]);
+        return json({ detail: "Not Found" }, 404);
+      });
+      // 導回院所頁後的 client 端換頁資料請求不連後端
+      await page.route(/\/clinic\/[^/]+\/__data\.json/, (route) => route.fulfill({ status: 404, contentType: "text/plain", body: "" }));
+      await page.goto(`${base}/terms`);
+      const historyBefore = await page.evaluate(() => history.length);
+      await page.goto(`${base}/booking/${id}`);
+      if (onlineBooking) {
+        await page.getByText("測試預約診所").first().waitFor({ timeout: 15_000 });
+        await page.getByText("一般門診諮詢").first().waitFor({ timeout: 15_000 });
+        assert.equal(await page.locator('[aria-label="載入預約資訊中"]').count(), 0, "資料回來後骨架消失");
+        assert.deepEqual(problems, []);
+      } else {
+        await page.waitForURL(`${base}/clinic/${id}`, { timeout: 15_000 });
+        // 直接開預約頁算一筆歷史；replace 導回後不多一筆（上一頁回到 /terms）
+        assert.equal(await page.evaluate(() => history.length), historyBefore + 1, "以 replace 導回院所頁");
+      }
+      for (const kind of ["config", "services", "doctors"]) {
+        assert.ok(apiCalls.includes(`/api/v1/booking/clinics/${id}/${kind}`), `瀏覽器端抓 ${kind}：${JSON.stringify(apiCalls)}`);
+      }
+      await page.close();
+    }
+  } finally {
+    await browser.close();
+  }
+});
+
 test("快取標頭只加在靜態頁：不存在的路徑（404）不帶一年 s-maxage", async () => {
   if (problem) assert.fail(problem);
   const res = await fetch(`${base}/no-such-page-for-cache-test`);

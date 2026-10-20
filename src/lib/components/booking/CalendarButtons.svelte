@@ -7,7 +7,7 @@
 	// 移植自舊版 components/booking/calendar-buttons.tsx（連結與 ICS 內容見 $lib/booking/calendar）
 	let { booking, primaryColor = "#1d4ed8" }: { booking: BookingResponse; primaryColor?: string } = $props();
 
-	// Apple 日曆按鈕只在 Apple 裝置顯示。成功頁 ssr = false、預約資料載入後才渲染本元件，
+	// Apple 日曆按鈕只在 Apple 裝置顯示。成功頁的預約資料只在瀏覽器端載入，本元件不會在伺服器端渲染，
 	// 舊版此時 useSyncExternalStore 直接取 client 值，故初始化時判斷一次即可。
 	const showApple = isAppleDevice();
 

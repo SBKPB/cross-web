@@ -3,7 +3,7 @@
 	// 只在 root layout 內、沒有 header / footer，版面與 inline 樣式照 next/dist/client/components/
 	// http-access-fallback/error-fallback.js 與 styles/access-error-styles.js。
 	// <head> 照舊版：全站預設 metadata（root layout 輸出）再加 robots noindex；<title> 依 404 種類見下。
-	// 由 routes/+error.svelte 與預約頁（ssr = false，舊版 page 內 notFound()）共用。
+	// 由 routes/+error.svelte 與預約頁（舊版 page 內 notFound()；預約資料在瀏覽器端載入，故在頁面內渲染）共用。
 	let {
 		status,
 		message,

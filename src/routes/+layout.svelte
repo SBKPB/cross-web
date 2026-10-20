@@ -57,8 +57,9 @@
 	<link rel="icon" href="/favicon.ico" sizes="64x64" type="image/x-icon" />
 	<link rel="icon" href="/icon.png" sizes="512x512" type="image/png" />
 	<link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png" />
-	<!-- 錯誤頁（404 等）不輸出：舊版 Next 的 not-found 回應伺服器輸出的 HTML 裡沒有這段 -->
-	{#if !page.error}
+	<!-- 頁面 load 丟出的錯誤（如找不到院所的 404）不輸出：舊版 notFound() 回應的伺服器 HTML 沒有這段；
+	     找不到路由（route.id 為 null）的 404 舊版有輸出，照舊 -->
+	{#if !page.error || page.route.id === null}
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html jsonLdScript(SITE_JSONLD)}
 	{/if}

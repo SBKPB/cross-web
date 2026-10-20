@@ -40,6 +40,7 @@
     { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218", "auth": false },
     { "path": "/booking/00000000-0000-0000-0000-000000000000", "auth": false },
     { "path": "/booking/not-a-uuid", "auth": false },
+    { "path": "/booking/c406782c-628f-411c-890c-62a3dc4a5cf0", "auth": false },
     { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218/success", "auth": false },
     { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218/success?id=00000000-0000-0000-0000-000000000000&number=X", "auth": false }
   ]

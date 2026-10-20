@@ -14,3 +14,9 @@ export const CLINIC_OG_CACHE = "public, s-maxage=86400, stale-while-revalidate";
  * 下一次請求重新產生，避免一次暫時失敗把錯的卡釘在 CDN 上一天、被 LINE / FB 爬蟲抓走
  */
 export const CLINIC_OG_DEGRADED_CACHE = "public, max-age=0, must-revalidate";
+
+/**
+ * 在地落地頁（/area、/specialty 及其子頁）與 sitemap.xml：CDN 快取一小時（舊版 revalidate = 3600 的 ISR）。
+ * 舊版 ISR 連 notFound() 的 404 也快取一小時（3100 基準與正式站皆是），所以 404 也帶這個標頭
+ */
+export const LANDING_PAGE_CACHE = "public, s-maxage=3600, stale-while-revalidate";

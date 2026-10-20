@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright-core";
 import { buildProblem, CHROME, startPreview } from "./support/built-app.mjs";
@@ -59,6 +59,17 @@ test("找不到路由：Next 預設 404 頁與 <head>", async () => {
   assert.match(html, /<h1 class="next-error-h1"[^>]*>\s*404\s*<\/h1>/);
   assert.match(html, /This page could not be found\./);
   assert.doesNotMatch(html, /public-content/, "不應包在民眾端外框內");
+});
+
+// 舊版 app/robots.ts 是靜態 metadata route（build 時產生，部署才更新）；新版 prerender 成靜態檔，Vercel 由 CDN 直接回應
+test("robots.txt：建置時預先產生為靜態檔（含 Vercel 輸出），內容與 3100 基準逐位元組相同", async () => {
+  if (problem) assert.fail(problem);
+  const baseline = readFileSync(new URL("./support/landing/robots-3100.txt", import.meta.url), "utf8");
+  assert.equal(readFileSync(new URL("../.vercel/output/static/robots.txt", import.meta.url), "utf8"), baseline);
+  const res = await fetch(`${base}/robots.txt`);
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get("content-type") ?? "", /^text\/plain/);
+  assert.equal(await res.text(), baseline);
 });
 
 test("舊分享圖網址 /opengraph-image（含任意 query）308 → /og.png，且 /og.png 取得到", async () => {

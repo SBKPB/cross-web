@@ -1,4 +1,5 @@
-import documents from "../content/developers/docs.json";
+// 加 import attribute：node --test 直接載入本檔（sitemap 測試）時，Node ESM 要求 JSON 標明 type
+import documents from "../content/developers/docs.json" with { type: "json" };
 
 export const developerDocuments = documents;
 export const developerRepository =

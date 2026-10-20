@@ -3,6 +3,7 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { radixAutoFocus } from "./radix-auto-focus.js";
 	import * as Dialog from "./index.js";
 	import DialogPortal from "./dialog-portal.svelte";
 	import type { Snippet } from "svelte";
@@ -13,6 +14,8 @@
 		class: className,
 		portalProps,
 		children,
+		onOpenAutoFocus,
+		onCloseAutoFocus,
 		showCloseButton = true,
 		...restProps
 	}: WithoutChildrenOrChild<DialogPrimitive.ContentProps> & {
@@ -20,6 +23,9 @@
 		children: Snippet;
 		showCloseButton?: boolean;
 	} = $props();
+
+	// 開啟、關閉時的焦點規則與舊版 Radix 相同（見 radix-auto-focus.ts）
+	const autoFocus = radixAutoFocus(() => ref);
 </script>
 
 <DialogPortal {...portalProps}>
@@ -32,6 +38,8 @@
 			className
 		)}
 		{...restProps}
+		onOpenAutoFocus={(e) => autoFocus.onOpen(e, onOpenAutoFocus)}
+		onCloseAutoFocus={(e) => autoFocus.onClose(e, onCloseAutoFocus)}
 	>
 		{@render children?.()}
 		{#if showCloseButton}

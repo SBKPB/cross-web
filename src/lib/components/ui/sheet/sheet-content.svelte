@@ -7,6 +7,7 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { radixAutoFocus } from "../dialog/radix-auto-focus.js";
 	import SheetOverlay from "./sheet-overlay.svelte";
 	import SheetPortal from "./sheet-portal.svelte";
 	import type { Snippet } from "svelte";
@@ -19,6 +20,8 @@
 		showCloseButton = true,
 		portalProps,
 		children,
+		onOpenAutoFocus,
+		onCloseAutoFocus,
 		...restProps
 	}: WithoutChildrenOrChild<SheetPrimitive.ContentProps> & {
 		portalProps?: WithoutChildrenOrChild<ComponentProps<typeof SheetPortal>>;
@@ -26,6 +29,9 @@
 		showCloseButton?: boolean;
 		children: Snippet;
 	} = $props();
+
+	// 開啟、關閉時的焦點規則與舊版 Radix 相同（見 radix-auto-focus.ts）
+	const autoFocus = radixAutoFocus(() => ref);
 </script>
 
 <SheetPortal {...portalProps}>
@@ -39,6 +45,8 @@
 			className
 		)}
 		{...restProps}
+		onOpenAutoFocus={(e) => autoFocus.onOpen(e, onOpenAutoFocus)}
+		onCloseAutoFocus={(e) => autoFocus.onClose(e, onCloseAutoFocus)}
 	>
 		{@render children?.()}
 		{#if showCloseButton}

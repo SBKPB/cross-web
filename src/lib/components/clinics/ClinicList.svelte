@@ -49,7 +49,7 @@
 	</div>
 {:else}
 	<div class={cn(GRID_CLASS, className)}>
-		{#each clinics as clinic (clinic.id)}
+		{#each clinics as clinic, i (i)}
 			<ClinicCard {clinic} onClick={() => handleCardClick(clinic)} />
 		{/each}
 	</div>

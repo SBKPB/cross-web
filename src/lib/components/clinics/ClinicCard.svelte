@@ -175,7 +175,7 @@
 		<!-- 服務子類別標籤（看診 / 醫美 / 美容 / 其他皆顯示，label 取自 taxonomy） -->
 		{#if displayDepartments.length > 0}
 			<div class="flex flex-wrap gap-1.5">
-				{#each displayDepartments as dept (dept)}
+				{#each displayDepartments as dept, i (i)}
 					<Badge variant="outline" class="text-muted-foreground">
 						{categoryLabel(tax.current, dept)}
 					</Badge>

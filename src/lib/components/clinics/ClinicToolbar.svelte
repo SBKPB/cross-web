@@ -139,7 +139,7 @@
 		<div class="space-y-2">
 			<p class="text-sm font-medium">服務分類 <span class="font-normal text-muted-foreground">可複選</span></p>
 			<div class="flex flex-wrap gap-2" role="group" aria-label="服務分類">
-				{#each subcategories as category (category.code)}
+				{#each subcategories as category, i (i)}
 					<Button
 						variant={filters.serviceCategories.includes(category.code) ? "default" : "secondary"}
 						class="min-h-11 rounded-full px-3 text-sm md:min-h-9"

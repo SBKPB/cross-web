@@ -57,8 +57,11 @@
 	<link rel="icon" href="/favicon.ico" sizes="64x64" type="image/x-icon" />
 	<link rel="icon" href="/icon.png" sizes="512x512" type="image/png" />
 	<link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png" />
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html jsonLdScript(SITE_JSONLD)}
+	<!-- 錯誤頁（404 等）不輸出：舊版 Next 的 not-found 回應伺服器輸出的 HTML 裡沒有這段 -->
+	{#if !page.error}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html jsonLdScript(SITE_JSONLD)}
+	{/if}
 </svelte:head>
 
 <!-- 主題：亮 / 暗 / 跟隨系統，以 <html class="dark"> 套用；首屏初始化腳本在 app.html，這裡不重複注入 -->

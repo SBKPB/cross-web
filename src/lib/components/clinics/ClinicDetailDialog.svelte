@@ -69,7 +69,7 @@
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-foreground">診療科別</h4>
 						<div class="flex flex-wrap gap-1.5">
-							{#each clinic.departments as dept (dept)}
+							{#each clinic.departments as dept, i (i)}
 								<Badge variant="outline" class="text-xs px-2 py-1 border-0 bg-accent text-primary">
 									{categoryLabel(tax.current, dept)}
 								</Badge>
@@ -102,7 +102,7 @@
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-foreground">門診時間</h4>
 						<div class="grid grid-cols-2 gap-1.5 text-sm">
-							{#each clinic.business_hours as hours (hours.day)}
+							{#each clinic.business_hours as hours, i (i)}
 								<div class="contents">
 									<div class="flex items-center gap-2 text-muted-foreground">
 										<Clock class="h-3.5 w-3.5 text-amber-500" />
@@ -122,7 +122,7 @@
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-foreground">專業人員</h4>
 						<div class="space-y-2">
-							{#each clinic.members.slice(0, 3) as member (member.id)}
+							{#each clinic.members.slice(0, 3) as member, i (i)}
 								<div class="flex items-center gap-3 text-sm">
 									<User class="h-4 w-4 shrink-0 text-primary" />
 									<div>
@@ -152,7 +152,7 @@
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-foreground">服務項目</h4>
 						<div class="space-y-1.5">
-							{#each clinic.services.slice(0, 4) as service (service.id)}
+							{#each clinic.services.slice(0, 4) as service, i (i)}
 								<!-- 價格 badge 統一規則（依 payment_type gating，三端一致） -->
 								{@const priceBadge = getServicePriceBadge(service.price, clinic.payment_type)}
 								<div class="flex items-center justify-between text-sm">

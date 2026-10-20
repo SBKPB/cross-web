@@ -14,6 +14,11 @@
 	import ScheduleTimetable from "$lib/components/clinic-detail/ScheduleTimetable.svelte";
 	import ServicePreviewList from "$lib/components/clinic-detail/ServicePreviewList.svelte";
 	import LandingClinicGrid from "$lib/components/seo/LandingClinicGrid.svelte";
+	import DatePicker from "$lib/components/booking/DatePicker.svelte";
+	import DoctorSelector from "$lib/components/booking/DoctorSelector.svelte";
+	import ServiceList from "$lib/components/booking/ServiceList.svelte";
+	import TimeSlotGrid from "$lib/components/booking/TimeSlotGrid.svelte";
+	import type { BookableDate, DoctorOption, ServiceOption, TimeSlot } from "$lib/types/booking";
 	import { FALLBACK_TAXONOMY } from "$lib/api/service-categories";
 	import type { LandingClinic } from "$lib/seo/landing-data";
 	import type { AnnouncementPublic, Clinic, ClinicDoctorDetail, Member, Service } from "$lib/types/clinic";
@@ -71,6 +76,12 @@
 		phone: null,
 		is_featured: false,
 	};
+
+	// 預約流程（/booking）：日期、時段、服務、人員皆來自後端
+	const slot: TimeSlot = { id: "t-dup", time: "09:30", period: "morning", isAvailable: true };
+	const day: BookableDate = { date: "2026-10-21", dayOfWeek: "三", dayNumber: 21, isToday: false, isAvailable: true, slots: [slot, slot] };
+	const bookingService: ServiceOption = { id: "bs-dup", name: "重複預約服務", description: "", price: 300, duration_minutes: 30, category: "一般服務" };
+	const bookingDoctor: DoctorOption = { id: "bd-dup", name: "重複預約醫師", title: "家醫科" };
 </script>
 
 <section id="card"><ClinicCard {clinic} /></section>
@@ -86,6 +97,15 @@
 <section id="schedule"><ScheduleTimetable {schedule} /></section>
 <section id="landing"><LandingClinicGrid clinics={[landing, landing]} taxonomy={FALLBACK_TAXONOMY} /></section>
 <DoctorDetailDialog open={true} {member} {detail} />
+
+<section id="booking-dates"><DatePicker dates={[day, day]} selectedDate={null} onSelectDate={() => {}} /></section>
+<section id="booking-slots"><TimeSlotGrid slots={[slot, slot]} selectedSlot={null} onSelectSlot={() => {}} /></section>
+<section id="booking-services">
+	<ServiceList services={[bookingService, bookingService]} selectedService={null} onSelectService={() => {}} paymentType="nhi" />
+</section>
+<section id="booking-doctors">
+	<DoctorSelector doctors={[bookingDoctor, bookingDoctor]} selectedDoctor={null} onSelectDoctor={() => {}} />
+</section>
 
 <!-- 角色分頁（舊版 ROLE_GROUPS）：超過兩個分頁才顯示，點選後只列該組成員 -->
 <section id="team-roles">

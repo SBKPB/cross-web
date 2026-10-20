@@ -28,5 +28,12 @@
     { "path": "/search?type=self_pay", "auth": false },
     { "path": "/search?cat=oth_manipulation", "auth": false },
     { "path": "/search?type=foo&city=%E5%8F%B0%E5%8C%97%E5%B8%82", "auth": false }
+  ],
+  "booking": [
+    { "path": "/booking/18c0ca2b-5af2-46ff-943f-41314e37169b", "auth": true },
+    { "path": "/booking/ece8efbf-efc4-40f1-baed-71046a534e65", "auth": true },
+    { "path": "/booking/00000000-0000-0000-0000-000000000000", "auth": true },
+    { "path": "/booking/18c0ca2b-5af2-46ff-943f-41314e37169b/success", "auth": true },
+    { "path": "/booking/18c0ca2b-5af2-46ff-943f-41314e37169b/success?id=00000000-0000-0000-0000-000000000000&number=X", "auth": true }
   ]
 }

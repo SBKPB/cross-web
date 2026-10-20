@@ -70,8 +70,8 @@
     { "path": "/join/verify?token=invalid-token-for-parity", "auth": false }
   ],
   "shortlink": [
-    { "path": "/c/c406782c", "auth": false, "expectStatus": 308, "finalPath": "/clinic/c406782c-628f-411c-890c-62a3dc4a5cf0" },
-    { "path": "/c/C406782C", "auth": false, "expectStatus": 308, "finalPath": "/clinic/c406782c-628f-411c-890c-62a3dc4a5cf0" },
+    { "path": "/c/c406782c", "auth": false, "expectStatus": 308 },
+    { "path": "/c/C406782C", "auth": false, "expectStatus": 308 },
     { "path": "/c/zzzzzzzz", "auth": false, "expectStatus": 404 },
     { "path": "/c/42399a23", "auth": false, "expectStatus": 404 }
   ]

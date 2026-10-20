@@ -10,8 +10,9 @@
 //     PARITY_TOKEN=… PARITY_REFRESH_TOKEN=… node scripts/parity/screenshot.mjs --base http://localhost:3101 --preview http://localhost:4173 --group <群組>
 //   token 由本地 dev DB 測試帳號登入取得（後端 http://localhost:8001）；不要對 Vercel preview（接正式後端）跑 auth 路由。
 // - 最後停留的路徑和要求的不同（例如 token 過期被導去 /auth）就列為錯誤，不算差異比例。
-//   路由可標 finalPath（例如未登入的會員頁 { "path": "/member", "auth": false, "finalPath": "/auth" }、
-//   短網址轉到診所頁）：兩邊都停在該路徑才比對，停在別處同樣列為錯誤。
+//   路由可標 finalPath（例如未登入的會員頁 { "path": "/member", "auth": false, "finalPath": "/auth" }）：
+//   兩邊都停在該路徑才比對，停在別處同樣列為錯誤。
+// - expectStatus 為 3xx 的轉址路由（例如 /c/[code]）略過截圖：沒有自己的頁面，狀態碼與 Location 由 seo-diff 比對。
 // - 預覽受 Vercel Deployment Protection 保護時設 VERCEL_AUTOMATION_BYPASS_SECRET；密鑰只加在送往預覽來源的請求
 //   （做法見 bypass.mjs：不用 extraHTTPHeaders，也不用 route.continue）。
 // - 像素比對在瀏覽器的 canvas 裡做，不另裝影像套件。
@@ -157,6 +158,12 @@ for (const [group, list] of Object.entries(args.group ? { [args.group]: routes[a
   mkdirSync(dir, { recursive: true });
   console.log(`\n[${group}]`);
   for (const route of list) {
+    // 轉址路由（例如 /c/[code] 短網址 308）沒有自己的頁面：狀態碼與 Location 由 seo-diff 比對，目的頁由所屬群組截圖。
+    // 也避開 Playwright 的 route 不攔轉址後請求、預覽轉址後少了 bypass 密鑰被導去 Vercel 登入頁的問題
+    if (route.expectStatus >= 300 && route.expectStatus < 400) {
+      console.log(`${route.path}  略過（轉址，狀態碼與 Location 由 seo-diff 比對）`);
+      continue;
+    }
     if (route.auth && !TOKEN) {
       console.log(`${route.path}  略過（auth 路由需設 PARITY_TOKEN，最好也設 PARITY_REFRESH_TOKEN）`);
       continue;

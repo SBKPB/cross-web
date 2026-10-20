@@ -477,3 +477,13 @@ test("screenshot：路由標了 finalPath 時，兩邊都轉到該頁才比對�
     assert.match(bad.stdout, new RegExp(`/member\\s+${v}\\s+→ 基準轉址到 /auth，預覽轉址到 /auth`));
   }
 });
+
+test("screenshot：expectStatus 為 3xx 的轉址路由略過截圖（沒有自己的頁面；狀態碼與 Location 由 seo-diff 比對）", {
+  skip: existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}`,
+}, async () => {
+  drift = false;
+  const { code, stdout, stderr } = await screenshotWith({ g: [{ path: "/go", auth: false, expectStatus: 308 }] });
+  assert.equal(code, 0, stdout + stderr);
+  assert.match(stdout, /\/go\s+略過（轉址/);
+  assert.ok(!seen.base.some((r) => r.path === "/go") && !seen.preview.some((r) => r.path === "/go"), "不應請求轉址路由");
+});

@@ -8,6 +8,7 @@
 	import { setAuth } from "$lib/auth/auth.svelte";
 	import SessionExpiredDialog from "$lib/components/auth/SessionExpiredDialog.svelte";
 	import Seo, { SITE_NAME, SITE_URL } from "$lib/components/Seo.svelte";
+	import { resetFavoritesOnUserChange } from "$lib/hooks/favorites.svelte";
 	import { createSmoothScrollPause } from "$lib/navigation/smooth-scroll";
 	import { jsonLdScript } from "$lib/seo/serialize-json-ld";
 
@@ -15,6 +16,10 @@
 
 	const auth = setAuth();
 	onMount(() => auth.init());
+
+	// 使用者身分變動（登入 / 登出 / 換帳號）即重置模組級收藏快取，
+	// 避免上一位使用者的收藏狀態殘留到下一位（跨帳號資料外洩）。對應舊版 AuthProvider 的 useEffect [user?.id]。
+	resetFavoritesOnUserChange(() => auth.user?.id);
 
 	// 對應舊版 <html data-scroll-behavior="smooth">：除了同 path + search 的純 hash 導航外，換頁期間暫停 CSS 平滑捲動，
 	// 新頁面直接回到頂端，不會從上一頁的位置慢慢滑上去；navigation.complete settle 時還原（含被取消或中止）。

@@ -20,8 +20,8 @@ before(async () => {
 
 after(() => preview?.stop());
 
-// 舊版這四頁是 SSG（CDN 快取一年，部署時清除）
-for (const path of ["/terms", "/privacy", "/refund", "/pricing"]) {
+// 舊版這五頁是 SSG（CDN 快取一年，部署時清除）；首頁舊版也是 SSG（3100 基準回 s-maxage=31536000）
+for (const path of ["/", "/terms", "/privacy", "/refund", "/pricing"]) {
   test(`${path} 帶靜態頁快取標頭（GET 與 HEAD）`, async () => {
     if (problem) assert.fail(problem);
     for (const method of ["GET", "HEAD"]) {
@@ -33,11 +33,11 @@ for (const path of ["/terms", "/privacy", "/refund", "/pricing"]) {
   });
 }
 
-test("快取標頭只加在靜態頁：首頁不帶一年 s-maxage", async () => {
+test("快取標頭只加在靜態頁：不存在的路徑（404）不帶一年 s-maxage", async () => {
   if (problem) assert.fail(problem);
-  const res = await fetch(`${base}/`);
+  const res = await fetch(`${base}/no-such-page-for-cache-test`);
   await res.body?.cancel();
-  assert.equal(res.status, 200);
+  assert.equal(res.status, 404);
   assert.doesNotMatch(res.headers.get("cache-control") ?? "", /s-maxage=31536000/);
 });
 

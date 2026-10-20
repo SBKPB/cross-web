@@ -51,3 +51,14 @@ test("enabled 變成 false 即停止；未啟用時不設 timer 也不監聽", (
   assert.equal(polls, 2);
   h.destroy();
 });
+
+test("enabled 的值沒變（只是來源物件換新，例如每次進度回應）時不重設 timer，輪詢節奏不漂移", (t) => {
+  t.mock.timers.enable({ apis: ["setInterval"] });
+  let polls = 0;
+  const h = mountPoll(() => polls++, 15_000, true);
+  t.mock.timers.tick(10_000);
+  h.setEnabled(true); // 同值、新物件
+  t.mock.timers.tick(5_000);
+  assert.equal(polls, 1, "第 15 秒照常輪詢（timer 沒有在第 10 秒被重設）");
+  h.destroy();
+});

@@ -8,15 +8,16 @@ import { pollOnVisible } from "../../src/lib/hooks/poll-on-visible.svelte.ts";
  * @param {boolean} initialEnabled
  */
 export function mountPoll(poll, intervalMs, initialEnabled) {
-  let enabled = $state(initialEnabled);
+  // 與預約詳情頁相同：enabled 從一個每次都換新物件的狀態讀出（進度回應每次都是新物件）
+  let flags = $state.raw({ shouldPoll: initialEnabled });
   const destroy = $effect.root(() => {
-    pollOnVisible(poll, intervalMs, () => enabled);
+    pollOnVisible(poll, intervalMs, () => flags.shouldPoll);
   });
   flushSync();
   return {
-    /** @param {boolean} next */
+    /** @param {boolean} next 換成新的物件（值可能相同） */
     setEnabled(next) {
-      enabled = next;
+      flags = { shouldPoll: next };
       flushSync();
     },
     destroy,

@@ -33,7 +33,7 @@ for (const path of ["/", "/terms", "/privacy", "/refund", "/pricing"]) {
   });
 }
 
-// 預約流程 ssr = false（沒有 server load 可 setHeaders）：舊版是動態渲染，3100 基準與正式站皆回 Next 動態頁標頭
+// 預約流程：舊版是動態渲染（依網址參數抓資料、成功頁讀 searchParams），3100 基準與正式站皆回 Next 動態頁標頭
 const DYNAMIC_PAGE_CACHE = "private, no-cache, no-store, max-age=0, must-revalidate";
 for (const path of [
   "/booking/00000000-0000-0000-0000-000000000000",
@@ -47,6 +47,39 @@ for (const path of [
       assert.equal(res.status, 200, `${method} ${path}`);
       assert.equal(res.headers.get("cache-control"), DYNAMIC_PAGE_CACHE, `${method} ${path}`);
     }
+  });
+}
+
+// 預約流程的伺服器 HTML（3100 基準實測）：舊版沒有頁面專屬 metadata，<head> 是 root layout 的全站預設
+// （標題、描述、robots、canonical、og 卡片含 1200×630 分享圖、twitter、全站 JSON-LD）——把預約網址貼到 LINE / FB / Slack，
+// 不執行 JS 的預覽爬蟲拿到的是全站卡片。<body> 先輸出民眾端外框（無 footer）與 loading.tsx 骨架，資料之後才到；
+// 成功頁照網址的 ?id= 先顯示轉圈（有 id）或「無法載入預約資訊」（沒有 id）。
+const BOOKING_ID = "00000000-0000-0000-0000-000000000000";
+for (const [path, body] of [
+  [`/booking/${BOOKING_ID}`, /<main id="public-content"[^>]*>[\s\S]*role="status" aria-label="載入預約資訊中"/],
+  [`/booking/${BOOKING_ID}/success?id=x`, /<main id="public-content"[^>]*>[\s\S]*animate-spin/],
+  [`/booking/${BOOKING_ID}/success`, /<main id="public-content"[^>]*>[\s\S]*無法載入預約資訊/],
+]) {
+  test(`${path}：伺服器 HTML 帶全站預設 <head> 與外框`, async () => {
+    if (problem) assert.fail(problem);
+    const res = await fetch(base + path);
+    const html = await res.text();
+    assert.equal(res.status, 200);
+    const end = html.indexOf("</head>");
+    const head = html.slice(0, end);
+    assert.deepEqual([...head.matchAll(/<title>([^<]*)<\/title>/g)].map((m) => m[1]), ["Cross | AIoT 健康資料連接平台"]);
+    assert.match(head, /<meta name="description" content="讓設備、醫療軟體與健康資料更容易連接。/);
+    assert.match(head, /<meta name="robots" content="index, follow"/);
+    assert.match(head, /<link rel="canonical" href="https:\/\/cross\.twinhao\.com"/);
+    assert.match(head, /<meta property="og:title" content="Cross \| AIoT 健康資料連接平台"/);
+    assert.match(head, /<meta property="og:url" content="https:\/\/cross\.twinhao\.com"/);
+    assert.match(head, new RegExp(`<meta property="og:image" content="${base}/og\\.png"`));
+    assert.match(head, /<meta property="og:image:width" content="1200"/);
+    assert.match(head, /<meta property="og:image:height" content="630"/);
+    assert.match(head, /<meta name="twitter:card" content="summary"/);
+    assert.match(head, /application\/ld\+json/);
+    assert.match(html.slice(end), body);
+    assert.doesNotMatch(html, /<footer/, "預約流程的外框沒有 footer（舊版 app/booking/layout.tsx）");
   });
 }
 

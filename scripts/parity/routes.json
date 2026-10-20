@@ -35,5 +35,12 @@
     { "path": "/booking/00000000-0000-0000-0000-000000000000", "auth": true },
     { "path": "/booking/18c0ca2b-5af2-46ff-943f-41314e37169b/success", "auth": true },
     { "path": "/booking/18c0ca2b-5af2-46ff-943f-41314e37169b/success?id=00000000-0000-0000-0000-000000000000&number=X", "auth": true }
+  ],
+  "booking-public": [
+    { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218", "auth": false },
+    { "path": "/booking/00000000-0000-0000-0000-000000000000", "auth": false },
+    { "path": "/booking/not-a-uuid", "auth": false },
+    { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218/success", "auth": false },
+    { "path": "/booking/42399a23-1119-407e-91ed-e2df5bdbb218/success?id=00000000-0000-0000-0000-000000000000&number=X", "auth": false }
   ]
 }

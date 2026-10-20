@@ -22,16 +22,7 @@ export const CLINIC_OG_DEGRADED_CACHE = "public, max-age=0, must-revalidate";
 export const LANDING_PAGE_CACHE = "public, s-maxage=3600, stale-while-revalidate";
 
 /**
- * 依網址參數渲染的動態頁（/search）：舊版讀 searchParams 而為動態渲染，Next 一律回這個標頭（不進 CDN、瀏覽器不快取）
+ * 依網址參數渲染的動態頁（/search、預約流程 /booking/[id] 與其 success）：舊版讀 searchParams 或依路由參數抓資料而為動態渲染，
+ * Next 一律回這個標頭（不進 CDN、瀏覽器不快取）
  */
 export const DYNAMIC_PAGE_CACHE = "private, no-cache, no-store, max-age=0, must-revalidate";
-
-/**
- * ssr = false 的頁面只回應空殼，不會執行 server load，無法在 load 裡 setHeaders；由 hooks.server.ts 依路由補上標頭。
- * 只列舊版為動態渲染的頁面（預約流程：舊版 server component 依網址參數抓資料、成功頁讀 searchParams），
- * 舊版為靜態的 client 頁（如 /member、/admin、/auth 回 s-maxage=31536000）另行決定，不在此表。
- */
-export const CSR_ONLY_ROUTE_CACHE: Readonly<Record<string, string>> = {
-  "/booking/[id]": DYNAMIC_PAGE_CACHE,
-  "/booking/[id]/success": DYNAMIC_PAGE_CACHE,
-};

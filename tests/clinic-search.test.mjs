@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { filterAndSortClinics } from "../src/lib/clinic-search.ts";
+import { filterAndSortClinics, parseSearchFilters } from "../src/lib/clinic-search.ts";
 
 // 搜尋頁的篩選與排序（移植自舊版 clinic-search-view.tsx 的 filteredClinics useMemo，邏輯逐行相同）。
 
@@ -96,4 +96,101 @@ test("排序：精選一律置頂；default 其餘維持後端順序；rating �
     ["丙", ...byName],
   );
   assert.deepEqual(ids(list), [a.id, b.id, f.id, c.id], "不改動輸入陣列");
+});
+
+// ---- 網址參數 → 初始篩選（移植自舊版 app/search/page.tsx，逐行相同；預期值對照 3100 基準實際的 initialFilters） ----
+
+const params = (qs) => new URLSearchParams(qs);
+const DEFAULTS = {
+  search: "",
+  city: "all",
+  serviceCategories: [],
+  hospitalLevel: "all",
+  facilityType: "all",
+  paymentType: "all",
+};
+
+test("parseSearchFilters：沒有參數時全部為預設值；不認得的參數（page、大寫 Q）忽略", () => {
+  assert.deepEqual(parseSearchFilters(params("")), DEFAULTS);
+  assert.deepEqual(parseSearchFilters(params("page=2&Q=abc&sort=rating")), DEFAULTS);
+});
+
+test("parseSearchFilters：q 原樣成為關鍵字（+ 為空白、無效的 % 跳脫保留原字串、; 不是分隔符）", () => {
+  assert.deepEqual(parseSearchFilters(params("q=a+b")), { ...DEFAULTS, search: "a b" });
+  assert.deepEqual(parseSearchFilters(params("q=%ZZ")), { ...DEFAULTS, search: "%ZZ" });
+  assert.deepEqual(parseSearchFilters(params("q=%E5%85%92%E7%A7%91;city=x")), { ...DEFAULTS, search: "兒科;city=x" });
+  assert.deepEqual(parseSearchFilters(params("q=")), DEFAULTS);
+});
+
+test("parseSearchFilters：type=self_pay 向後相容 → 看診 + 自費；明確的 payment 優先", () => {
+  assert.deepEqual(parseSearchFilters(params("type=self_pay")), {
+    ...DEFAULTS,
+    facilityType: "healthcare",
+    paymentType: "self_pay",
+  });
+  assert.deepEqual(parseSearchFilters(params("type=self_pay&payment=nhi")), {
+    ...DEFAULTS,
+    facilityType: "healthcare",
+    paymentType: "nhi",
+  });
+  assert.deepEqual(parseSearchFilters(params("type=healthcare&payment=self_pay")), {
+    ...DEFAULTS,
+    facilityType: "healthcare",
+    paymentType: "self_pay",
+  });
+});
+
+test("parseSearchFilters：付款方式只在看診大類保留，醫療分級只在看診／全部保留", () => {
+  assert.deepEqual(parseSearchFilters(params("payment=nhi")), DEFAULTS);
+  assert.deepEqual(parseSearchFilters(params("type=aesthetic&payment=nhi&level=clinic")), {
+    ...DEFAULTS,
+    facilityType: "aesthetic",
+  });
+  assert.deepEqual(parseSearchFilters(params("level=medical_center")), { ...DEFAULTS, hospitalLevel: "medical_center" });
+  assert.deepEqual(parseSearchFilters(params("type=healthcare&level=clinic")), {
+    ...DEFAULTS,
+    facilityType: "healthcare",
+    hospitalLevel: "clinic",
+  });
+  assert.deepEqual(parseSearchFilters(params("type=beauty&level=clinic")), { ...DEFAULTS, facilityType: "beauty" });
+});
+
+test("parseSearchFilters：cat 逗號分隔（去空白、去空項）優先，否則退回舊 dept 單值", () => {
+  assert.deepEqual(parseSearchFilters(params("cat=a,%20b,,c%20")), { ...DEFAULTS, serviceCategories: ["a", "b", "c"] });
+  assert.deepEqual(parseSearchFilters(params("cat=a&dept=z")), { ...DEFAULTS, serviceCategories: ["a"] });
+  assert.deepEqual(parseSearchFilters(params("dept=pediatrics")), { ...DEFAULTS, serviceCategories: ["pediatrics"] });
+  // 空字串的 cat 視為沒給 → 退回 dept；只有逗號 → 空陣列（不退回 dept）
+  assert.deepEqual(parseSearchFilters(params("cat=&dept=z")), { ...DEFAULTS, serviceCategories: ["z"] });
+  assert.deepEqual(parseSearchFilters(params("cat=,&dept=z")), DEFAULTS);
+  assert.deepEqual(parseSearchFilters(params("dept=")), DEFAULTS);
+});
+
+test("parseSearchFilters：無效值照舊原樣帶入（空字串只有 type 退回全部；city／level／payment 的空字串保留）", () => {
+  assert.deepEqual(parseSearchFilters(params("type=")), DEFAULTS);
+  assert.deepEqual(parseSearchFilters(params("type=foo&level=clinic&payment=nhi")), { ...DEFAULTS, facilityType: "foo" });
+  assert.deepEqual(parseSearchFilters(params("city=")), { ...DEFAULTS, city: "" });
+  assert.deepEqual(parseSearchFilters(params("city=&type=self_pay")), {
+    ...DEFAULTS,
+    city: "",
+    facilityType: "healthcare",
+    paymentType: "self_pay",
+  });
+  assert.deepEqual(parseSearchFilters(params("city=不存在市")), { ...DEFAULTS, city: "不存在市" });
+  assert.deepEqual(parseSearchFilters(params("level=")), { ...DEFAULTS, hospitalLevel: "" });
+  assert.deepEqual(parseSearchFilters(params("level=bogus")), { ...DEFAULTS, hospitalLevel: "bogus" });
+  assert.deepEqual(parseSearchFilters(params("type=healthcare&payment=")), {
+    ...DEFAULTS,
+    facilityType: "healthcare",
+    paymentType: "",
+  });
+  assert.deepEqual(parseSearchFilters(params("type=healthcare&payment=xyz")), {
+    ...DEFAULTS,
+    facilityType: "healthcare",
+    paymentType: "xyz",
+  });
+});
+
+test("parseSearchFilters：重複的參數取第一個值（舊版 Next 會變成陣列而讓頁面出錯，屬已知且刻意的差異）", () => {
+  assert.deepEqual(parseSearchFilters(params("q=a&q=b")), { ...DEFAULTS, search: "a" });
+  assert.deepEqual(parseSearchFilters(params("cat=a&cat=b")), { ...DEFAULTS, serviceCategories: ["a"] });
 });

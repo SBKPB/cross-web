@@ -95,8 +95,11 @@
 		<ClinicListSkeleton />
 	{:else if loadError}
 		<div class="rounded-3xl border bg-card p-8 text-center" role="alert">
-			<p class="mb-4">暫時無法載入店家，請稍後再試。</p>
-			<Button variant="outline" onclick={() => (reloadKey += 1)}>重新載入</Button>
+			<!-- p 與按鈕之間不留空白文字節點，與舊版 JSX 輸出相同 -->
+			<p class="mb-4">暫時無法載入店家，請稍後再試。</p><Button
+				variant="outline"
+				onclick={() => (reloadKey += 1)}>重新載入</Button
+			>
 		</div>
 	{:else}
 		<ClinicList clinics={filteredClinics} onReset={() => (filters = EMPTY_FILTERS)} />

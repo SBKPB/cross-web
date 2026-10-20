@@ -20,3 +20,8 @@ export const CLINIC_OG_DEGRADED_CACHE = "public, max-age=0, must-revalidate";
  * 舊版 ISR 連 notFound() 的 404 也快取一小時（3100 基準與正式站皆是），所以 404 也帶這個標頭
  */
 export const LANDING_PAGE_CACHE = "public, s-maxage=3600, stale-while-revalidate";
+
+/**
+ * 依網址參數渲染的動態頁（/search）：舊版讀 searchParams 而為動態渲染，Next 一律回這個標頭（不進 CDN、瀏覽器不快取）
+ */
+export const DYNAMIC_PAGE_CACHE = "private, no-cache, no-store, max-age=0, must-revalidate";

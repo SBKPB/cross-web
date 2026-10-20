@@ -85,6 +85,23 @@ function handler(side) {
       return res.writeHead(200, { "content-type": type }).end(sitemapXml(side));
     }
     if (path === "/robots.txt") return res.writeHead(200, { "content-type": "text/plain" }).end(robotsTxt(side));
+    // 搜尋頁：瀏覽器端抓店家清單再依 q 篩選（模擬 /search 的 ClinicSearchView）；drift 時預覽把結果順序反過來
+    if (path.startsWith("/search")) {
+      return res.writeHead(200, { "content-type": "text/html; charset=utf-8" }).end(`<!doctype html><html><body>
+<main><p role="status">載入店家中…</p><div id="grid"></div></main>
+<script>
+fetch("/api/v1/booking/clinics").then((r) => r.json()).then((list) => {
+  const q = new URLSearchParams(location.search).get("q") ?? "";
+  const hits = list.filter((c) => c.name.includes(q)).map((c) => c.name);
+  if (${drift && side === "preview"}) hits.reverse();
+  document.querySelector("[role=status]").textContent = "共 " + hits.length + " 間店家";
+  document.getElementById("grid").innerHTML = hits.map((n) => '<div data-slot="card-title">' + n + "</div>").join("");
+});
+</script></body></html>`);
+    }
+    if (path === "/api/v1/booking/clinics") {
+      return res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify([{ id: "r1", name: "真實店家" }]));
+    }
     // 需登入頁：token 不對就像舊版／新版 app 一樣導去 /auth
     if (path === "/member") {
       return res.writeHead(200, { "content-type": "text/html; charset=utf-8" }).end(`<!doctype html><html><head><script>
@@ -381,4 +398,41 @@ test("screenshot：auth 路由注入 access／refresh token，被導去別頁時
     assert.match(bad.stdout, new RegExp(`/member\\s+${v}\\s+→ 基準轉址到 /auth，預覽轉址到 /auth`));
   }
   assert.doesNotMatch(bad.stdout, /\/member\s+\S+\s+[\d.]+%/);
+});
+
+test("search-diff --fixture：兩邊的店家清單都由瀏覽器攔截回假資料、不打後端，結果一致；密鑰只送預覽來源", {
+  skip: existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}`,
+}, async () => {
+  drift = false;
+  const { code, stdout, stderr } = await run("search-diff.mjs", ["--fixture", "--only", "page=2"]);
+  assert.equal(code, 0, stdout + stderr);
+  assert.match(stdout, /✓ \/search\?page=2 {2}12 間，前幾筆 仁愛家醫診所\(01\)、中港醫學中心\(02\)、港都區域醫院\(03\)/);
+  assert.match(stdout, /1 個案例：1 個一致、0 個不同/);
+  for (const side of ["base", "preview"]) {
+    assert.ok(seen[side].some((r) => r.path === "/search?page=2"), `${side} 應收到 /search`);
+    assert.ok(!seen[side].some((r) => r.path.startsWith("/api/")), `${side} 不應收到 API 請求：${JSON.stringify(seen[side])}`);
+  }
+  assert.ok(seen.preview.every((r) => r.bypass === SECRET), JSON.stringify(seen.preview));
+  assert.ok(seen.base.every((r) => r.bypass === undefined), JSON.stringify(seen.base));
+});
+
+test("search-diff：真實資料模式打各自後端；結果順序不同列為差異並以非 0 結束", {
+  skip: existsSync(CHROME) ? false : `找不到 Chrome：${CHROME}`,
+}, async () => {
+  drift = false;
+  const real = await run("search-diff.mjs", ["--only", "page=2"]);
+  assert.equal(real.code, 0, real.stdout + real.stderr);
+  assert.match(real.stdout, /✓ \/search\?page=2 {2}1 間，前幾筆 真實店家/);
+  assert.ok(seen.base.some((r) => r.path === "/api/v1/booking/clinics"));
+  assert.ok(seen.preview.some((r) => r.path === "/api/v1/booking/clinics" && r.bypass === SECRET));
+
+  drift = true;
+  try {
+    const bad = await run("search-diff.mjs", ["--fixture", "--only", "page=2"]);
+    assert.equal(bad.code, 1, bad.stdout + bad.stderr);
+    assert.match(bad.stdout, /✗ \/search\?page=2\n {4}cards：\["仁愛家醫診所",.*\] → \["全家中醫診所",/);
+    assert.match(bad.stdout, /1 個案例：0 個一致、1 個不同/);
+  } finally {
+    drift = false;
+  }
 });

@@ -20,5 +20,13 @@
     { "path": "/specialty/oth_manipulation", "auth": false },
     { "path": "/area/%E8%87%BA%E5%8C%97%E5%B8%82", "auth": false, "expectStatus": 404 },
     { "path": "/specialty/internal_medicine", "auth": false, "expectStatus": 404 }
+  ],
+  "search": [
+    { "path": "/search", "auth": false },
+    { "path": "/search?q=%E5%96%AC", "auth": false },
+    { "path": "/search?type=other&city=%E9%AB%98%E9%9B%84%E5%B8%82", "auth": false },
+    { "path": "/search?type=self_pay", "auth": false },
+    { "path": "/search?cat=oth_manipulation", "auth": false },
+    { "path": "/search?type=foo&city=%E5%8F%B0%E5%8C%97%E5%B8%82", "auth": false }
   ]
 }

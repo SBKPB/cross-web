@@ -39,6 +39,10 @@
 
 	// clinics 已是後端回傳的收藏清單；模組快取就緒前直接顯示，避免快取載入空窗誤判為空。
 	// 就緒後才以收藏狀態過濾，以保留「取消收藏即時從清單移除」的樂觀行為。
+	// 刻意與舊版實際行為不同（控制者裁決，見 progress.md「Task 12: Ruling: 收藏頁…」）：
+	// 舊版 useMemo 依賴 useCallback([]) 穩定的 isFavorite，收藏集合變動時不重算，卡片其實留在清單；
+	// 這裡依舊版註解的原意，讀取響應式收藏集合、取消收藏即移除。
+	// 若改回逐字對齊舊版：把 favorites.isFavorite(c.id) 包進 untrack，只在 clinics / ready 改變時重算。
 	const visibleClinics = $derived(
 		favorites.ready ? clinics.filter((c) => favorites.isFavorite(c.id)) : clinics,
 	);

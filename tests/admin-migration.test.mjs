@@ -131,7 +131,11 @@ test('Svelte 看板只呈現遮罩姓名；Svelte 文件 SSR、內頁導覽及�
     assert.match(html, /developer-document/);
     assert.match(html, /<h1/);
     assert.match(html, /<title>快速開始 · 開發者 \| Cross<\/title>/);
-    assert.equal((await fetch(preview.origin + '/developers/docs/not-found')).status, 404);
+    const missing = await fetch(preview.origin + '/developers/docs/not-found');
+    assert.equal(missing.status, 404);
+    const missingHtml = await missing.text();
+    assert.match(missingHtml, /<title>404: This page could not be found.<\/title>/);
+    assert.match(missingHtml, /#organization/);
     await page.goto(preview.origin + '/developers');
     await page.getByRole('link', { name: /快速開始/ }).first().click();
     await page.waitForURL('**/developers/docs/quickstart');

@@ -6,4 +6,5 @@
 	const message = $derived(page.status === 404 ? "This page could not be found." : (page.error?.message ?? "Error"));
 </script>
 
-<NextErrorFallback status={page.status} {message} routeMiss={page.route.id === null} />
+<!-- 舊版文件的 dynamicParams=false 會將未知 slug 視為路由不存在。 -->
+<NextErrorFallback status={page.status} {message} routeMiss={page.route.id === null || (page.status === 404 && page.route.id === '/developers/docs/[slug]')} />

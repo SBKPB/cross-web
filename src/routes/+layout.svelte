@@ -61,7 +61,8 @@
 	<link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png" />
 	<!-- 頁面 load 丟出的錯誤（如找不到院所的 404）不輸出：舊版 notFound() 回應的伺服器 HTML 沒有這段；
 	     找不到路由（route.id 為 null）的 404 舊版有輸出，照舊 -->
-	{#if !page.error || page.route.id === null}
+	<!-- 舊版文件設定 dynamicParams=false，未知 slug 等同找不到路由，仍保留全站結構化資料。 -->
+	{#if !page.error || page.route.id === null || (page.status === 404 && page.route.id === '/developers/docs/[slug]')}
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html jsonLdScript(SITE_JSONLD)}
 	{/if}

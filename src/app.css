@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-/* shadcn-svelte 元件用的 data-open／data-closed／data-checked 等 variant 與 no-scrollbar 等 utility（對應舊版 shadcn/tailwind.css） */
+/* shadcn-svelte 元件共用的狀態與互動樣式。 */
 @import "shadcn-svelte/tailwind.css";
 
 /* 首頁專用版面節奏，不影響院所與管理後台。 */
@@ -68,7 +68,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  /* Luma radius scale — exponential, 圓到具有「macOS Tahoe 感」 */
+  /* Cross 圓角比例 */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -80,7 +80,7 @@
 
 :root {
   --radius: 0.625rem;
-  /* shadcn/Luma tokens 指向 Cross 的 n-* 品牌色，讓 Luma 元件繼承 Cross 配色 */
+  /* Cross 品牌語意色。 */
   --background: #f8fafc;           /* n-main */
   --foreground: #0f172a;           /* n-heading */
   --card: #ffffff;                 /* n-card */
@@ -97,7 +97,7 @@
   --accent-foreground: #1d4ed8;    /* n-brand */
   --destructive: oklch(0.577 0.245 27.325);
   --border: #e2e8f0;               /* n-border */
-  --input: #e2e8f0;                /* n-border（Luma input 用 bg-input/50，會變成 #e2e8f0 半透明） */
+  --input: #e2e8f0;                /* 輸入邊界 */
   --ring: #1d4ed8;                 /* n-brand */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -303,11 +303,14 @@
   }
 }
 
-/* 原生 Svelte 院所工作區：沿用 Luma tokens，表單保持可辨識的文字標籤。 */
-.admin-field {
-  width: 100%; min-width: 0; min-height: 2.5rem; border: 1px solid var(--border);
-  border-radius: .75rem; background: var(--background); color: var(--foreground);
-  padding: .5rem .75rem; font: inherit; font-size: .875rem;
-}
-.admin-field:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.admin-field:disabled { opacity: .5; }
+/* 後台使用 shadcn-svelte 元件與品牌語意色。 */
+.cross-admin .admin-canvas { background: none; }
+.cross-admin h1 { font-size: clamp(1.5rem, 2vw, 1.875rem); line-height: 1.3; letter-spacing: -.035em; font-weight: 650; }
+.cross-admin [data-slot="card"] { transition: box-shadow .2s ease, border-color .2s ease; }
+.cross-admin [data-slot="table-head"] { height: 3rem; font-size: .75rem; font-weight: 500; color: var(--muted-foreground); }
+.cross-admin [data-slot="table-cell"] { padding-block: 1.125rem; }
+.admin-dialog-footer { position: sticky; bottom: -1.5rem; z-index: 10; margin-inline: -1.5rem; margin-top: 1.5rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--popover); }
+.admin-form [data-slot="field-set"] { min-width: 0; }
+.admin-form [data-slot="field-label"] { line-height: 1.6; }
+.admin-form [data-slot="field-legend"] { margin-bottom: .25rem; }
+@media (prefers-reduced-motion: reduce) { .cross-admin *, .admin-dialog * { scroll-behavior: auto; transition-duration: 0s !important; animation-duration: 0s !important; } }

@@ -40,6 +40,8 @@ Cross Web 使用 SvelteKit 3.1 / Svelte 5，UI 一律繁體中文。正式網址
 
 新增畫面與視覺更新優先使用 Luma shadcn/ui registry 的 blocks / components，沿用專案設計 tokens；沒有對應元件才自建。Svelte 元件位於 `src/lib/components/`，後台元件集中於 `admin/workspace/` 與 `admin/manage/`，避免重新引入 React 相容層。
 
+後台載入狀態使用 shadcn-svelte 的 Skeleton（`admin/layout/AdminSkeleton.svelte`），不是 Skeleton UI 元件庫；不引入 `@skeletonlabs/*`。共用版型與表單規範見 `docs/admin-luma-guide.md`。
+
 對話、文件、註解與 commit message 一律繁體中文。
 
 ## Security

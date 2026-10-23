@@ -1,7 +1,172 @@
 <script lang="ts">
- import {adminClinicsApi} from '#lib/api/admin/clinics.ts';import {apiMessage} from '#lib/admin/scheduling.ts';import {PLAN_LABELS,isExpired} from '#lib/feature-access.ts';import {FACILITY_TYPE_LABELS} from '#lib/constants/clinic-constants.ts';import {Button} from '#lib/components/ui/button/index.ts';import {Input} from '#lib/components/ui/input/index.ts';import Feedback from './Feedback.svelte';import ClinicEditor from './ClinicEditor.svelte';import ShareClinicDialog from '#lib/components/clinics/ShareClinicDialog.svelte';import type {MedicalFacility} from '#lib/types/clinic.ts';
- let rows=$state<MedicalFacility[]>([]),loading=$state(true),error=$state(''),message=$state(''),revision=$state(0),search=$state(''),type=$state(''),editor=$state(false),share=$state<MedicalFacility|null>(null),shareOpen=$state(false);
- $effect(()=>{const r=revision;void r;let live=true;loading=true;error='';adminClinicsApi.list().then(v=>{if(live)rows=v;}).catch(e=>{if(live)error=apiMessage(e,'院所列表載入失敗');}).finally(()=>{if(live)loading=false;});return()=>{live=false;};});const filtered=$derived(rows.filter(f=>(!type||f.facility_type===type)&&(!search.trim()||[f.name,f.phone,f.address].some(v=>v?.toLowerCase().includes(search.trim().toLowerCase())))));
+  import AdminSkeleton from "../layout/AdminSkeleton.svelte";
+  import * as NativeSelect from "#lib/components/ui/native-select/index.ts";
+  import * as Card from "#lib/components/ui/card/index.ts";
+
+  import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+  import { apiMessage } from "#lib/admin/scheduling.ts";
+  import { PLAN_LABELS, isExpired } from "#lib/feature-access.ts";
+  import { FACILITY_TYPE_LABELS } from "#lib/constants/clinic-constants.ts";
+  import { Button } from "#lib/components/ui/button/index.ts";
+  import { Input } from "#lib/components/ui/input/index.ts";
+  import Feedback from "./Feedback.svelte";
+  import ClinicEditor from "./ClinicEditor.svelte";
+  import ShareClinicDialog from "#lib/components/clinics/ShareClinicDialog.svelte";
+  import type { MedicalFacility } from "#lib/types/clinic.ts";
+  let rows = $state<MedicalFacility[]>([]),
+    loading = $state(true),
+    error = $state(""),
+    message = $state(""),
+    revision = $state(0),
+    search = $state(""),
+    type = $state(""),
+    editor = $state(false),
+    share = $state<MedicalFacility | null>(null),
+    shareOpen = $state(false);
+  $effect(() => {
+    const r = revision;
+    void r;
+    let live = true;
+    loading = true;
+    error = "";
+    adminClinicsApi
+      .list()
+      .then((v) => {
+        if (live) rows = v;
+      })
+      .catch((e) => {
+        if (live) error = apiMessage(e, "院所列表載入失敗");
+      })
+      .finally(() => {
+        if (live) loading = false;
+      });
+    return () => {
+      live = false;
+    };
+  });
+  const filtered = $derived(
+    rows.filter(
+      (f) =>
+        (!type || f.facility_type === type) &&
+        (!search.trim() ||
+          [f.name, f.phone, f.address].some((v) =>
+            v?.toLowerCase().includes(search.trim().toLowerCase()),
+          )),
+    ),
+  );
 </script>
-<div class="space-y-5"><div class="flex flex-wrap items-center justify-between gap-3"><div><h1 class="text-2xl font-semibold">院所管理</h1><p class="mt-1 text-sm text-muted-foreground">管理合作院所、公開資訊與訂閱。</p></div><Button onclick={()=>editor=true}>新增院所</Button></div><div class="flex flex-wrap gap-3"><Input class="max-w-sm" aria-label="搜尋院所" placeholder="搜尋名稱、電話或地址" bind:value={search}/><select class="rounded-xl border bg-background px-3 py-2 text-sm" aria-label="篩選院所類型" bind:value={type}><option value="">全部類型</option>{#each Object.entries(FACILITY_TYPE_LABELS) as [key,label] (key)}<option value={key}>{label}</option>{/each}</select></div><Feedback {error} {message}/>{#if error}<Button variant="outline" onclick={()=>revision++}>重試院所列表</Button>{/if}{#if loading}<p role="status">載入院所中…</p>{:else if !error}<p class="text-sm text-muted-foreground">共 {filtered.length} 間院所</p><div class="grid gap-4 lg:grid-cols-2">{#each filtered as f (f.id)}<article class="space-y-4 rounded-2xl border bg-card p-5"><a href={'/admin/clinics/'+f.id} class="flex items-center gap-3">{#if f.logo_url}<img src={f.logo_url} alt={f.name+' Logo'} class="size-14 rounded-xl border object-contain"/>{:else}<span class="grid size-14 shrink-0 place-items-center rounded-xl bg-primary/10 text-xl text-primary">{f.name.slice(0,1)}</span>{/if}<div class="min-w-0"><h2 class="truncate font-semibold hover:text-primary">{f.name}</h2><p class="mt-1 text-sm text-muted-foreground">{FACILITY_TYPE_LABELS[f.facility_type]} · {f.is_active?'啟用':'停用'} · {PLAN_LABELS[f.subscription_plan]}{isExpired(f.subscription_expires_at)?'（已到期）':''}</p></div></a><p class="text-sm text-muted-foreground">{f.address||'地址未填'} · {f.phone||'電話未填'}</p><div class="flex flex-wrap gap-2"><Button size="sm" variant="outline" href={'/admin/clinics/'+f.id}>管理院所</Button><Button size="sm" variant="outline" onclick={()=>{share=f;shareOpen=true;}}>分享預約頁</Button><Button size="sm" variant="ghost" href={'/clinic/'+f.id} target="_blank" rel="noopener noreferrer">公開頁 ↗</Button></div></article>{:else}<p class="rounded-xl border p-8 text-muted-foreground">沒有符合的院所。</p>{/each}</div>{/if}</div>
-{#if editor}<ClinicEditor bind:open={editor} onSaved={()=>{revision++;message='院所已新增';}}/>{/if}{#if share}<ShareClinicDialog bind:open={shareOpen} clinicId={share.id} clinicName={share.name}/>{/if}
+
+<div class="space-y-5">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">院所管理</h1>
+      <p class="mt-1 text-sm text-muted-foreground">
+        管理合作院所、公開資訊與訂閱。
+      </p>
+    </div>
+    <Button onclick={() => (editor = true)}>新增院所</Button>
+  </div>
+  <div class="flex flex-wrap gap-3">
+    <Input
+      class="max-w-sm"
+      aria-label="搜尋院所"
+      placeholder="搜尋名稱、電話或地址"
+      bind:value={search}
+    /><NativeSelect.Root
+      class="w-full"
+      aria-label="篩選院所類型"
+      bind:value={type}
+    >
+      <NativeSelect.Option value="">
+        全部類型
+      </NativeSelect.Option>{#each Object.entries(FACILITY_TYPE_LABELS) as [key, label] (key)}<NativeSelect.Option
+          value={key}
+        >
+          {label}
+        </NativeSelect.Option>{/each}
+    </NativeSelect.Root>
+  </div>
+  <Feedback {error} {message} />{#if error}<Button
+      variant="outline"
+      onclick={() => revision++}
+    >
+      重試院所列表
+    </Button>{/if}{#if loading}<AdminSkeleton
+      label="載入院所中…"
+      variant="cards"
+    />{:else if !error}<p class="text-sm text-muted-foreground">
+      共 {filtered.length} 間院所
+    </p>
+    <div class="grid gap-4 lg:grid-cols-2">
+      {#each filtered as f (f.id)}<Card.Root
+          role="article"
+          class="gap-0 shadow-sm space-y-4 p-5"
+        >
+          <a href={"/admin/clinics/" + f.id} class="flex items-center gap-3">
+            {#if f.logo_url}<img
+                src={f.logo_url}
+                alt={f.name + " Logo"}
+                class="size-14 rounded-xl border object-contain"
+              />{:else}<span
+                class="grid size-14 shrink-0 place-items-center rounded-xl bg-primary/10 text-xl text-primary"
+              >
+                {f.name.slice(0, 1)}
+              </span>{/if}
+            <div class="min-w-0">
+              <h2 class="truncate font-semibold hover:text-primary">
+                {f.name}
+              </h2>
+              <p class="mt-1 text-sm text-muted-foreground">
+                {FACILITY_TYPE_LABELS[f.facility_type]} · {f.is_active
+                  ? "啟用"
+                  : "停用"} · {PLAN_LABELS[f.subscription_plan]}{isExpired(
+                  f.subscription_expires_at,
+                )
+                  ? "（已到期）"
+                  : ""}
+              </p>
+            </div>
+          </a>
+          <p class="text-sm text-muted-foreground">
+            {f.address || "地址未填"} · {f.phone || "電話未填"}
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" href={"/admin/clinics/" + f.id}>
+              管理院所
+            </Button><Button
+              size="sm"
+              variant="outline"
+              onclick={() => {
+                share = f;
+                shareOpen = true;
+              }}
+            >
+              分享預約頁
+            </Button><Button
+              size="sm"
+              variant="ghost"
+              href={"/clinic/" + f.id}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              公開頁 ↗
+            </Button>
+          </div>
+        </Card.Root>{:else}<p
+          class="rounded-xl border p-8 text-muted-foreground"
+        >
+          沒有符合的院所。
+        </p>{/each}
+    </div>{/if}
+</div>
+{#if editor}<ClinicEditor
+    bind:open={editor}
+    onSaved={() => {
+      revision++;
+      message = "院所已新增";
+    }}
+  />{/if}{#if share}<ShareClinicDialog
+    bind:open={shareOpen}
+    clinicId={share.id}
+    clinicName={share.name}
+  />{/if}

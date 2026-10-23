@@ -1,186 +1,44 @@
-# Admin Luma UI Guide
+# 後台 shadcn-svelte／Luma 元件指南
 
-後台管理介面的 Luma shadcn/ui 設計規則。所有 `/admin/*` 相關頁面與 `src/components/admin/**` 元件都必須遵循。
+2026-10-23：後台使用 SvelteKit 3.1、Svelte 5 與 shadcn-svelte／Bits UI；沿用專案 Luma registry 與 Cross 品牌語意色。使用者所指的 Skeleton 是 shadcn 的載入占位元件，並非 Skeleton UI 元件庫；專案沒有 `@skeletonlabs/*` 依賴。
 
-## 核心原則
+## 元件與版型
 
-1. **直接使用 shadcn primitives**（`@/components/ui/*`），不要另外封一層 wrapper
-2. **從 `@/lib/admin/luma-styles` import className 常數**套到 shadcn 元件上
-3. **使用 Luma token，禁用 slate-\***
-4. **互動元素必帶 hover 微互動**（`hover:-translate-y-1` / `hover:ring-primary/20`）
+- `admin/layout/AdminFrame.svelte`：共用院所與平台管理外框。桌面固定側欄、手機 Sheet 選單、目前院所／使用者、修改密碼、登出及主題切換。
+- `admin/layout/AdminSkeleton.svelte`：使用 `ui/skeleton` 組合儀表板、卡片、清單、表格、表單、班表與時段的載入占位。
+- `admin/manage/Modal.svelte`：共用 Dialog 標題與說明、可捲動表單區與送出期間關閉保護。
+- `ui/field`：Field、Label、Set 與 Legend，控制項須保留唯一 id 與明確 label 關聯。
+- `ui/native-select`：原生選單操作與專案表單樣式，保留鍵盤、手機原生選單及既有值綁定。
+- Card、Table、Avatar、Badge、Button、Input、Textarea、Checkbox、Tabs、Dialog、Sheet 與 Empty 由 `src/lib/components/ui/` 匯入。
 
----
+不新增 React 或 Radix React 元件。新增 UI 優先取用既有 shadcn-svelte／Luma 元件，避免用全域 CSS 重製控制項。
 
-## 用法範例
+## 載入與錯誤
 
-> **重要**：shadcn `<Card>` 本身已套用 Luma baseline（`rounded-4xl`、`bg-card`、`ring-1 ring-foreground/5`、`shadow-md`）。**不要**再疊 `lumaCard` 上去。只有在用純 `<div>` 建立 card 樣式時才套 `lumaCard`。
+```svelte
+<script lang="ts">
+  import AdminSkeleton from '../layout/AdminSkeleton.svelte';
+  let loading = $state(true);
+  let error = $state('');
+</script>
 
-```tsx
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { lumaCardHover, lumaPageContainer } from "@/lib/admin/luma-styles";
-
-export default function Page() {
-  return (
-    <div className={lumaPageContainer}>
-      {/* 可點擊卡片：Card + hover 類別 */}
-      <Card className={cn("cursor-pointer", lumaCardHover)}>
-        <CardHeader>
-          <CardTitle>標題</CardTitle>
-        </CardHeader>
-        <CardContent>內容</CardContent>
-      </Card>
-
-      {/* 純 div 的內層區塊：用 lumaCardInner */}
-      <div className={lumaCardInner}>
-        <p>次級資訊卡</p>
-      </div>
-    </div>
-  );
-}
+{#if loading}
+  <AdminSkeleton label="載入人員中…" variant="cards" />
+{:else if error}
+  <p role="alert">{error}</p>
+{:else}
+  <!-- 呈現已取得的資料 -->
+{/if}
 ```
 
-**`lumaPageContainer` 的作用**：提供 `mx-auto max-w-7xl space-y-6`。shell 的 `<main>` 已經有 padding，頁面只負責 max-width 與垂直間距。
+骨架只在等待資料時顯示，不能把載入失敗或空資料呈現成持續載入。保留舊資料的重新整理，應沿用更新時間及忙碌狀態。骨架以 `aria-busy` 和單一狀態文字告知輔助工具，占位圖形本身隱藏；使用者偏好減少動態時停止脈動動畫。
 
-表格外框：
+## 表單與確認
 
-```tsx
-import { Table } from "@/components/ui/table";
-import { lumaTableShell } from "@/lib/admin/luma-styles";
+使用 Field.Label 搭配 Input／Checkbox 的唯一 id。新增與編輯維持既有 API 契約、資料驗證、錯誤後保留輸入及部分成功重試機制；儲存、停用與刪除等業務規則不能因視覺調整而改變。
 
-<div className={lumaTableShell}>
-  <Table>...</Table>
-</div>
-```
+長表單的動作列使用 `Dialog.Footer class="admin-dialog-footer"`，捲動內容與手機安全區內仍可使用儲存及取消。不要直接以全域 selector 重寫 Input／Select／Textarea 的圓角、顏色或焦點規則。
 
-Page header 直接寫 JSX：
+## 驗收
 
-```tsx
-<div className="flex items-start justify-between">
-  <div className="space-y-1">
-    <h1 className={lumaSectionTitle}>院所管理</h1>
-    <p className={lumaSectionDesc}>管理所有院所資料</p>
-  </div>
-  <Button>新增院所</Button>
-</div>
-```
-
-空狀態用共用元件（有 icon badge + action slot 的結構）：
-
-```tsx
-import { AdminEmptyState } from "@/components/admin/ui/admin-empty-state";
-import { Building2 } from "lucide-react";
-
-<AdminEmptyState
-  icon={Building2}
-  title="尚無院所資料"
-  description="點擊右上角新增院所開始建立"
-  action={<Button>新增院所</Button>}
-/>
-```
-
----
-
-## 全域禁用清單
-
-```
-slate-*              → foreground / muted-foreground / muted
-bg-white             → bg-background / bg-card
-border-slate-*       → border-border 或 ring-1 ring-foreground/5
-from-slate-*         → 不用 gradient，改 bg-background
-text-slate-*         → text-foreground / text-muted-foreground
-text-red-*           → text-destructive
-rounded-md（外層 card）→ rounded-2xl / rounded-3xl / rounded-4xl
-單獨 hover:shadow-md → 配 ring + translate
-```
-
----
-
-## Luma 標準寫法對照表
-
-| 元素 | 常數 | 實際 className |
-|---|---|---|
-| Page shell | `lumaPageShell` | `min-h-screen bg-background` |
-| Page container | `lumaPageContainer` | `container mx-auto px-4 py-8 space-y-6` |
-| Primary card | `lumaCard` | `bg-card rounded-4xl p-6 shadow-sm ring-1 ring-foreground/5` |
-| Card hover | `lumaCardHover` | `transition hover:shadow-xl hover:ring-primary/20 hover:-translate-y-1` |
-| Inner card | `lumaCardInner` | `bg-card rounded-2xl p-5 ring-1 ring-foreground/5` |
-| Table shell | `lumaTableShell` | `rounded-3xl bg-card shadow-sm ring-1 ring-foreground/5 overflow-hidden` |
-| Table header | `lumaTableHeader` | `bg-muted/40 [&_th]:text-muted-foreground [&_th]:font-medium` |
-| Row hover | `lumaTableRowHover` | `hover:bg-muted/30 transition` |
-| Icon badge | `lumaIconBadge` | `inline-flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary` |
-| TabsList | `lumaTabsList` | `bg-muted/50 rounded-full p-1` |
-| TabsTrigger active | `lumaTabsTrigger` | `data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:rounded-full` |
-| Dialog footer | `lumaDialogFooter` | `gap-2 sm:gap-3 sm:justify-end` |
-| Selectable item | `lumaSelectableItem` | `rounded-2xl ring-1 ring-foreground/5 p-4 hover:ring-primary/20 transition` |
-| 主標題 | `lumaSectionTitle` | `text-2xl font-semibold tracking-tight text-foreground` |
-| 副文字 | `lumaSectionDesc` | `text-sm text-muted-foreground` |
-
----
-
-## Badge 與 Loading 處理
-
-```tsx
-// Badge：永遠用 variant，不要手刻 bg + text
-<Badge variant="secondary">已確認</Badge>
-<Badge variant="outline">待處理</Badge>
-<Badge variant="destructive">已取消</Badge>
-
-// Loading spinner
-<div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-
-// 錯誤文字
-<p className="text-destructive">{error}</p>
-```
-
----
-
-## 常見反模式
-
-```tsx
-// ❌ 手刻 slate 色階
-<div className="bg-slate-100 text-slate-800 rounded-md border border-slate-200">
-
-// ✅ 用 Luma token
-<div className={lumaCardInner}>
-```
-
-```tsx
-// ❌ Badge 手刻改色
-<Badge className="bg-blue-100 text-blue-800">已確認</Badge>
-
-// ✅ 用 variant
-<Badge variant="secondary">已確認</Badge>
-```
-
-```tsx
-// ❌ loading spinner 硬編碼顏色
-<div className="border-slate-200 border-t-blue-600 animate-spin rounded-full" />
-
-// ✅ 用 token
-<div className="border-muted border-t-primary animate-spin rounded-full" />
-```
-
-```tsx
-// ❌ 在 shadcn Card 上再疊一層抽象
-export function LumaCard({ children }) {
-  return <Card className="...">{children}</Card>;
-}
-
-// ✅ 直接用 shadcn Card + className 常數
-<Card className={cn(lumaCard, lumaCardHover)}>{children}</Card>
-```
-
----
-
-## 驗收指令
-
-PR 合併前在 web 目錄跑：
-
-```bash
-grep -rn "slate-" src/app/admin src/components/admin
-grep -rn "bg-white" src/app/admin src/components/admin
-grep -rn "from-slate" src/app/admin src/components/admin
-```
-
-三個指令都應回傳 0 行。
+執行型別檢查、lint、正式建置與完整測試；寫入驗收使用虛構 API。`tests/admin-skeleton.test.mjs` 驗證慢速載入、錯誤結束與重試、減少動態、手機選單與暗色模式。既有完整後台與日常工作區測試保護預約、身分資料、訂閱及權限。

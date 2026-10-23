@@ -4,7 +4,7 @@
   import { Button } from '#lib/components/ui/button/index.ts';
   import { Input } from '#lib/components/ui/input/index.ts';
   import type { ApiPatientListItem } from '#lib/types/clinic.ts';
-  import LegacyPanel from './LegacyPanel.svelte';
+  import PatientDetail from '../manage/PatientDetail.svelte';
   import BookingDialog from './BookingDialog.svelte';
   let {facilityId}:{facilityId:string}=$props();
   let search=$state(''),inactive=$state(false),rows=$state<ApiPatientListItem[]>([]),error=$state(''),loading=$state(false),revision=$state(0),offset=$state(0),selected=$state<string|null>(null),seed=$state<ApiPatientListItem|null>(null),booking=$state(false),message=$state('');
@@ -15,5 +15,5 @@
 {#if error}<p role="alert" class="rounded-xl bg-destructive/10 p-3 text-destructive">{error}<Button class="ml-2" variant="outline" onclick={()=>revision++}>重試客戶名單</Button></p>{/if}
 {#if message}<p role="status" class="rounded-xl bg-primary/10 p-3 text-primary">{message}</p>{/if}
 {#if loading}<p role="status">正在搜尋客戶…</p>{:else if !error}<ul class="divide-y overflow-hidden rounded-2xl border bg-card">{#each rows as p (p.id)}<li class="flex flex-wrap items-center justify-between gap-3 p-4"><button class="min-w-0 flex-1 text-left hover:text-primary focus-visible:outline-2 focus-visible:outline-primary" onclick={()=>selected=p.id}><p class="font-medium">{p.name}{p.is_active?'':'（停用）'}</p><p class="mt-1 text-sm text-muted-foreground">{p.phone||'電話未填'} · 身分證末四碼 {p.national_id_last4??'未記錄'}</p><p class="mt-1 text-xs text-muted-foreground">最近預約 {p.last_visit_date??'未記錄'} · 共 {p.appointment_count} 次 · 未到 {p.no_show_count} 次</p></button><Button variant="outline" onclick={()=>selected=p.id} aria-label={'查看'+p.name+'的客戶檔案'}>查看檔案</Button>{#if p.is_active}<Button onclick={()=>{seed=p;booking=true;}} aria-label={'為'+p.name+'再次預約'}>再次預約</Button>{/if}</li>{:else}<li class="p-10 text-center text-muted-foreground">{search?'找不到符合的客戶':'尚無客戶資料'}</li>{/each}</ul><div class="flex justify-end gap-2"><Button variant="outline" disabled={offset===0} onclick={()=>offset=Math.max(0,offset-50)}>上一頁</Button><Button variant="outline" disabled={rows.length<50} onclick={()=>offset+=50}>下一頁</Button></div>{/if}</div>
-{#if selected}<LegacyPanel name="patient" props={{facilityId,patientId:selected,onOpenChange:(open:boolean)=>{if(!open)selected=null;},onSaved:()=>revision++}}/>{/if}
+{#if selected}<PatientDetail {facilityId} patientId={selected} onClose={()=>selected=null} onSaved={()=>revision++}/>{/if}
 <BookingDialog bind:open={booking} {facilityId} patient={seed} onCreated={()=>{message='預約已建立';revision++;}}/>

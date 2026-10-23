@@ -11,7 +11,7 @@ Cross Web 使用 SvelteKit 3.1 / Svelte 5，UI 一律繁體中文。正式網址
 - 路由：`src/routes/`；共用程式、型別、元件：`src/lib/`，匯入採用 `package.json` 的 `#lib/*` subpath imports（含副檔名）。
 - 公開頁、預約、會員、開發者文件、看板使用 Svelte。UI 使用 Svelte 5 runes、Tailwind 4、shadcn-svelte / Bits UI，沿用既有設計 tokens。
 - 院所工作區：`src/lib/components/admin/workspace/`，今日工作台、預約、叫號、排班（含批次）及客戶清單使用原生 Svelte 5。`AdminPage.svelte` 在掛載前檢查院所歸屬與角色。
-- 既有相容層：平台管理員頁、院所編輯／Logo、人員／服務／公告設定、詳細客戶檔案、分析、訂閱與修改密碼仍由 `admin-compat/` 按需載入 React 19 / Radix。日常工作頁不載入 React；沒有 Next.js 執行階段。完整範圍見 `docs/admin-compatibility.md`。
+- 完整原生後台：`src/lib/components/admin/manage/` 包含登入、平台管理、院所／Logo、人員／照片／服務對應／休假、服務、公告、客戶完整檔案、分析、訂閱與修改密碼。React／Radix React 依賴、JSX 設定及 `admin-compat/` 已移除。完整範圍見 `docs/admin-compatibility.md`。
 - API 代理：`src/routes/api/v1/[...path]/+server.ts`；本機 Vite proxy 指向 `http://localhost:8001`。`BACKEND_URL` 為伺服器變數，`src/env.ts` 明確宣告允許公開的既有 `NEXT_PUBLIC_` 變數，私密後端網址不會進入瀏覽器。
 - 登入與主題沿用 `access_token` / `refresh_token` / `theme` 儲存鍵；不要建立另一份 React token 狀態。
 - 需登入頁面關閉 SSR。公開文件與公開頁保留 SSR 與 SEO；看板使用遮罩姓名並設 noindex。
@@ -25,7 +25,7 @@ Cross Web 使用 SvelteKit 3.1 / Svelte 5，UI 一律繁體中文。正式網址
 - `pnpm check`、`pnpm lint`、`pnpm build`、`pnpm test`。瀏覽器測試前先建置，允許本機測試伺服器與無頭 Chrome；測試會拒絕過期產物。
 - `pnpm preview`。唯讀正式 API 驗收需明確覆寫本機的 `BACKEND_URL`，不可拿 `.env.local` 的本機後端結果當正式資料。
 - 所有寫入驗收使用虛構 API 或隔離測試環境，不對正式病人／預約資料做測試寫入。
-- 原遷移設計：`docs/superpowers/plans/2026-10-19-sveltekit-migration.md`。React 後台原生化尚未完成，不可將歷史計畫全部標成完成。
+- 原遷移設計：`docs/superpowers/plans/2026-10-19-sveltekit-migration.md`。歷史計畫保留原紀錄；目前全面原生化範圍與測試以 `docs/admin-compatibility.md` 為準。
 
 ## 領域模型
 
@@ -38,7 +38,7 @@ Cross Web 使用 SvelteKit 3.1 / Svelte 5，UI 一律繁體中文。正式網址
 
 ## UI 與輸出
 
-新增畫面與視覺更新優先使用 Luma shadcn/ui registry 的 blocks / components，沿用專案設計 tokens；沒有對應元件才自建。Svelte 元件位於 `src/lib/components/`，後台舊元件位於相容層內，避免混淆兩種元件。
+新增畫面與視覺更新優先使用 Luma shadcn/ui registry 的 blocks / components，沿用專案設計 tokens；沒有對應元件才自建。Svelte 元件位於 `src/lib/components/`，後台元件集中於 `admin/workspace/` 與 `admin/manage/`，避免重新引入 React 相容層。
 
 對話、文件、註解與 commit message 一律繁體中文。
 

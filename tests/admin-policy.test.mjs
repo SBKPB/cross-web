@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adminAccess } from '../src/lib/admin-compat/policy.ts';
+import { adminAccess } from '../src/lib/admin/policy.ts';
 const user = (roles, facility_id = null) => ({ roles, facility_id });
 
 test('身分載入完成前不掛載後台；未登入與民眾不能進入後台', () => {

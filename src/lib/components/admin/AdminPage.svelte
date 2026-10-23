@@ -1,17 +1,6 @@
 <script lang="ts">
-  import { page } from '$app/state';
-  import { goto } from '$app/navigation';
-  import { getAuth } from '#lib/auth/auth.svelte.ts';
-  import { isFacilityUser } from '#lib/auth/roles.ts';
-  import { adminAccess } from '#lib/admin-compat/policy.ts';
-  import type { AdminPage } from '#lib/admin-compat/runtime.tsx';
-  import LegacyAdminPage from './LegacyAdminPage.svelte';
-  import Workspace from './workspace/Workspace.svelte';
-  let {name}:{name:AdminPage}=$props();
-  const auth=getAuth();
-  const access=$derived(adminAccess(name,auth.user,auth.isLoading,page.params.id));
-  const native=$derived(name==='clinic'||isFacilityUser(auth.user)&&['dashboard','analytics','subscription'].includes(name));
-  $effect(()=>{if(access.state==='redirect')void goto(access.href,{replaceState:true});});
+ import {page} from '$app/state';import {goto} from '$app/navigation';import {getAuth} from '#lib/auth/auth.svelte.ts';import {getAdminHomePath,isFacilityUser,isSystemAdmin} from '#lib/auth/roles.ts';import {adminAccess} from '#lib/admin/policy.ts';import type {AdminPage} from '#lib/admin/types.ts';import Workspace from './workspace/Workspace.svelte';import Login from './manage/Login.svelte';import System from './manage/System.svelte';
+ let {name}:{name:AdminPage}=$props();const auth=getAuth();const access=$derived(adminAccess(name,auth.user,auth.isLoading,page.params.id));const native=$derived(name==='clinic'||isFacilityUser(auth.user)&&['dashboard','analytics','subscription'].includes(name));
+ $effect(()=>{if(access.state==='redirect')void goto(access.href,{replace:true});else if(access.state==='allow'&&name==='index')void goto(getAdminHomePath(auth.user),{replace:true});else if(access.state==='allow'&&name==='subscription'&&isSystemAdmin(auth.user))void goto('/admin/clinics',{replace:true});});
 </script>
-{#if access.state==='loading'}<p role="status" class="p-8 text-center text-muted-foreground">載入後台中…</p>
-{:else if access.state==='allow'}{#if native}<Workspace {name} facilityId={name==='clinic'?page.params.id!:auth.user!.facility_id!}/>{:else}<LegacyAdminPage {name}/>{/if}{/if}
+{#if access.state==='loading'}<p role="status" class="p-8 text-center text-muted-foreground">載入後台中…</p>{:else if access.state==='allow'}{#if name==='login'}<Login/>{:else if native}<Workspace {name} facilityId={name==='clinic'?page.params.id!:auth.user!.facility_id!}/>{:else if name!=='index'&&name!=='subscription'}<System {name}/>{/if}{/if}

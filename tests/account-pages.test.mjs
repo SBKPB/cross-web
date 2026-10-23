@@ -27,12 +27,12 @@ test("/member/appointments/[id]：動態頁快取標頭，回傳路由參數", a
   assert.deepEqual(data, { id: "abc" });
 });
 
-test("/join：metadata 同舊版（canonical /join），靜態頁快取", async () => {
+test("/join：院所導入 metadata 與靜態頁快取", async () => {
   const { data, headers } = await runLoad("../src/routes/join/+page.ts");
   assert.deepEqual(headers, [{ "cache-control": STATIC_PAGE_CACHE }]);
   assert.deepEqual(data.seo, {
-    title: "Design Partner 共同合作",
-    description: "Cross 募集 3–5 家醫療院所、健康服務機構與設備夥伴，共同設計並量化驗證資料與預約工作流程。",
+    title: "院所導入",
+    description: "Cross 協助診所與醫美院所建立線上預約入口，管理諮詢、療程、人員排班與候診流程。了解方案並申請院所導入。",
     canonical: "/join",
   });
 });

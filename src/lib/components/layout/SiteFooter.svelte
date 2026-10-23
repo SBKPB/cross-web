@@ -19,12 +19,12 @@
 			],
 		},
 		{
-			title: "平台與合作",
+			title: "醫療院所",
 			links: [
 				{ label: "診所登入", href: "/admin" },
-				{ label: "開發者文件", href: "/developers" },
-				{ label: "Design Partner", href: "/join" },
+				{ label: "院所導入", href: "/join" },
 				{ label: "方案與定價", href: "/pricing" },
+				{ label: "申請加入", href: "/join/apply" },
 			],
 		},
 		{
@@ -37,6 +37,7 @@
 				},
 				{ label: "服務條款", href: "/terms" },
 				{ label: "退款政策", href: "/refund" },
+				{ label: "開發者文件", href: "/developers" },
 			],
 		},
 	];
@@ -79,9 +80,7 @@
 				<p
 					class={`max-w-xs text-sm leading-7 ${home ? "text-blue-100/75" : "text-muted-foreground"}`}
 				>
-					{home
-						? "讓設備、醫療軟體與健康資料更容易連接。從第一筆量測到完整工作流程，與 Cross 一起開始。"
-						: "讓設備、醫療軟體與健康資料更容易連接。預約是平台的第一個參考應用。"}
+					從線上預約到院所日常管理，讓每一次安排更清楚，把時間留給照顧。
 				</p>
 			</div>
 

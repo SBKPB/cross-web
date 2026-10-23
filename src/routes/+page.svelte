@@ -2,7 +2,7 @@
 	import Seo from "$lib/components/Seo.svelte";
 	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
 	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
-	import PlatformHome from "$lib/components/platform/PlatformHome.svelte";
+	import BookingHome from "$lib/components/home/BookingHome.svelte";
 
 	let { data } = $props();
 </script>
@@ -18,7 +18,7 @@
 	</a>
 	<SiteHeader home />
 	<main id="main-content" class="flex-1">
-		<PlatformHome />
+		<BookingHome />
 	</main>
 	<SiteFooter />
 </div>

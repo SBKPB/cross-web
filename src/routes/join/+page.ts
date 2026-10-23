@@ -2,14 +2,14 @@ import { STATIC_PAGE_CACHE } from "../../lib/cache-control.ts";
 import type { SeoProps } from "../../lib/components/Seo.svelte";
 import type { PageLoad } from "./$types";
 
-// 移植自舊版 app/join/page.tsx（SSG，CDN 快取一年）的 metadata
+// 院所導入頁保留靜態頁快取。
 export const load: PageLoad = ({ setHeaders }) => {
 	setHeaders({ "cache-control": STATIC_PAGE_CACHE });
 	return {
 		seo: {
-			title: "Design Partner 共同合作",
+			title: "院所導入",
 			description:
-				"Cross 募集 3–5 家醫療院所、健康服務機構與設備夥伴，共同設計並量化驗證資料與預約工作流程。",
+				"Cross 協助診所與醫美院所建立線上預約入口，管理諮詢、療程、人員排班與候診流程。了解方案並申請院所導入。",
 			canonical: "/join",
 		} satisfies SeoProps,
 	};

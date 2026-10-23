@@ -16,16 +16,16 @@
 		</a>
 		<nav aria-label="主要導覽" class="flex items-center gap-1 sm:gap-2">
 			<Button
-				href={`${home ? "" : "/"}#platform`}
+				href={`${home ? "" : "/"}#how-it-works`}
 				variant="ghost"
 				size="sm"
 				class="hidden lg:inline-flex"
 			>
-				平台
+				如何預約
 			</Button>
-			<Button href="/developers" variant="ghost" size="sm">開發者</Button>
-			<Button href="/join" variant="ghost" size="sm" class="hidden sm:inline-flex">共同合作</Button>
-			<Button href="/search" variant="ghost" size="sm">預約服務</Button>
+			<Button href="/search" size="sm">線上預約</Button>
+			<Button href="/member" variant="ghost" size="sm">我的預約</Button>
+			<Button href="/join" variant="ghost" size="sm" class="hidden sm:inline-flex">院所導入</Button>
 			<span class="hidden min-[400px]:inline-flex">
 				<ThemeToggle />
 			</span>

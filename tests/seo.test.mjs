@@ -34,28 +34,28 @@ function headLines(props) {
 }
 const lines = (text) => text.trim().split("\n").map((l) => l.trim());
 
-// 以下預期值逐行取自舊 Next（web-next-ref 546d950，pnpm start -p 3100）實際輸出的 <head>；
+// metadata 結構沿用原正式版；全站品牌文案依 2026-10-23 預約優先定位更新。
 // og:image / twitter:image 的網址依 R6 只要求存在（舊版是 /opengraph-image，新版是 og.png）。
 const ROBOTS = `
   robots=index, follow
   googlebot=index, follow, max-image-preview:large, max-snippet:-1`;
 const ROOT_KEYWORDS =
-  "keywords=AIoT,健康資料,醫療設備串接,開發者 API,線上預約,線上掛號,看診預約,診所預約,醫美預約,台灣診所,Cross";
+  "keywords=線上預約,線上掛號,看診預約,診所預約,醫美諮詢,療程預約,院所管理,排班管理,台灣診所,Cross";
 const ROOT_TWITTER = `
   twitter:card=summary
-  twitter:title=Cross | AIoT 健康資料連接平台
-  twitter:description=讓設備、醫療軟體與健康資料更容易連接。探索 Cross 的原生 App、資料 API 與開發者沙盒。`;
+  twitter:title=Cross | 線上預約與院所管理平台
+  twitter:description=線上預約看診、醫美諮詢與療程，查詢院所服務及可預約時段。Cross 協助院所集中管理預約、人員排班與候診叫號。`;
 
 test("沒給 openGraph / twitter：輸出全站 og、twitter 與預設分享圖（舊版 /terms）", () => {
   assert.deepEqual(
     headLines({ canonical: "/" }),
     lines(`
-      title=Cross | AIoT 健康資料連接平台
-      description=讓設備、醫療軟體與健康資料更容易連接。探索 Cross 的原生 App、資料 API 與開發者沙盒。
+      title=Cross | 線上預約與院所管理平台
+      description=線上預約看診、醫美諮詢與療程，查詢院所服務及可預約時段。Cross 協助院所集中管理預約、人員排班與候診叫號。
       ${ROOT_KEYWORDS}${ROBOTS}
       canonical=https://cross.twinhao.com
-      og:title=Cross | AIoT 健康資料連接平台
-      og:description=讓設備、醫療軟體與健康資料更容易連接。探索 Cross 的原生 App、資料 API 與開發者沙盒。
+      og:title=Cross | 線上預約與院所管理平台
+      og:description=線上預約看診、醫美諮詢與療程，查詢院所服務及可預約時段。Cross 協助院所集中管理預約、人員排班與候診叫號。
       og:url=https://cross.twinhao.com
       og:site_name=Cross
       og:locale=zh_TW
@@ -63,10 +63,10 @@ test("沒給 openGraph / twitter：輸出全站 og、twitter 與預設分享圖�
       og:image:type=image/png
       og:image:width=1200
       og:image:height=630
-      og:image:alt=Cross — AIoT 健康資料連接平台
+      og:image:alt=Cross — 線上預約與院所管理
       og:type=website${ROOT_TWITTER}
       twitter:image=${ORIGIN}/og.png
-      twitter:image:alt=Cross — AIoT 健康資料連接平台
+      twitter:image:alt=Cross — 線上預約與院所管理
       twitter:image:type=image/png
       twitter:image:width=1200
       twitter:image:height=630`),

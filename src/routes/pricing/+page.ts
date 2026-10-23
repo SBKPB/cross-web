@@ -7,9 +7,9 @@ export const load: PageLoad = ({ setHeaders }) => {
 	setHeaders({ "cache-control": STATIC_PAGE_CACHE });
 	return {
 		seo: {
-			title: "Cross 方案與合作",
+			title: "院所預約方案與費用",
 			description:
-				"Cross 預約工作流程單一方案 NT$3,000／月，設備、HIS 與客製整合依範圍報價。Design Partner 共同驗證實際流程。",
+				"Cross 院所預約方案 NT$3,000／月，提供線上預約、服務與人員排班管理。導入前確認開通功能、費用與上線安排。",
 			canonical: "/pricing",
 		} satisfies SeoProps,
 	};

@@ -1,11 +1,11 @@
 <script lang="ts" module>
 	export const SITE_URL = "https://cross.twinhao.com";
 	export const SITE_NAME = "Cross";
-	export const SITE_TITLE = "Cross | AIoT 健康資料連接平台";
+	export const SITE_TITLE = "Cross | 線上預約與院所管理平台";
 	export const SITE_DESC =
-		"讓設備、醫療軟體與健康資料更容易連接。探索 Cross 的原生 App、資料 API 與開發者沙盒。";
+		"線上預約看診、醫美諮詢與療程，查詢院所服務及可預約時段。Cross 協助院所集中管理預約、人員排班與候診叫號。";
 	export const SITE_KEYWORDS =
-		"AIoT,健康資料,醫療設備串接,開發者 API,線上預約,線上掛號,看診預約,診所預約,醫美預約,台灣診所,Cross";
+		"線上預約,線上掛號,看診預約,診所預約,醫美諮詢,療程預約,院所管理,排班管理,台灣診所,Cross";
 
 	/** 分享圖：字串只輸出網址；物件可附 alt / type / 尺寸（對應舊版 opengraph-image 檔的 alt、contentType、size） */
 	export type SeoImage =
@@ -106,7 +106,7 @@
 						? undefined
 						: {
 								url: `${SITE_URL}/og.png`,
-								alt: "Cross — AIoT 健康資料連接平台",
+								alt: "Cross — 線上預約與院所管理",
 								type: "image/png",
 								width: 1200,
 								height: 630,

@@ -67,11 +67,11 @@ for (const [path, body] of [
     assert.equal(res.status, 200);
     const end = html.indexOf("</head>");
     const head = html.slice(0, end);
-    assert.deepEqual([...head.matchAll(/<title>([^<]*)<\/title>/g)].map((m) => m[1]), ["Cross | AIoT 健康資料連接平台"]);
-    assert.match(head, /<meta name="description" content="讓設備、醫療軟體與健康資料更容易連接。/);
+    assert.deepEqual([...head.matchAll(/<title>([^<]*)<\/title>/g)].map((m) => m[1]), ["Cross | 線上預約與院所管理平台"]);
+    assert.match(head, /<meta name="description" content="線上預約看診、醫美諮詢與療程，/);
     assert.match(head, /<meta name="robots" content="index, follow"/);
     assert.match(head, /<link rel="canonical" href="https:\/\/cross\.twinhao\.com"/);
-    assert.match(head, /<meta property="og:title" content="Cross \| AIoT 健康資料連接平台"/);
+    assert.match(head, /<meta property="og:title" content="Cross \| 線上預約與院所管理平台"/);
     assert.match(head, /<meta property="og:url" content="https:\/\/cross\.twinhao\.com"/);
     // 分享圖網址固定用正式網域（舊版 metadataBase），不是本機 preview 的來源
     assert.match(head, /<meta property="og:image" content="https:\/\/cross\.twinhao\.com\/og\.png"/);
@@ -155,7 +155,7 @@ test("找不到路由：Next 預設 404 頁與 <head>", async () => {
   const head = html.slice(0, html.indexOf("</head>"));
   assert.deepEqual(
     [...head.matchAll(/<title>([^<]*)<\/title>/g)].map((m) => m[1]).sort(),
-    ["404: This page could not be found.", "Cross | AIoT 健康資料連接平台"],
+    ["404: This page could not be found.", "Cross | 線上預約與院所管理平台"],
   );
   assert.match(head, /<meta name="robots" content="noindex"/);
   assert.match(head, /application\/ld\+json/);
@@ -230,7 +230,7 @@ test("換頁時暫停平滑捲動、完成後還原，新頁面直接在頂端",
 
 // 登入、會員、加入頁（Task 12）：舊版都是 client component，但 Next 仍伺服器端渲染「未登入／載入中」的外框
 // 並帶 root layout 的全站 <head>（3100 基準實測）。新版同樣 SSR 外框，登入狀態只在瀏覽器端判斷（SSR 不讀 localStorage）。
-const SITE_TITLE = "Cross | AIoT 健康資料連接平台";
+const SITE_TITLE = "Cross | 線上預約與院所管理平台";
 const SPINNER_60 =
   '<div class="flex min-h-[60vh] items-center justify-center bg-background"><div class="size-8 animate-spin rounded-full border-4 border-muted border-t-primary"></div></div>';
 const memberNav = (current) =>
@@ -263,7 +263,7 @@ for (const [path, cache, title, checks] of [
   ["/member/favorites", STATIC_PAGE_CACHE, SITE_TITLE, [memberNav("/member/favorites"), SPINNER_60]],
   ["/member/patients", STATIC_PAGE_CACHE, SITE_TITLE, [memberNav("/member/patients"), SPINNER_60]],
   ["/member/appointments/x", DYNAMIC_PAGE_CACHE, SITE_TITLE, [memberNav("/member"), SPINNER_60]],
-  ["/join", STATIC_PAGE_CACHE, "Design Partner 共同合作 | Cross", [/從你的工作流程，/, /院所預約申請/]],
+  ["/join", STATIC_PAGE_CACHE, "院所導入 | Cross", [/讓預約更有條理，/, /申請院所導入/]],
   ["/join/apply", STATIC_PAGE_CACHE, "申請加入 Cross | Cross", [/成為 Cross 合作夥伴/, /第 1 \/ 3 步 · 你經營的是哪一種？/]],
   ["/join/verify", STATIC_PAGE_CACHE, "驗證信箱並設定密碼 | Cross", [/<div class="text-sm text-muted-foreground">載入中…<\/div>/]],
 ]) {

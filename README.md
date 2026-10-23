@@ -1,5 +1,7 @@
 # Cross Web
 
+產品主軸為線上預約與院所營運管理：民眾搜尋院所、預約看診／諮詢／療程，院所管理服務、人員、排班與候診。開發者文件保留為次要技術資源。
+
 SvelteKit 2 / Svelte 5 網站，包含公開頁面、預約、會員、院所後台、叫號看板與開發者文件。路由、登入狀態與 API 代理由 SvelteKit 管理；複雜後台透過僅在後台載入的 React 相容層保留既有操作。沒有 Next.js 執行階段。
 
 正式網站：<https://cross.twinhao.com>。發布與驗收詳見上層 `docs/deployment-sveltekit-2026-10-23.md`；相容層範圍與後續原生化工作見 [後台相容層](docs/admin-compatibility.md)。

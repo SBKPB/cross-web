@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## 產品主軸
+
+Cross 以「線上預約與院所營運管理」為核心，優先完成醫美院所的諮詢與療程預約導入及付費驗證。民眾找院所／預約與院所導入是主要入口；開發者文件、設備與 API 為次要擴充，不可將預約描述為參考應用或附加能力。
+
 ## 目前架構（2026-10-23）
 
 Cross Web 使用 SvelteKit 2 / Svelte 5，UI 一律繁體中文。正式網址 https://cross.twinhao.com，發布紀錄位於上層 `docs/deployment-sveltekit-2026-10-23.md`。

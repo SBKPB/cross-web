@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cross Web
 
-## Getting Started
+SvelteKit 2 / Svelte 5 網站，包含公開頁面、預約、會員、院所後台、叫號看板與開發者文件。路由、登入狀態與 API 代理由 SvelteKit 管理；複雜後台透過僅在後台載入的 React 相容層保留既有操作。沒有 Next.js 執行階段。
 
-First, run the development server:
+正式網站：<https://cross.twinhao.com>。發布與驗收詳見上層 `docs/deployment-sveltekit-2026-10-23.md`；相容層範圍與後續原生化工作見 [後台相容層](docs/admin-compatibility.md)。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+## 本機開發
+
+```sh
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+開啟 http://localhost:5173。Vite 將 `/api/v1/*` 代理至本機後端 `http://localhost:8001`。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+頁面位於 `src/routes/`，業務邏輯、型別與元件位於 `src/lib/`。部署時的後端代理位於 `src/routes/api/v1/[...path]/+server.ts`。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 檢查與建置
 
-## Learn More
+本機已驗證 Node 22；Vercel 使用 Node 24，套件管理器固定 pnpm 10.34.5。預設環境的 Node 26 不受目前 Vercel adapter 支援；執行前先確認實際 Node 版本。
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+pnpm check
+pnpm lint
+pnpm build
+pnpm test
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+測試包含虛構 API 回應及無頭 Chrome 案例，需要允許啟動本機測試伺服器。預設 Chrome 路徑為 macOS 的 Google Chrome，可用 `CHROME_PATH` 覆寫。建置產物不存在或比來源舊時，整合測試會明確失敗。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`PREVIEW_URL` 未設定時，遠端 API 代理檢查會略過；本機測試不代表已驗證正式部署。
 
-## Deploy on Vercel
+## 遷移與發布
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[原遷移計畫](docs/superpowers/plans/2026-10-19-sveltekit-migration.md) 保留為歷史設計。這次以 React 相容層保留完整後台，尚未完成計畫中的全原生 Svelte 後台改寫。正式部署先產生不切換網域的 production 候選版本，驗收後提升同一份產物。

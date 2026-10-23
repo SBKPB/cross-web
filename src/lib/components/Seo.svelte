@@ -47,7 +47,6 @@
 </script>
 
 <script lang="ts">
-	import { page } from "$app/state";
 	import { jsonLdScript } from "$lib/seo/serialize-json-ld";
 
 	/**
@@ -98,7 +97,7 @@
 		title: twitter ? (twitter.title ?? og.title) : SITE_TITLE,
 		description: twitter ? (twitter.description ?? og.description) : SITE_DESC,
 	});
-	// 預設分享圖用目前來源的網址，preview 部署上也能取得（正式站即 https://cross.twinhao.com/og.png）
+	// 預設分享圖一律用正式網域的絕對網址（舊版 metadataBase = SITE_URL，preview 與本機也一樣），不隨請求來源變
 	const img = $derived(
 		typeof image === "string"
 			? { url: image }
@@ -106,7 +105,7 @@
 					(openGraph
 						? undefined
 						: {
-								url: `${page.url.origin}/og.png`,
+								url: `${SITE_URL}/og.png`,
 								alt: "Cross — AIoT 健康資料連接平台",
 								type: "image/png",
 								width: 1200,

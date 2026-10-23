@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	oxc: { jsx: { runtime: "automatic" } },
 	server: {
 		// 本機開發：/api/v1 代理到本機後端（8001）
 		proxy: {

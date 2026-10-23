@@ -271,6 +271,23 @@ test("seo-diff：抓取逾時印出路由並以非 0 結束，其他路由照常
   }
 });
 
+// 非數字（NaN）會讓 AbortSignal.timeout 丟 TypeError、每條路由都誤報「抓取失敗」；0 或負數等於立刻逾時；Infinity 等於不逾時。
+// 一律在開始前以 exit 2 結束（與用法錯誤相同），訊息寫明環境變數名稱與收到的值，不發出任何請求。
+for (const script of ["seo-diff.mjs", "search-diff.mjs"]) {
+  test(`${script}：PARITY_FETCH_TIMEOUT_MS 不是正的有限數 → exit 2 並說明，不發請求`, async () => {
+    drift = false;
+    for (const value of ["abc", "0", "-5", "Infinity", "", "30s", "0.5", "1.5", "2147483648", "4294967296"]) {
+      const { code, stdout, stderr } = await run(script, ["--group", "static"].slice(script === "seo-diff.mjs" ? 0 : 2), {
+        PARITY_FETCH_TIMEOUT_MS: value,
+      });
+      assert.equal(code, 2, `${JSON.stringify(value)}：${stdout}${stderr}`);
+      assert.match(stderr, /PARITY_FETCH_TIMEOUT_MS 必須是正的有限毫秒數/, JSON.stringify(value));
+      assert.ok(stderr.includes(`「${value}」`), `訊息要帶收到的值：${stderr}`);
+      assert.deepEqual([...seen.base, ...seen.preview, ...seen.third], [], "不應發出任何請求");
+    }
+  });
+}
+
 test("seo-diff --sitemap：網址、changefreq、priority 相同，只有 lastmod 時間與站台網址不同 → 0 差異，密鑰只送預覽", async () => {
   sitemapDrift = false;
   const { code, stdout, stderr } = await run("seo-diff.mjs", ["--sitemap"]);

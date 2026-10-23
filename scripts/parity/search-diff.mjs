@@ -15,6 +15,7 @@
 import { parseArgs } from "node:util";
 import { chromium } from "playwright-core";
 import { BYPASS_PERMISSIONS, routeBypass } from "./bypass.mjs";
+import { fetchTimeoutMs } from "./timeout.mjs";
 
 const CHROME =
   process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -34,7 +35,8 @@ const base = new URL(args.base).origin;
 const preview = new URL(args.preview).origin;
 const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const redact = (text) => (BYPASS ? text.replaceAll(BYPASS, "***") : text);
-const TIMEOUT_MS = Number(process.env.PARITY_FETCH_TIMEOUT_MS ?? 30_000);
+// 頁面載入逾時（PARITY_FETCH_TIMEOUT_MS，須為正的有限毫秒數，否則 exit 2）
+const TIMEOUT_MS = fetchTimeoutMs();
 
 const id = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const staff = (n, name, role, main_specialties) => ({ id: `s${n}`, name, role, main_specialties });

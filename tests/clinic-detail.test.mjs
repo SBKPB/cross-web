@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { isHttpError } from "@sveltejs/kit";
 import { FALLBACK_TAXONOMY } from "../src/lib/api/service-categories.ts";
-import { CLINIC_PAGE_CACHE } from "../src/lib/cache-control.ts";
+import { CLINIC_PAGE_CACHE, CLINIC_PAGE_DEGRADED_CACHE } from "../src/lib/cache-control.ts";
 import {
   buildClinicJsonLd,
   buildClinicSeo,
@@ -155,6 +155,7 @@ test("loadClinicDetail：單一端點成功就不打清單；排班抓不到則�
   assert.equal(detail.clinic.services, undefined, "沒有服務項目時不設定 services");
   assert.equal(detail.schedule, null);
   assert.equal(detail.showSchedule, false);
+  assert.equal(detail.degraded, true, "排班抓不到（後端對上架院所一律回 200）算降級");
 });
 
 test("loadClinicDetail：找不到院所或後端全掛 → clinic 為 null，其他資料降級為空", async () => {
@@ -171,7 +172,61 @@ test("loadClinicDetail：找不到院所或後端全掛 → clinic 為 null，�
     announcements: [],
     doctorDetails: [],
     taxonomy: FALLBACK_TAXONOMY,
+    degraded: true,
   });
+});
+
+/** 院所與所有子請求都成功的後端（單一院所端點照正式後端回 404，從清單找到） */
+const SCHEDULE = { week_start: "2026-10-19", week_end: "2026-10-25", week_offset: 0, entries: [] };
+const okRoutes = () => ({
+  [BASE]: () => json([RAW]),
+  [`${BASE}/${ID}/services`]: () => json([]),
+  [`${BASE}/${ID}/doctors`]: () => json([]),
+  [`${BASE}/${ID}/announcements`]: () => json([]),
+  [`${BASE}/${ID}/schedule`]: () => json(SCHEDULE),
+  "/api/v1/service-categories": () => json(FALLBACK_TAXONOMY),
+});
+
+test("loadClinicDetail：所有子請求成功 → 不算降級（單一院所端點 404 退回清單是正式後端的正常路徑）", async () => {
+  const { fetch, calls } = fakeFetch(okRoutes());
+  const detail = await loadClinicDetail(fetch, ID);
+  assert.ok(calls.includes(`${BASE}/${ID}`), "先試單一端點");
+  assert.equal(detail.clinic.clinic_name, "喬鋭德鶴");
+  assert.equal(detail.degraded, false);
+});
+
+// 子請求失敗時頁面照舊版以空值顯示（服務、公告、醫師為空，時刻表不顯示，分類字彙用內建 fallback），但要標成降級
+const FAILURES = {
+  "HTTP 500": () => json({ detail: "boom" }, 500),
+  "HTTP 404": () => json({ detail: "Not Found" }, 404),
+  連線失敗: () => {
+    throw new TypeError("fetch failed");
+  },
+  "回應不是 JSON": () => new Response("<html>bad gateway</html>", { status: 200, headers: { "content-type": "text/html" } }),
+};
+for (const [sub, path] of [
+  ["services", `${BASE}/${ID}/services`],
+  ["schedule", `${BASE}/${ID}/schedule`],
+  ["announcements", `${BASE}/${ID}/announcements`],
+  ["doctors", `${BASE}/${ID}/doctors`],
+  ["服務分類字彙（退回 fallback）", "/api/v1/service-categories"],
+]) {
+  test(`loadClinicDetail：${sub} 失敗 → 以空值降級且 degraded`, async () => {
+    for (const [mode, failure] of Object.entries(FAILURES)) {
+      const { fetch } = fakeFetch({ ...okRoutes(), [path]: failure });
+      const detail = await loadClinicDetail(fetch, ID);
+      assert.equal(detail.clinic.clinic_name, "喬鋭德鶴", mode);
+      assert.equal(detail.degraded, true, `${sub} ${mode}`);
+    }
+  });
+}
+
+test("loadClinicDetail：services / doctors 回應不是陣列（.map 丟錯）也算降級", async () => {
+  for (const path of [`${BASE}/${ID}/services`, `${BASE}/${ID}/doctors`]) {
+    const { fetch } = fakeFetch({ ...okRoutes(), [path]: () => json({ detail: "unexpected" }) });
+    const detail = await loadClinicDetail(fetch, ID);
+    assert.equal(detail.degraded, true, path);
+  }
 });
 
 test("loadClinicDetail：clinicId 編碼後才放進路徑，不會被當成其他後端路徑", async () => {
@@ -183,7 +238,7 @@ test("loadClinicDetail：clinicId 編碼後才放進路徑，不會被當成其�
 
 test("buildClinicSeo：title／description／keywords／og／twitter 與 3100 基準相同", () => {
   const clinic = transformClinicData(RAW);
-  const seo = buildClinicSeo(clinic, ID, FALLBACK_TAXONOMY, ORIGIN);
+  const seo = buildClinicSeo(clinic, ID, FALLBACK_TAXONOMY);
   const title = "喬鋭德鶴｜高雄市傳統整復推拿線上預約";
   const description = "物理治療師；傳統整復推拿技術士。";
   assert.equal(seo.title, title);
@@ -199,9 +254,9 @@ test("buildClinicSeo：title／description／keywords／og／twitter 與 3100 �
     description,
   });
   assert.deepEqual(seo.twitter, { card: "summary_large_image", title: `${title} | Cross`, description });
-  // 分享圖改指本站 og.png（舊版 opengraph-image 的 alt / 型別 / 尺寸照舊）
+  // 分享圖改指 og.png，網域固定為正式站（舊版 metadataBase；不是請求來源 ORIGIN），alt / 型別 / 尺寸照舊版 opengraph-image
   assert.deepEqual(seo.image, {
-    url: `${ORIGIN}/clinic/${ID}/og.png`,
+    url: `https://cross.twinhao.com/clinic/${ID}/og.png`,
     alt: "診所線上預約掛號 — Cross",
     type: "image/png",
     width: 1200,
@@ -217,7 +272,7 @@ test("buildClinicSeo：看診用「線上預約掛號」；沒自介時組合在
     departments: ["family_medicine", "other", "pediatrics", "internal_medicine", "ent"],
     description: "  ",
   });
-  const seo = buildClinicSeo(clinic, ID, FALLBACK_TAXONOMY, ORIGIN);
+  const seo = buildClinicSeo(clinic, ID, FALLBACK_TAXONOMY);
   assert.equal(seo.title, "喬鋭德鶴｜高雄市家醫科線上預約掛號");
   assert.equal(
     seo.description,
@@ -225,20 +280,20 @@ test("buildClinicSeo：看診用「線上預約掛號」；沒自介時組合在
   );
   assert.equal(seo.keywords, "喬鋭德鶴、家醫科、兒科、內科、高雄市、線上預約、掛號");
 
-  const long = buildClinicSeo(transformClinicData({ ...RAW, description: "長".repeat(200) }), ID, FALLBACK_TAXONOMY, ORIGIN);
+  const long = buildClinicSeo(transformClinicData({ ...RAW, description: "長".repeat(200) }), ID, FALLBACK_TAXONOMY);
   assert.equal(long.description, "長".repeat(150));
 
   // 沒有城市也沒有分類 → 主關鍵字退回大類 label；連大類都沒有就只有動作
   const noCity = transformClinicData({ ...RAW, address: null, departments: [] });
-  assert.equal(buildClinicSeo(noCity, ID, FALLBACK_TAXONOMY, ORIGIN).title, "喬鋭德鶴｜其他線上預約");
+  assert.equal(buildClinicSeo(noCity, ID, FALLBACK_TAXONOMY).title, "喬鋭德鶴｜其他線上預約");
   assert.equal(
-    buildClinicSeo({ ...noCity, facility_type: undefined }, ID, FALLBACK_TAXONOMY, ORIGIN).title,
+    buildClinicSeo({ ...noCity, facility_type: undefined }, ID, FALLBACK_TAXONOMY).title,
     "喬鋭德鶴｜線上預約",
   );
 });
 
 test("buildClinicSeo：示範院所 noindex 且不輸出院所 JSON-LD", () => {
-  const seo = buildClinicSeo(transformClinicData({ ...RAW, id: DEMO_CLINIC_ID }), DEMO_CLINIC_ID, FALLBACK_TAXONOMY, ORIGIN);
+  const seo = buildClinicSeo(transformClinicData({ ...RAW, id: DEMO_CLINIC_ID }), DEMO_CLINIC_ID, FALLBACK_TAXONOMY);
   assert.equal(seo.noindex, true);
   assert.equal(seo.jsonLd, undefined);
 });
@@ -315,16 +370,10 @@ test("buildClinicJsonLd：醫美用 HealthAndBeautyBusiness 且不列 medicalSpe
   assert.equal(noReviews.aggregateRating, undefined);
 });
 
-test("+page.server.ts load：找到院所 → 快取 300 秒並回傳頁面資料與 seo", async () => {
+test("+page.server.ts load：找到院所且子請求全部成功 → 快取 300 秒並回傳頁面資料與 seo", async () => {
   const { load } = await import("../src/routes/clinic/[id]/+page.server.ts");
   const headers = [];
-  const { fetch } = fakeFetch({
-    [BASE]: () => json([RAW]),
-    [`${BASE}/${ID}/services`]: () => json([]),
-    [`${BASE}/${ID}/doctors`]: () => json([]),
-    [`${BASE}/${ID}/announcements`]: () => json([]),
-    "/api/v1/service-categories": () => json(FALLBACK_TAXONOMY),
-  });
+  const { fetch } = fakeFetch(okRoutes());
   const data = await load({
     params: { id: ID },
     fetch,
@@ -332,11 +381,29 @@ test("+page.server.ts load：找到院所 → 快取 300 秒並回傳頁面資�
     setHeaders: (h) => headers.push(h),
   });
   assert.deepEqual(headers, [{ "cache-control": CLINIC_PAGE_CACHE }]);
-  assert.equal(CLINIC_PAGE_CACHE, "public, s-maxage=300, stale-while-revalidate");
+  assert.equal(CLINIC_PAGE_CACHE, "public, max-age=0, must-revalidate, s-maxage=300, stale-while-revalidate");
   assert.equal(data.clinic.clinic_name, "喬鋭德鶴");
   assert.equal(data.isDemo, false);
   assert.equal(data.seo.title, "喬鋭德鶴｜高雄市傳統整復推拿線上預約");
-  assert.equal(data.seo.image.url, `${ORIGIN}/clinic/${ID}/og.png`);
+  // 請求來源是 preview（ORIGIN），分享圖仍用正式網域
+  assert.equal(data.seo.image.url, `https://cross.twinhao.com/clinic/${ID}/og.png`);
+});
+
+test("+page.server.ts load：任一子請求失敗而降級 → private, no-store（不進 CDN），頁面照樣渲染", async () => {
+  const { load } = await import("../src/routes/clinic/[id]/+page.server.ts");
+  for (const path of [`${BASE}/${ID}/services`, `${BASE}/${ID}/schedule`, "/api/v1/service-categories"]) {
+    const headers = [];
+    const { fetch } = fakeFetch({ ...okRoutes(), [path]: () => json({ detail: "boom" }, 503) });
+    const data = await load({
+      params: { id: ID },
+      fetch,
+      url: new URL(`${ORIGIN}/clinic/${ID}`),
+      setHeaders: (h) => headers.push(h),
+    });
+    assert.deepEqual(headers, [{ "cache-control": CLINIC_PAGE_DEGRADED_CACHE }], path);
+    assert.equal(CLINIC_PAGE_DEGRADED_CACHE, "private, no-store");
+    assert.equal(data.clinic.clinic_name, "喬鋭德鶴");
+  }
 });
 
 test("+page.server.ts load：找不到院所 → error(404)，且不設快取", async () => {

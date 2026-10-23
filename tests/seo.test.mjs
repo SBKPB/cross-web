@@ -7,11 +7,13 @@ import { render } from "svelte/server";
 // 把真正的 Seo.svelte 編成 SSR 模組後 render，比對輸出的 <head> 標籤。
 // $app/state 換成固定網址的替身，$lib 與 svelte 換成實際檔案路徑（data: 模組只能 import 絕對網址）。
 const ORIGIN = "https://cross.twinhao.com";
+// 目前請求的來源刻意用 preview 網域：og:image 要用固定的正式網域（舊版 metadataBase），不能跟著請求來源變
+const REQUEST_ORIGIN = "https://cross-abc123-office.vercel.app";
 const stub = (code) => `data:text/javascript,${encodeURIComponent(code)}`;
 const source = readFileSync(new URL("../src/lib/components/Seo.svelte", import.meta.url), "utf8");
 const code = compile(source, { generate: "server", filename: "Seo.svelte" })
   .js.code.replace(/(["'])svelte\/internal\/server\1/, JSON.stringify(import.meta.resolve("svelte/internal/server")))
-  .replace(/(["'])\$app\/state\1/, JSON.stringify(stub(`export const page = { url: new URL("${ORIGIN}/") };`)))
+  .replace(/(["'])\$app\/state\1/, JSON.stringify(stub(`export const page = { url: new URL("${REQUEST_ORIGIN}/") };`)))
   .replace(
     /(["'])\$lib\/seo\/serialize-json-ld\1/,
     JSON.stringify(new URL("../src/lib/seo/serialize-json-ld.ts", import.meta.url).href),
@@ -217,4 +219,19 @@ test("openGraph + twitter + 頁面分享圖：twitter:image 沿用 og 圖（舊�
       twitter:image:width=1200
       twitter:image:height=630`),
   );
+});
+
+// 舊版 root layout 設 metadataBase = https://cross.twinhao.com：og:image / twitter:image 的相對網址一律以正式網域補成絕對網址，
+// preview 部署與本機也一樣（不是目前請求的來源）。新版預設分享圖 og.png 與診所 og.png 同樣用固定網域。
+test("og:image / twitter:image 一律以 https://cross.twinhao.com/ 開頭，不隨請求來源（舊版 metadataBase）", () => {
+  const { head } = render(Seo, { props: { canonical: "/" } });
+  const images = [...head.matchAll(/<meta (?:property|name)="(og:image|twitter:image)" content="([^"]*)"/g)];
+  assert.deepEqual(
+    images.map((m) => [m[1], m[2]]),
+    [
+      ["og:image", "https://cross.twinhao.com/og.png"],
+      ["twitter:image", "https://cross.twinhao.com/og.png"],
+    ],
+  );
+  assert.ok(!head.includes(REQUEST_ORIGIN), "不得出現請求來源");
 });

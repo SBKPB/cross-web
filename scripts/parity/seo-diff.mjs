@@ -14,7 +14,7 @@
 //   其他 UA 一律可能把 metadata 串流到 <body>。Googlebot 不在這份清單：is-bot.js 把它歸為會執行 JS 的 'dom' bot，
 //   待遇和一般瀏覽器相同，所以不能用 Googlebot UA。bingbot、facebookexternalhit 都在清單內。
 // - meta 以「屬性:名稱」為鍵比對（property:og:title 與 name:og:title 視為不同）。
-// - 每個請求 30 秒逾時（環境變數 PARITY_FETCH_TIMEOUT_MS 可改），逾時的路由列為差異並以 exit 1 結束。
+// - 每個請求 30 秒逾時（環境變數 PARITY_FETCH_TIMEOUT_MS 可改，須為正的有限毫秒數，否則 exit 2），逾時的路由列為差異並以 exit 1 結束。
 // - 預覽受 Vercel Deployment Protection 保護時，設環境變數 VERCEL_AUTOMATION_BYPASS_SECRET；
 //   密鑰只會帶給預覽來源（每一跳轉址各自判斷），不會送往基準或第三方。
 // - --routes 預設為同資料夾的 routes.json（測試用來換成假路由）。
@@ -28,11 +28,11 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual, parseArgs } from "node:util";
+import { fetchTimeoutMs } from "./timeout.mjs";
 
 const PROD = "https://cross.twinhao.com";
 // 必須符合 Next 的 HTML-limited bot 清單（見頂部註解），舊版才會把 metadata 放在 <head>
 const CRAWLER_UA = "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)";
-const TIMEOUT_MS = Number(process.env.PARITY_FETCH_TIMEOUT_MS ?? 30_000);
 const { values: args } = parseArgs({
   options: {
     base: { type: "string", default: "http://localhost:3100" },
@@ -57,6 +57,7 @@ if (args.group && !routes[args.group]) {
 const base = new URL(args.base).origin;
 const preview = new URL(args.preview).origin;
 const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+const TIMEOUT_MS = fetchTimeoutMs();
 
 /**
  * 不自動跟隨轉址，每一跳都重新判斷是否帶密鑰（fetch 跨來源轉址會沿用自訂標頭）。

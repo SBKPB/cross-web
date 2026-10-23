@@ -22,6 +22,8 @@
 
 	let selectedClinic = $state<Clinic | null>(null);
 	let dialogOpen = $state(false);
+	// 正常清單以院所 ID 保留元件狀態；重複 ID 才退回位置，避免 Svelte 拒絕渲染。
+	const hasDuplicateIds = $derived(new Set(clinics.map((clinic) => clinic.id)).size !== clinics.length);
 
 	function handleCardClick(clinic: Clinic) {
 		selectedClinic = clinic;
@@ -49,7 +51,7 @@
 	</div>
 {:else}
 	<div class={cn(GRID_CLASS, className)}>
-		{#each clinics as clinic, i (i)}
+		{#each clinics as clinic, i (hasDuplicateIds ? `index:${i}` : `id:${clinic.id}`)}
 			<ClinicCard {clinic} onClick={() => handleCardClick(clinic)} />
 		{/each}
 	</div>

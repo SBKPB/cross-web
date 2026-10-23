@@ -88,7 +88,7 @@ test.beforeEach((t) => {
 });
 
 test("快取常數：落地頁 / sitemap 一小時（舊版 revalidate = 3600）", () => {
-  assert.equal(LANDING_PAGE_CACHE, "public, s-maxage=3600, stale-while-revalidate");
+  assert.equal(LANDING_PAGE_CACHE, "public, max-age=0, must-revalidate, s-maxage=3600, stale-while-revalidate");
 });
 
 // ---------- /area ----------

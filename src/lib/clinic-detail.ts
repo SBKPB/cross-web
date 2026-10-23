@@ -3,6 +3,7 @@
 // 純 TS 模組：node --test 直接 import，內部一律相對路徑。
 import {
   categoryLabel,
+  FALLBACK_TAXONOMY,
   facilityTypeLabel,
   serviceCategoriesApi,
   type ServiceTaxonomy,
@@ -46,6 +47,15 @@ const ROLE_NAMES: Record<string, string> = {
   beautician: "美容師",
   therapist: "治療師",
 };
+
+/**
+ * 子請求結果：失敗時照舊版以空值（[] / null）降級顯示，`ok` 記錄是否真的成功。
+ * 降級的頁面不可進 CDN 快取（見 +page.server.ts）。
+ */
+interface Fetched<T> {
+  value: T;
+  ok: boolean;
+}
 
 /** 後端路徑：clinicId 來自網址，編碼後才放進路徑（避免 ../ 之類的值被解析成其他後端路徑） */
 const clinicPath = (clinicId: string, suffix = "") =>
@@ -116,12 +126,12 @@ export function transformClinicData(found: any): Clinic {
   };
 }
 
-async function getDoctorsFromApi(fetch: Fetch, clinicId: string): Promise<ClinicDoctorDetail[]> {
+async function getDoctorsFromApi(fetch: Fetch, clinicId: string): Promise<Fetched<ClinicDoctorDetail[]>> {
   try {
     const res = await fetch(clinicPath(clinicId, "/doctors"));
-    if (!res.ok) return [];
+    if (!res.ok) return { value: [], ok: false };
     const raw = await res.json();
-    return raw.map(
+    const value = raw.map(
       (d: {
         id: string;
         name: string;
@@ -146,17 +156,18 @@ async function getDoctorsFromApi(fetch: Fetch, clinicId: string): Promise<Clinic
         license_type: d.license_type ?? undefined,
       }),
     );
+    return { value, ok: true };
   } catch {
-    return [];
+    return { value: [], ok: false };
   }
 }
 
-async function getServicesFromApi(fetch: Fetch, clinicId: string): Promise<Service[]> {
+async function getServicesFromApi(fetch: Fetch, clinicId: string): Promise<Fetched<Service[]>> {
   try {
     const res = await fetch(clinicPath(clinicId, "/services"));
-    if (!res.ok) return [];
+    if (!res.ok) return { value: [], ok: false };
     const raw = await res.json();
-    return raw.map((item: { id: string; service_name?: string; name?: string; description?: string | null; price: string | number; duration_minutes?: number; category?: string }) => ({
+    const value = raw.map((item: { id: string; service_name?: string; name?: string; description?: string | null; price: string | number; duration_minutes?: number; category?: string }) => ({
       id: item.id,
       name: item.service_name ?? item.name ?? "",
       description: item.description ?? "",
@@ -164,28 +175,29 @@ async function getServicesFromApi(fetch: Fetch, clinicId: string): Promise<Servi
       duration_minutes: item.duration_minutes ?? 30,
       category: item.category ?? "一般服務",
     }));
+    return { value, ok: true };
   } catch {
-    return [];
+    return { value: [], ok: false };
   }
 }
 
-async function getAnnouncementsFromApi(fetch: Fetch, clinicId: string): Promise<AnnouncementPublic[]> {
+async function getAnnouncementsFromApi(fetch: Fetch, clinicId: string): Promise<Fetched<AnnouncementPublic[]>> {
   try {
     const res = await fetch(clinicPath(clinicId, "/announcements"));
-    if (!res.ok) return [];
-    return await res.json();
+    if (!res.ok) return { value: [], ok: false };
+    return { value: await res.json(), ok: true };
   } catch {
-    return [];
+    return { value: [], ok: false };
   }
 }
 
-async function getScheduleFromApi(fetch: Fetch, clinicId: string): Promise<WeeklySchedule | null> {
+async function getScheduleFromApi(fetch: Fetch, clinicId: string): Promise<Fetched<WeeklySchedule | null>> {
   try {
     const res = await fetch(clinicPath(clinicId, "/schedule"));
-    if (!res.ok) return null;
-    return (await res.json()) as WeeklySchedule;
+    if (!res.ok) return { value: null, ok: false };
+    return { value: (await res.json()) as WeeklySchedule, ok: true };
   } catch {
-    return null;
+    return { value: null, ok: false };
   }
 }
 
@@ -226,11 +238,16 @@ export interface ClinicDetail {
   doctorDetails: ClinicDoctorDetail[];
   /** 服務分類字彙（給 metadata / JSON-LD；元件內仍用 useServiceTaxonomy，同舊版 client 元件） */
   taxonomy: ServiceTaxonomy;
+  /**
+   * 降級渲染：服務、排班、公告、醫師任一子請求失敗（非 2xx、連線失敗或回應無法解析）而以空值顯示，
+   * 或服務分類字彙退回內建 fallback。院所本身的請求不在此列（找不到即 404）
+   */
+  degraded: boolean;
 }
 
 /** 平行取得院所資訊、服務項目、門診排班、公告、醫師詳情與服務分類字彙（同舊版頁面） */
 export async function loadClinicDetail(fetch: Fetch, clinicId: string): Promise<ClinicDetail> {
-  const [clinic, services, schedule, announcements, doctorDetails, taxonomy] = await Promise.all([
+  const [clinic, services, schedule, announcements, doctors, taxonomy] = await Promise.all([
     getClinicFromApi(fetch, clinicId),
     getServicesFromApi(fetch, clinicId),
     getScheduleFromApi(fetch, clinicId),
@@ -240,15 +257,27 @@ export async function loadClinicDetail(fetch: Fetch, clinicId: string): Promise<
   ]);
 
   // 合併服務項目到 clinic 資料
-  if (clinic && services.length > 0) {
-    clinic.services = services;
+  if (clinic && services.value.length > 0) {
+    clinic.services = services.value;
   }
 
   // 門診時刻表：由院所後台「啟用門診時刻表」開關控制（看診預設開、美容/醫美等預設關，可切換）；
   // 開啟者有排班資料才顯示（無資料呈現空狀態）
-  const showSchedule = !!clinic && clinic.show_schedule !== false && schedule !== null;
+  const showSchedule = !!clinic && clinic.show_schedule !== false && schedule.value !== null;
 
-  return { clinic, schedule, showSchedule, announcements, doctorDetails, taxonomy };
+  // serviceCategoriesApi.get 失敗時回傳的就是 FALLBACK_TAXONOMY 本身（成功時是新解析的物件），以同一性判斷
+  const degraded =
+    [services, schedule, announcements, doctors].some((r) => !r.ok) || taxonomy === FALLBACK_TAXONOMY;
+
+  return {
+    clinic,
+    schedule: schedule.value,
+    showSchedule,
+    announcements: announcements.value,
+    doctorDetails: doctors.value,
+    taxonomy,
+    degraded,
+  };
 }
 
 // 院所服務分類 code → 中文 label（最多取前 3 個，給 SEO 關鍵字 / medicalSpecialty）
@@ -284,13 +313,13 @@ const SCHEMA_DAY: Record<string, string> = {
 
 /**
  * 舊版 generateMetadata 的輸出，轉成 <Seo> 的 props（openGraph / twitter 整組取代全站值，同 Next 合併語意）。
- * 分享圖改指本站 /clinic/<id>/og.png（origin 為目前請求來源，preview 部署也能取得），alt / 型別 / 尺寸同舊版 opengraph-image。
+ * 分享圖改指 /clinic/<id>/og.png，網域固定為正式站（舊版 metadataBase = SITE_URL，不隨請求來源變），
+ * alt / 型別 / 尺寸同舊版 opengraph-image。
  */
 export function buildClinicSeo(
   clinic: Clinic,
   clinicId: string,
   tax: ServiceTaxonomy,
-  origin: string,
 ): SeoProps {
   const isHealthcare = clinic.facility_type === "healthcare";
   const action = isHealthcare ? "線上預約掛號" : "線上預約";
@@ -336,7 +365,7 @@ export function buildClinicSeo(
     },
     // 每間診所專屬動態分享卡（舊版由同目錄 opengraph-image.tsx 自動提供）
     image: {
-      url: `${origin}${path}/og.png`,
+      url: `${SITE_URL}${path}/og.png`,
       alt: CLINIC_OG_ALT,
       type: "image/png",
       width: 1200,

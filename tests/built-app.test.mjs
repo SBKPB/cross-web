@@ -7,7 +7,7 @@ import { buildProblem, CHROME, startPreview } from "./support/built-app.mjs";
 // 對 `pnpm build` 產物（vite preview）驗證的行為；產物不存在或比來源舊就明確失敗（請先 pnpm build）。
 const PORT = Number(process.env.BUILT_APP_TEST_PORT ?? 4321);
 const problem = buildProblem();
-const STATIC_PAGE_CACHE = "public, s-maxage=31536000, stale-while-revalidate";
+const STATIC_PAGE_CACHE = "public, max-age=0, must-revalidate, s-maxage=31536000, stale-while-revalidate";
 
 let preview;
 let base;
@@ -73,7 +73,8 @@ for (const [path, body] of [
     assert.match(head, /<link rel="canonical" href="https:\/\/cross\.twinhao\.com"/);
     assert.match(head, /<meta property="og:title" content="Cross \| AIoT 健康資料連接平台"/);
     assert.match(head, /<meta property="og:url" content="https:\/\/cross\.twinhao\.com"/);
-    assert.match(head, new RegExp(`<meta property="og:image" content="${base}/og\\.png"`));
+    // 分享圖網址固定用正式網域（舊版 metadataBase），不是本機 preview 的來源
+    assert.match(head, /<meta property="og:image" content="https:\/\/cross\.twinhao\.com\/og\.png"/);
     assert.match(head, /<meta property="og:image:width" content="1200"/);
     assert.match(head, /<meta property="og:image:height" content="630"/);
     assert.match(head, /<meta name="twitter:card" content="summary"/);

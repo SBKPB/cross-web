@@ -2,6 +2,7 @@
 	import "../app.css";
 	import { onMount } from "svelte";
 	import { ModeWatcher } from "mode-watcher";
+	import { browser } from "$app/environment";
 	import { beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { env } from "$env/dynamic/public";
@@ -22,8 +23,9 @@
 	resetFavoritesOnUserChange(() => auth.user?.id);
 
 	// 對應舊版 <html data-scroll-behavior="smooth">：除了同 path + search 的純 hash 導航外，換頁期間暫停 CSS 平滑捲動，
-	// 新頁面直接回到頂端，不會從上一頁的位置慢慢滑上去；navigation.complete settle 時還原（含被取消或中止）。
-	beforeNavigate(createSmoothScrollPause(() => document.documentElement));
+	// 新頁面直接回到頂端，不會從上一頁的位置慢慢滑上去；navigation.complete settle 時還原（含被取消或中止），
+	// 從 bfcache 還原（pageshow persisted）時重置。SSR 期間沒有 window，不註冊 pageshow（beforeNavigate 也只在瀏覽器端觸發）。
+	beforeNavigate(createSmoothScrollPause(() => document.documentElement, browser ? window : undefined));
 
 	// 全站結構化資料：Organization + WebSite（@id 互相連結）
 	const SITE_JSONLD = {

@@ -227,19 +227,26 @@
           <Empty.Header>
             <Empty.Media variant="icon"><UsersRound /></Empty.Media><Empty.Title
             >
-              尚無符合的人員
+              {rows.length ? "沒有符合角色的人員" : "尚未新增團隊成員"}
             </Empty.Title><Empty.Description>
-              新增團隊成員，設定他們提供的服務與可預約時間。
+              {rows.length
+                ? "可清除角色篩選，查看其他團隊成員。"
+                : "新增團隊成員，再設定服務對應與可預約時間。"}
             </Empty.Description>
           </Empty.Header><Empty.Content>
-            <Button
-              onclick={() => {
-                selected = null;
-                editor = true;
-              }}
-            >
-              <Plus class="size-4" />新增人員
-            </Button>
+            {#if role && rows.length}<Button
+                variant="outline"
+                onclick={() => (role = "")}
+              >
+                顯示全部人員
+              </Button>{:else}<Button
+                onclick={() => {
+                  selected = null;
+                  editor = true;
+                }}
+              >
+                <Plus class="size-4" />新增人員
+              </Button>{/if}
           </Empty.Content>
         </Empty.Root>{/each}
     </div>{/if}

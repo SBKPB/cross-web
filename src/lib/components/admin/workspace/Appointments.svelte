@@ -80,6 +80,12 @@
     search = $state(""),
     message = $state(""),
     pending = $state("");
+  const filterCount = $derived(
+    Number(status !== "all") +
+      Number(!!staff) +
+      Number(!!service) +
+      Number(!!search.trim()),
+  );
   let selected = $state<ApiAppointment | null>(null),
     detailError = $state("");
   async function params(values: Record<string, string | null>) {
@@ -225,7 +231,7 @@
   }
 </script>
 
-<div class="space-y-7">
+<Tabs.Root value={view} onValueChange={changeView} class="gap-7">
   <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
       <p
@@ -307,7 +313,10 @@
         今天
       </Button><Button
         size="sm"
-        variant={endDate === addDateDays(startDate, 6) ? "default" : "outline"}
+        variant={startDate === taipeiToday() &&
+        endDate === addDateDays(startDate, 6)
+          ? "default"
+          : "outline"}
         onclick={() =>
           params({
             start: taipeiToday(),
@@ -346,14 +355,15 @@
         aria-expanded={showFilters}
         onclick={() => (showFilters = !showFilters)}
       >
-        {showFilters ? "收合篩選" : "更多篩選"}{status !== "all" ||
-        staff ||
-        service
-          ? "（已套用）"
+        {showFilters ? "收合篩選" : "更多篩選"}{filterCount
+          ? `（${filterCount}）`
           : ""}
       </Button>
-      <Tabs.Root value={view} onValueChange={changeView} class="ml-auto">
-        <Tabs.List aria-label="預約檢視方式" class="h-9 bg-muted/70">
+      <div class="w-full sm:ml-auto sm:w-auto">
+        <Tabs.List
+          aria-label="預約檢視方式"
+          class="grid w-full grid-cols-3 sm:inline-flex"
+        >
           {#each [{ id: "list", label: "清單", icon: List }, { id: "day", label: "人員日曆", icon: CalendarDays }, { id: "week", label: "週行程", icon: CalendarRange }] as item (item.id)}<Tabs.Trigger
               value={item.id}
               class="gap-1.5 px-3 text-xs"
@@ -361,7 +371,7 @@
               <item.icon class="size-3.5" />{item.label}
             </Tabs.Trigger>{/each}
         </Tabs.List>
-      </Tabs.Root>
+      </div>
     </div>
 
     <div
@@ -487,6 +497,38 @@
         </NativeSelect.Root>
       </div>
     </div>
+    {#if filterCount}<div
+        class="flex flex-wrap items-center gap-2 rounded-xl bg-primary/5 px-3 py-2 text-xs text-foreground"
+        role="status"
+        aria-label="已套用篩選"
+      >
+        <span>已套用 {filterCount} 項篩選</span>
+        {#if status !== "all"}<span
+            class="rounded-full border border-primary/20 px-2 py-1"
+          >
+            {APPOINTMENT_STATUS_LABELS[
+              status as keyof typeof APPOINTMENT_STATUS_LABELS
+            ] ?? "指定狀態"}
+          </span>{/if}{#if staff}<span
+            class="rounded-full border border-primary/20 px-2 py-1"
+          >
+            {people.find(([id]) => id === staff)?.[1] ?? "指定人員"}
+          </span>{/if}{#if service}<span
+            class="rounded-full border border-primary/20 px-2 py-1"
+          >
+            {services.find(([id]) => id === service)?.[1] ?? "指定服務"}
+          </span>{/if}<Button
+          size="sm"
+          variant="ghost"
+          class="ml-auto"
+          onclick={() => {
+            search = "";
+            void params({ status: null, staff: null, service: null });
+          }}
+        >
+          清除篩選
+        </Button>
+      </div>{/if}
     <div
       class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"
     >
@@ -504,217 +546,228 @@
       </Button>
     </div>
   </Card.Root>
-  {#if message}<p
-      role="status"
-      class="rounded-xl bg-primary/10 p-3 text-sm text-primary"
-    >
-      {message}
-    </p>{/if}
-  {#if error}<div
-      role="alert"
-      class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-destructive/10 p-4 text-sm text-destructive"
-    >
-      <div>
-        <p>{error}</p>
-        {#if updated}<p>
-            目前顯示 {updated} 的資料，尚未取得最新結果。
-          </p>{:else}<p>尚未取得預約資料，不能判定此期間是否有預約。</p>{/if}
-      </div>
-      <Button variant="outline" onclick={() => revision++}>重試預約</Button>
-    </div>{/if}
-  {#if detailError}<div
-      role="alert"
-      class="rounded-xl bg-destructive/10 p-3 text-destructive"
-    >
-      {detailError}<Button
-        variant="outline"
-        onclick={() => params({ appointment: null })}
+  <Tabs.Content value={view} class="space-y-5">
+    {#if message}<p
+        role="status"
+        class="rounded-xl bg-primary/10 p-3 text-sm text-primary"
       >
-        關閉提示
-      </Button>
-    </div>{/if}
-  {#if loading && !updated}<AdminSkeleton
-      label="正在載入預約…"
-      variant="table"
-    />
-  {:else if !error || updated}
-    <div aria-busy={loading} class="space-y-3">
-      <p class="text-sm text-muted-foreground">
-        共 {filtered.length} 筆{search || staff || service || status !== "all"
-          ? "符合篩選條件"
-          : ""}
-      </p>
-      {#if !filtered.length}<Card.Root class="gap-0 py-0 shadow-sm">
-          <Empty.Root class="py-14">
-            <Empty.Header>
-              <Empty.Media variant="icon">
-                <CalendarCheck2 class="size-6" />
-              </Empty.Media><Empty.Title>
-                {rows.length ? "沒有符合條件的預約" : "期間無預約"}
-              </Empty.Title><Empty.Description>
-                {rows.length
-                  ? "請調整姓名、日期或篩選條件。"
-                  : "可從右上方新增預約，或切換日期查看。"}
-              </Empty.Description>
-            </Empty.Header>{#if rows.length}<Empty.Content>
-                <Button
-                  variant="outline"
-                  onclick={() => {
-                    search = "";
-                    void params({ status: null, staff: null, service: null });
-                  }}
-                >
-                  清除篩選
-                </Button>
-              </Empty.Content>{/if}
-          </Empty.Root>
-        </Card.Root>
-      {:else}
-        {#if view !== "list"}<AppointmentCalendar
-            appointments={filtered}
-            {startDate}
-            {view}
-            fallbackDuration={facility.slot_duration}
-            onSelect={select}
-          />{/if}
-        <div
-          class={view === "list"
-            ? "hidden overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-foreground/5 md:block"
-            : "hidden"}
+        {message}
+      </p>{/if}
+    {#if error}<div
+        role="alert"
+        class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-destructive/10 p-4 text-sm text-destructive"
+      >
+        <div>
+          <p>{error}</p>
+          {#if updated}<p>
+              目前顯示 {updated} 的資料，尚未取得最新結果。
+            </p>{:else}<p>尚未取得預約資料，不能判定此期間是否有預約。</p>{/if}
+        </div>
+        <Button variant="outline" onclick={() => revision++}>重試預約</Button>
+      </div>{/if}
+    {#if detailError}<div
+        role="alert"
+        class="rounded-xl bg-destructive/10 p-3 text-destructive"
+      >
+        {detailError}<Button
+          variant="outline"
+          onclick={() => params({ appointment: null })}
         >
-          <Table.Root class="w-full text-left text-sm">
-            <Table.Header
-              class="border-b border-border/60 bg-muted/40 text-muted-foreground"
-            >
-              <Table.Row>
-                <Table.Head class="p-3">日期／時間</Table.Head><Table.Head
-                  class="p-3"
-                >
-                  客戶
-                </Table.Head><Table.Head class="p-3">
-                  服務／人員
-                </Table.Head><Table.Head class="p-3">
-                  狀態
-                </Table.Head><Table.Head class="p-3 text-right">
-                  操作
-                </Table.Head>
-              </Table.Row>
-            </Table.Header><Table.Body class="divide-y">
-              {#each filtered as a (a.id)}<Table.Row class="hover:bg-muted/30">
-                  <Table.Cell class="p-3 tabular-nums">
-                    <p>{a.appointment_date}</p>
-                    <p class="font-medium">
-                      {a.appointment_time.slice(0, 5)}–{appointmentEnd(
-                        a,
-                        facility.slot_duration,
-                      )}
-                    </p>
-                  </Table.Cell><Table.Cell class="p-3">
-                    <div class="flex items-center gap-3">
-                      <Avatar.Root class="size-10 rounded-2xl">
-                        <Avatar.Fallback
-                          class="rounded-2xl bg-primary/7 text-sm font-medium text-primary"
-                        >
-                          {a.patient_name.slice(0, 1)}
-                        </Avatar.Fallback>
-                      </Avatar.Root>
-                      <div>
-                        <button
-                          class="font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"
-                          onclick={() => select(a)}
-                        >
-                          {a.patient_name}
-                        </button>
-                        <p class="mt-1 text-xs text-muted-foreground">
-                          {a.patient_phone}
-                        </p>
+          關閉提示
+        </Button>
+      </div>{/if}
+    {#if loading && !updated}<AdminSkeleton
+        label="正在載入預約…"
+        variant="table"
+      />
+    {:else if !error || updated}
+      <div aria-busy={loading} class="space-y-3">
+        <p class="text-sm text-muted-foreground">
+          共 {filtered.length} 筆{search || staff || service || status !== "all"
+            ? "符合篩選條件"
+            : ""}
+        </p>
+        {#if !filtered.length}<Card.Root class="gap-0 py-0 shadow-sm">
+            <Empty.Root class="py-14">
+              <Empty.Header>
+                <Empty.Media variant="icon">
+                  <CalendarCheck2 class="size-6" />
+                </Empty.Media><Empty.Title>
+                  {rows.length ? "沒有符合條件的預約" : "期間無預約"}
+                </Empty.Title><Empty.Description>
+                  {rows.length
+                    ? "請調整姓名、日期或篩選條件。"
+                    : "可從右上方新增預約，或切換日期查看。"}
+                </Empty.Description>
+              </Empty.Header>{#if rows.length}<Empty.Content>
+                  <Button
+                    variant="outline"
+                    onclick={() => {
+                      search = "";
+                      void params({ status: null, staff: null, service: null });
+                    }}
+                  >
+                    清除篩選
+                  </Button>
+                </Empty.Content>{/if}
+            </Empty.Root>
+          </Card.Root>
+        {:else}
+          {#if view !== "list"}<AppointmentCalendar
+              appointments={filtered}
+              {startDate}
+              {view}
+              fallbackDuration={facility.slot_duration}
+              onSelect={select}
+            />{/if}
+          <div
+            class={view === "list"
+              ? "hidden overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-foreground/5 md:block"
+              : "hidden"}
+          >
+            <Table.Root class="w-full text-left text-sm">
+              <Table.Header
+                class="border-b border-border/60 bg-muted/40 text-muted-foreground"
+              >
+                <Table.Row>
+                  <Table.Head class="p-3">日期／時間</Table.Head><Table.Head
+                    class="p-3"
+                  >
+                    客戶
+                  </Table.Head><Table.Head class="p-3">
+                    服務／人員
+                  </Table.Head><Table.Head class="p-3">
+                    狀態
+                  </Table.Head><Table.Head class="p-3 text-right">
+                    操作
+                  </Table.Head>
+                </Table.Row>
+              </Table.Header><Table.Body class="divide-y">
+                {#each filtered as a (a.id)}<Table.Row
+                    class="hover:bg-muted/30"
+                  >
+                    <Table.Cell class="p-3 tabular-nums">
+                      <p>{a.appointment_date}</p>
+                      <p class="font-medium">
+                        {a.appointment_time.slice(0, 5)}–{appointmentEnd(
+                          a,
+                          facility.slot_duration,
+                        )}
+                      </p>
+                    </Table.Cell><Table.Cell class="p-3">
+                      <div class="flex items-center gap-3">
+                        <Avatar.Root class="size-10 rounded-2xl">
+                          <Avatar.Fallback
+                            class="rounded-2xl bg-primary/7 text-sm font-medium text-primary"
+                          >
+                            {a.patient_name.slice(0, 1)}
+                          </Avatar.Fallback>
+                        </Avatar.Root>
+                        <div>
+                          <button
+                            class="font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"
+                            onclick={() => select(a)}
+                          >
+                            {a.patient_name}
+                          </button>
+                          <p class="mt-1 text-xs text-muted-foreground">
+                            {a.patient_phone}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Table.Cell><Table.Cell class="p-3">
-                    <p>
-                      {a.service_name ?? "一般預約"} · {a.duration_minutes ??
-                        facility.slot_duration} 分鐘
-                    </p>
-                    <p class="mt-1 text-xs text-muted-foreground">
-                      {a.staff_name ?? "未指定人員"}
-                    </p>
-                  </Table.Cell><Table.Cell class="p-3">
-                    <StatusPill status={a.status} />
-                  </Table.Cell><Table.Cell class="p-3">
-                    <div class="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onclick={() => select(a)}
-                        aria-label={"查看" + a.patient_name + "的預約"}
-                      >
-                        詳情／改期
-                      </Button>{#if a.status === "confirmed" && a.appointment_date === taipeiToday() && canAccessFeature(facility, "queue_management")}<Button
+                    </Table.Cell><Table.Cell class="p-3">
+                      <p>
+                        {a.service_name ?? "一般預約"} · {a.duration_minutes ??
+                          facility.slot_duration} 分鐘
+                      </p>
+                      <p class="mt-1 text-xs text-muted-foreground">
+                        {a.staff_name ?? "未指定人員"}
+                      </p>
+                    </Table.Cell><Table.Cell class="p-3">
+                      <StatusPill status={a.status} />
+                    </Table.Cell><Table.Cell class="p-3">
+                      <div class="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
                           size="sm"
-                          disabled={!!pending}
-                          onclick={() => checkIn(a)}
-                          aria-label={"為" + a.patient_name + "報到"}
+                          onclick={() => select(a)}
+                          aria-label={"查看" + a.patient_name + "的預約"}
                         >
-                          報到
-                        </Button>{/if}
-                    </div>
-                  </Table.Cell>
-                </Table.Row>{/each}
-            </Table.Body>
-          </Table.Root>
-        </div>
-        <div class="space-y-2 md:hidden">
-          {#each filtered as a (a.id)}<Card.Root
-              role="article"
-              class="gap-0 shadow-sm space-y-2 p-4"
-            >
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <p class="font-semibold tabular-nums">
-                  {a.appointment_time.slice(0, 5)}–{appointmentEnd(
-                    a,
-                    facility.slot_duration,
-                  )}
-                </p>
-                <StatusPill status={a.status} />
-              </div>
-              <button
-                class="text-left font-semibold text-primary underline-offset-4 hover:underline"
-                onclick={() => select(a)}
+                          詳情／改期
+                        </Button>{#if a.status === "confirmed" && a.appointment_date === taipeiToday() && canAccessFeature(facility, "queue_management")}<Button
+                            size="sm"
+                            disabled={!!pending}
+                            onclick={() => checkIn(a)}
+                            aria-label={"為" + a.patient_name + "報到"}
+                          >
+                            報到
+                          </Button>{/if}
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>{/each}
+              </Table.Body>
+            </Table.Root>
+          </div>
+          <div class="space-y-2 md:hidden">
+            {#each filtered as a (a.id)}<Card.Root
+                role="article"
+                class="gap-0 shadow-sm space-y-2 p-4"
               >
-                {a.patient_name}
-              </button>
-              <p class="text-sm">
-                {a.service_name ?? "一般預約"} · {a.duration_minutes ??
-                  facility.slot_duration} 分鐘
-              </p>
-              <p class="text-xs text-muted-foreground">
-                {a.appointment_date} · {a.staff_name ?? "未指定"}
-              </p>
-              <div
-                class="flex flex-wrap items-center justify-between gap-2 border-t pt-2"
-              >
-                <a href={"tel:" + a.patient_phone} class="text-sm text-primary">
-                  {a.patient_phone}
-                </a>
-                <div class="flex gap-2">
-                  <Button size="sm" variant="outline" onclick={() => select(a)}>
-                    詳情／改期
-                  </Button>{#if a.status === "confirmed" && a.appointment_date === taipeiToday() && canAccessFeature(facility, "queue_management")}<Button
-                      size="sm"
-                      disabled={!!pending}
-                      onclick={() => checkIn(a)}
-                      aria-label={"為" + a.patient_name + "報到"}
-                    >
-                      報到
-                    </Button>{/if}
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="font-semibold tabular-nums">
+                    {a.appointment_time.slice(0, 5)}–{appointmentEnd(
+                      a,
+                      facility.slot_duration,
+                    )}
+                  </p>
+                  <StatusPill status={a.status} />
                 </div>
-              </div>
-            </Card.Root>{/each}
-        </div>
-      {/if}
-    </div>
-  {/if}
-</div>
+                <button
+                  class="text-left font-semibold text-primary underline-offset-4 hover:underline"
+                  onclick={() => select(a)}
+                >
+                  {a.patient_name}
+                </button>
+                <p class="text-sm">
+                  {a.service_name ?? "一般預約"} · {a.duration_minutes ??
+                    facility.slot_duration} 分鐘
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {a.appointment_date} · {a.staff_name ?? "未指定"}
+                </p>
+                <div
+                  class="flex flex-wrap items-center justify-between gap-2 border-t pt-2"
+                >
+                  <a
+                    href={"tel:" + a.patient_phone}
+                    class="text-sm text-primary"
+                  >
+                    {a.patient_phone}
+                  </a>
+                  <div class="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onclick={() => select(a)}
+                    >
+                      詳情／改期
+                    </Button>{#if a.status === "confirmed" && a.appointment_date === taipeiToday() && canAccessFeature(facility, "queue_management")}<Button
+                        size="sm"
+                        disabled={!!pending}
+                        onclick={() => checkIn(a)}
+                        aria-label={"為" + a.patient_name + "報到"}
+                      >
+                        報到
+                      </Button>{/if}
+                  </div>
+                </div>
+              </Card.Root>{/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
+  </Tabs.Content>
+</Tabs.Root>
 <BookingDialog
   bind:open={
     () => createOpen,

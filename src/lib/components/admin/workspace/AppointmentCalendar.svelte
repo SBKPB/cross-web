@@ -29,7 +29,9 @@
           id: addDateDays(startDate, i),
           label: addDateDays(startDate, i).slice(5),
           rows: appointments.filter(
-            (a) => a.appointment_date === addDateDays(startDate, i),
+            (a) =>
+              a.appointment_date === addDateDays(startDate, i) &&
+              a.status !== "cancelled",
           ),
         }))
       : [...new Set(appointments.map((a) => a.staff_id ?? "none"))].map(

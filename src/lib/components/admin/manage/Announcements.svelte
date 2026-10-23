@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AdminEmpty from "../layout/AdminEmpty.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.ts";
   import * as Card from "#lib/components/ui/card/index.ts";
@@ -142,11 +143,12 @@
           <p class="text-xs text-muted-foreground">
             {a.created_at.slice(0, 10)}
           </p>
-        </Card.Root>{:else}<p
-          class="rounded-xl border p-8 text-center text-muted-foreground"
+        </Card.Root>{:else}<AdminEmpty
+          title="尚無公告"
+          description="發布營業時間、預約須知或最新消息，讓客戶在公開頁看到。"
         >
-          尚無公告。
-        </p>{/each}
+          <Button onclick={() => edit(null)}>建立第一則公告</Button>
+        </AdminEmpty>{/each}
     </div>{/if}
 </div>
 <Modal bind:open={editor} title={selected ? "編輯公告" : "新增公告"} {busy}>

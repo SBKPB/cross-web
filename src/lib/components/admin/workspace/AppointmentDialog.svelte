@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { revealError } from "#lib/admin/reveal-error.ts";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Field from "#lib/components/ui/field/index.ts";
   import * as NativeSelect from "#lib/components/ui/native-select/index.ts";
@@ -123,7 +124,13 @@
 >
   <Dialog.Content
     showCloseButton={!busy}
-    class="block overflow-hidden p-0 sm:max-w-xl"
+    class="admin-dialog block overflow-hidden p-0 sm:max-w-xl"
+    onInteractOutside={(e) => {
+      if (busy) e.preventDefault();
+    }}
+    onEscapeKeydown={(e) => {
+      if (busy) e.preventDefault();
+    }}
   >
     {#if appointment}
       <div class="flex max-h-[calc(100dvh-2rem)] min-h-0 flex-col">
@@ -142,6 +149,8 @@
         <div class="min-h-0 space-y-4 overflow-y-auto px-6 pb-6">
           {#if error}<p
               role="alert"
+              tabindex="-1"
+              use:revealError={error}
               class="rounded-xl bg-destructive/10 p-3 text-destructive"
             >
               {error}

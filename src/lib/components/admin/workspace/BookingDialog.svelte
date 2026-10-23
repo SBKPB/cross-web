@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { revealError } from "#lib/admin/reveal-error.ts";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Field from "#lib/components/ui/field/index.ts";
   import * as NativeSelect from "#lib/components/ui/native-select/index.ts";
@@ -11,6 +12,7 @@
   import {
     loadBookingCatalog,
     matchingStaff,
+    clinicHref,
     type BookingCatalog,
   } from "#lib/admin/workspace.ts";
   import { apiMessage } from "#lib/admin/scheduling.ts";
@@ -63,6 +65,23 @@
       !!date &&
       !!time &&
       !saving,
+  );
+  const submitHint = $derived(
+    loading
+      ? "正在載入預約資料…"
+      : saving
+        ? "正在建立預約，請稍候。"
+        : !catalog
+          ? "資料載入完成後即可填寫預約。"
+          : !name.trim() || !nationalId.trim()
+            ? "請填寫客戶姓名與完整身分證字號。"
+            : !staffId
+              ? "請選擇服務人員。"
+              : !date
+                ? "請選擇預約日期。"
+                : !time
+                  ? "請選擇一個可用時段。"
+                  : "資料已齊全，可以建立預約。",
   );
   function choose(p: ApiPatientListItem) {
     chosen = p;
@@ -167,7 +186,7 @@
 <Dialog.Root bind:open>
   <Dialog.Content
     showCloseButton={!saving}
-    class="block overflow-hidden p-0 sm:max-w-2xl"
+    class="admin-dialog block overflow-hidden p-0 sm:max-w-2xl"
     onInteractOutside={(e) => {
       if (saving) e.preventDefault();
     }}
@@ -191,6 +210,8 @@
           />{/if}
         {#if error}<div
             role="alert"
+            tabindex="-1"
+            use:revealError={error}
             class="space-y-2 rounded-xl bg-destructive/10 p-3 text-destructive"
           >
             <p>{error}</p>
@@ -346,6 +367,14 @@
             </div>
             {#if !people.length}<p class="text-sm text-destructive">
                 沒有可承接此服務的人員，請先到院所設定確認人員與服務對應。
+                <a
+                  href={clinicHref(facilityId, "personnel")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-2 inline-flex min-h-10 items-center text-primary underline"
+                >
+                  開啟人員設定（另開分頁）
+                </a>
               </p>{/if}
             {#if serviceId && !Object.values(catalog.assignments).some((ids) => ids.length)}<p
                 class="text-xs text-muted-foreground"
@@ -399,16 +428,27 @@
         {/if}
       </div>
       <div
-        class="flex shrink-0 justify-end gap-2 border-t bg-popover p-4"
+        class="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t bg-popover p-4"
         data-slot="dialog-footer"
       >
+        <p
+          id="booking-submit-hint"
+          class="w-full text-xs text-muted-foreground"
+          aria-live="polite"
+        >
+          {submitHint}
+        </p>
         <Button
           variant="outline"
           disabled={saving}
           onclick={() => (open = false)}
         >
           關閉
-        </Button><Button type="submit" disabled={!canSubmit}>
+        </Button><Button
+          type="submit"
+          aria-describedby="booking-submit-hint"
+          disabled={!canSubmit}
+        >
           {saving ? "建立中…" : "建立預約"}
         </Button>
       </div>

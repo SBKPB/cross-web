@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AdminEmpty from "../layout/AdminEmpty.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.ts";
   import * as Field from "#lib/components/ui/field/index.ts";
@@ -138,11 +139,13 @@
   </div>
   <div class="flex flex-wrap gap-3">
     <Button
+      aria-pressed={tab === "staff"}
       variant={tab === "staff" ? "default" : "outline"}
       onclick={() => (tab = "staff")}
     >
       後台員工（{users.filter((u) => u.roles.some(isStaffRole)).length}）
     </Button><Button
+      aria-pressed={tab === "patient"}
       variant={tab === "patient" ? "default" : "outline"}
       onclick={() => (tab = "patient")}
     >
@@ -227,8 +230,31 @@
               </Button>
             </div>
           </div>
-        </li>{:else}<li class="p-8 text-center text-muted-foreground">
-          沒有符合的帳號。
+        </li>{:else}<li>
+          <AdminEmpty
+            title={search
+              ? "沒有符合的帳號"
+              : tab === "staff"
+                ? "尚無後台員工"
+                : "尚無民眾會員"}
+            description={search
+              ? "調整搜尋文字，或清除搜尋以查看目前分類的帳號。"
+              : tab === "staff"
+                ? "建立員工帳號，並指派角色與所屬院所。"
+                : "民眾註冊會員後，帳號會顯示於此。"}
+            search={!!search}
+          >
+            {#if search}<Button variant="outline" onclick={() => (search = "")}>
+                清除帳號搜尋
+              </Button>{:else if tab === "staff"}<Button
+                onclick={() => {
+                  selected = null;
+                  editor = true;
+                }}
+              >
+                建立第一個員工帳號
+              </Button>{/if}
+          </AdminEmpty>
         </li>{/each}
     </ul>{/if}
 </div>

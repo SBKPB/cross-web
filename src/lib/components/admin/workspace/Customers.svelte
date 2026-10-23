@@ -269,7 +269,17 @@
                 ? "試著調整搜尋條件，或確認客戶是否已停用。"
                 : "第一筆預約建立後，客戶資料會整理在這裡。"}
             </Empty.Description>
-          </Empty.Header>
+          </Empty.Header>{#if search}<Empty.Content>
+              <Button
+                variant="outline"
+                onclick={() => {
+                  search = "";
+                  offset = 0;
+                }}
+              >
+                清除客戶搜尋
+              </Button>
+            </Empty.Content>{/if}
         </Empty.Root>{/if}
       <Card.Footer
         class="flex items-center justify-between gap-3 border-t border-border/60 px-5 py-4"

@@ -32,6 +32,7 @@
       class="shrink-0 gap-3 border-b border-border/70 bg-muted/20 px-6 py-6 text-left"
     >
       <div
+        data-admin-modal-icon
         class="mb-1 flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary"
       >
         <SquarePen class="size-5" strokeWidth={1.7} />

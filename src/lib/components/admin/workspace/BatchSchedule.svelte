@@ -146,7 +146,16 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="block overflow-hidden p-0 sm:max-w-2xl">
+  <Dialog.Content
+    class="admin-dialog block overflow-hidden p-0 sm:max-w-2xl"
+    onInteractOutside={(e) => {
+      if (busy) e.preventDefault();
+    }}
+    onEscapeKeydown={(e) => {
+      if (busy) e.preventDefault();
+    }}
+    showCloseButton={!busy}
+  >
     <div class="flex max-h-[calc(100dvh-2rem)] flex-col">
       <Dialog.Header class="shrink-0 p-6 pr-12">
         <Dialog.Title>智慧排班</Dialog.Title><Dialog.Description>

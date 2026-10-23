@@ -88,7 +88,11 @@
         <span>
           <strong class="text-lg tracking-tight">Cross</strong>
           <span class="mt-0.5 block text-xs text-muted-foreground">
-            {system ? "平台營運管理" : "院所預約管理"}
+            {facilityName
+              ? "院所預約管理"
+              : system
+                ? "平台營運管理"
+                : "院所預約管理"}
           </span>
         </span>
       </a>
@@ -152,7 +156,10 @@
           variant="ghost"
           size="sm"
           class="flex-1 text-xs"
-          onclick={() => (password = true)}
+          onclick={() => {
+            menuOpen = false;
+            password = true;
+          }}
         >
           <KeyRound class="size-3.5" />修改密碼
         </Button><Button
@@ -189,7 +196,7 @@
         </Button>
         <div class="min-w-0">
           <p class="hidden text-[11px] text-muted-foreground md:block">
-            {system ? "平台管理" : "院所工作區"}
+            {facilityName ? "院所工作區" : system ? "平台管理" : "院所工作區"}
           </p>
           <p class="truncate text-sm font-semibold md:mt-1">{heading}</p>
         </div>
@@ -197,6 +204,7 @@
       <div class="flex shrink-0 items-center gap-2">
         <ThemeToggle />{#if actions}{@render actions()}{:else}<Button
             href="/"
+            aria-label="查看網站"
             variant="outline"
             size="sm"
           >

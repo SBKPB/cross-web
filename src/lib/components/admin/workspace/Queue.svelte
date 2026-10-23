@@ -271,7 +271,15 @@
     if (!v && !pending) nextGroup = null;
   }}
 >
-  <Dialog.Content>
+  <Dialog.Content
+    onInteractOutside={(e) => {
+      if (pending) e.preventDefault();
+    }}
+    onEscapeKeydown={(e) => {
+      if (pending) e.preventDefault();
+    }}
+    showCloseButton={!pending}
+  >
     <Dialog.Header>
       <Dialog.Title>確認叫下一號</Dialog.Title><Dialog.Description>
         將完成 {nextGroup?.appointments.find((a) => a.status === "in_progress")

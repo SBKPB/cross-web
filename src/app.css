@@ -314,3 +314,17 @@
 .admin-form [data-slot="field-label"] { line-height: 1.6; }
 .admin-form [data-slot="field-legend"] { margin-bottom: .25rem; }
 @media (prefers-reduced-motion: reduce) { .cross-admin *, .admin-dialog * { scroll-behavior: auto; transition-duration: 0s !important; animation-duration: 0s !important; } }
+
+/* 後台行動操作：輕點目標及鍵盤焦點保持可辨識。 */
+@media (max-width: 767px) {
+ :is(.cross-admin,.admin-dialog) [data-slot="button"] { min-height: 2.75rem; }
+ :is(.cross-admin,.admin-dialog) [data-slot="button"][data-size^="icon"] { min-width: 2.75rem; }
+ :is(.cross-admin,.admin-dialog) [data-slot="tabs-trigger"] { min-height: 2.75rem; }
+}
+
+/* 短視窗與鍵盤展開時，為長表單保留更多可用空間。 */
+@media (max-width: 767px) and (max-height: 600px) {
+ .admin-dialog [data-admin-modal-icon] { display: none; }
+ .admin-dialog [data-slot="dialog-header"] { gap: .5rem; padding-block: 1rem; }
+ .admin-dialog .admin-dialog-footer { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; }
+}

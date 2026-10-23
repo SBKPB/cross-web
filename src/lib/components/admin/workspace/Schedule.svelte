@@ -385,7 +385,16 @@
     if (!v && !busy) selected = "";
   }}
 >
-  <Dialog.Content class="sm:max-w-xl">
+  <Dialog.Content
+    class="admin-dialog sm:max-w-xl"
+    onInteractOutside={(e) => {
+      if (busy) e.preventDefault();
+    }}
+    onEscapeKeydown={(e) => {
+      if (busy) e.preventDefault();
+    }}
+    showCloseButton={!busy}
+  >
     <Dialog.Header>
       <Dialog.Title>{selected} 排班與休假</Dialog.Title><Dialog.Description>
         檢視安排，新增班次或設定休假。

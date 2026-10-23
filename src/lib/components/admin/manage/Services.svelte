@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AdminEmpty from "../layout/AdminEmpty.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.ts";
   import * as Field from "#lib/components/ui/field/index.ts";
@@ -146,8 +147,13 @@
               刪除
             </Button>
           </div>
-        </li>{:else}<li class="p-8 text-center text-muted-foreground">
-          尚無服務項目。
+        </li>{:else}<li>
+          <AdminEmpty
+            title="尚無服務項目"
+            description="先建立諮詢或療程，設定時長與價格，再到人員設定指派服務。"
+          >
+            <Button onclick={() => edit(null)}>建立第一個服務</Button>
+          </AdminEmpty>
         </li>{/each}
     </ul>{/if}
 </div>

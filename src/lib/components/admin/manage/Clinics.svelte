@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AdminEmpty from "../layout/AdminEmpty.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as NativeSelect from "#lib/components/ui/native-select/index.ts";
   import * as Card from "#lib/components/ui/card/index.ts";
@@ -152,11 +153,27 @@
               公開頁 ↗
             </Button>
           </div>
-        </Card.Root>{:else}<p
-          class="rounded-xl border p-8 text-muted-foreground"
-        >
-          沒有符合的院所。
-        </p>{/each}
+        </Card.Root>{:else}<div class="col-span-full">
+          <AdminEmpty
+            title={search || type ? "找不到符合的院所" : "尚未建立院所"}
+            description={search || type
+              ? "試著調整名稱、電話、地址或院所類型。"
+              : "新增合作院所後，即可設定團隊、服務與預約。"}
+            search={!!(search || type)}
+          >
+            {#if search || type}<Button
+                variant="outline"
+                onclick={() => {
+                  search = "";
+                  type = "";
+                }}
+              >
+                清除院所篩選
+              </Button>{:else}<Button onclick={() => (editor = true)}>
+                建立第一間院所
+              </Button>{/if}
+          </AdminEmpty>
+        </div>{/each}
     </div>{/if}
 </div>
 {#if editor}<ClinicEditor

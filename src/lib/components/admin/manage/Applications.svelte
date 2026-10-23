@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AdminEmpty from "../layout/AdminEmpty.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.ts";
   import * as Card from "#lib/components/ui/card/index.ts";
@@ -112,6 +113,7 @@
   </div>
   <nav aria-label="申請狀態" class="flex flex-wrap gap-2">
     {#each Object.entries(labels) as [key, label] (key)}<Button
+        aria-pressed={status === key}
         variant={status === key ? "default" : "outline"}
         onclick={() => (status = key as ApplicationStatus)}
       >
@@ -176,11 +178,10 @@
             >
               管理員帳號已建立，可至使用者管理搜尋 {a.email}。
             </p>{/if}
-        </Card.Root>{:else}<p
-          class="rounded-xl border p-8 text-center text-muted-foreground"
-        >
-          目前沒有{labels[status]}的申請。
-        </p>{/each}
+        </Card.Root>{:else}<AdminEmpty
+          title={"目前沒有" + labels[status] + "的申請"}
+          description="可切換上方申請狀態，查看其他審核進度。"
+        />{/each}
     </div>{/if}
 </div>
 <Modal

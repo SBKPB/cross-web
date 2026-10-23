@@ -23,11 +23,11 @@
 			>
 				如何預約
 			</Button>
-			<Button href="/search" size="sm">線上預約</Button>
-			<Button href="/member" variant="ghost" size="sm">我的預約</Button>
+			<Button href="/search" size="sm" class={home ? "min-h-11" : undefined}>線上預約</Button>
+			<Button href="/member" variant="ghost" size="sm" class={home ? "min-h-11" : undefined}>我的預約</Button>
 			<Button href="/join" variant="ghost" size="sm" class="hidden sm:inline-flex">院所導入</Button>
 			<span class="hidden min-[400px]:inline-flex">
-				<ThemeToggle />
+				<ThemeToggle class={home ? "size-11" : undefined} />
 			</span>
 			<span class="hidden md:inline-flex">
 				<AuthButton />

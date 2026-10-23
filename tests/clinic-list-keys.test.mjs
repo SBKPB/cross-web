@@ -85,3 +85,40 @@ test("重複 id 不丟錯，照舊版全部渲染；恢復不重複後照常", {
   assert.deepEqual([...errors, ...recorded], []);
   await page.close();
 });
+
+test("院所卡片載入 Logo；缺圖或失效時顯示首字，換圖後可恢復", { skip: noChrome }, async () => {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/api/v1/member/favorites", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+  );
+  await page.route("**/logo-valid.svg", (route) => route.fulfill({
+    status: 200, contentType: "image/svg+xml",
+    body: '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><rect width="120" height="60" fill="#2563eb"/></svg>',
+  }));
+  await page.route("**/logo-broken.svg", (route) => route.fulfill({ status: 404, body: "" }));
+  try {
+    await page.goto(harness.origin);
+    await page.waitForFunction(() => document.documentElement.dataset.mounted === "true");
+    const card = page.locator('[data-slot="card"]', { hasText: "甲診所" });
+    const fallback = card.locator('[data-slot="avatar-fallback"]');
+    const logo = card.locator('[data-slot="avatar-image"]');
+    await fallback.waitFor({ state: "visible" });
+    assert.equal(await fallback.innerText(), "甲");
+    for (const button of ["#logo-valid", "#logo-broken", "#logo-valid", "#logo-none", "#logo-valid"]) {
+      await page.click(button);
+      if (button === "#logo-valid") {
+        await logo.waitFor({ state: "visible" });
+        assert.equal(await logo.evaluate((img) => img.complete && img.naturalWidth === 120 && img.naturalHeight === 60), true);
+        assert.match(await logo.getAttribute("class"), /object-contain/);
+        await fallback.waitFor({ state: "hidden" });
+      } else {
+        await fallback.waitFor({ state: "visible" });
+        assert.equal(await fallback.innerText(), "甲");
+        await logo.waitFor({ state: "hidden" });
+      }
+    }
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});

@@ -60,6 +60,7 @@
 	import type { Clinic } from "$lib/types/clinic";
 	import { cn } from "$lib/utils";
 	import FavoriteButton from "./FavoriteButton.svelte";
+	import ClinicLogo from "./ClinicLogo.svelte";
 
 	let {
 		clinic,
@@ -106,12 +107,7 @@
 	)}
 >
 	<CardHeader>
-		<div
-			class="mb-3 flex size-14 items-center justify-center rounded-2xl bg-accent/60 text-2xl font-medium text-primary"
-			aria-hidden="true"
-		>
-			{clinic.clinic_name.slice(0, 1)}
-		</div>
+		<ClinicLogo logo={clinic.logo} name={clinic.clinic_name} class="mb-3" />
 		<div class="flex items-start justify-between gap-3">
 			<div class="min-w-0 flex-1 space-y-2">
 				<!-- 服務類型 / 醫療分級 badges（圖示與文字間不留空白，與舊版 JSX 輸出相同） -->

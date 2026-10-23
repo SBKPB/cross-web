@@ -4,6 +4,7 @@
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import Phone from "@lucide/svelte/icons/phone";
 	import { Badge } from "$lib/components/ui/badge/index.js";
+	import ClinicLogo from "$lib/components/clinics/ClinicLogo.svelte";
 	import { categoryLabel, type ServiceTaxonomy } from "$lib/api/service-categories";
 	import type { LandingClinic } from "$lib/seo/landing-data";
 
@@ -22,11 +23,7 @@
 				href={`/clinic/${clinic.id}`}
 				class="group flex h-full flex-col gap-4 rounded-3xl border border-border/80 bg-card p-6 transition-colors hover:border-primary/40"
 			>
-				<span
-					aria-hidden="true"
-					class="flex size-14 items-center justify-center rounded-2xl bg-accent/60 text-2xl text-primary"
-					>{clinic.name.slice(0, 1)}</span
-				>
+				<ClinicLogo logo={clinic.logo} name={clinic.name} />
 				<div class="flex items-center gap-1.5">
 					{#if clinic.is_featured}
 						<!-- 圖示與文字間不留空白（與舊版 JSX 輸出相同） -->

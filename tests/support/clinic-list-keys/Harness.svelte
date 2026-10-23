@@ -36,9 +36,15 @@
 	const B = clinic(2, "乙診所");
 
 	let clinics = $state<Clinic[]>([A, B]);
+	function setLogo(logo: string | null) {
+		clinics = clinics.map((item) => item.id === A.id ? { ...item, logo } : item);
+	}
 </script>
 
 <button id="reverse" type="button" onclick={() => (clinics = [...clinics].reverse())}>反轉順序</button>
 <button id="duplicate" type="button" onclick={() => (clinics = [A, A, B])}>重複 id</button>
 <button id="unique" type="button" onclick={() => (clinics = [B, A])}>恢復不重複</button>
+<button id="logo-valid" type="button" onclick={() => setLogo('/logo-valid.svg')}>設定 Logo</button>
+<button id="logo-broken" type="button" onclick={() => setLogo('/logo-broken.svg')}>失效 Logo</button>
+<button id="logo-none" type="button" onclick={() => setLogo(null)}>移除 Logo</button>
 <section id="list"><ClinicList {clinics} /></section>

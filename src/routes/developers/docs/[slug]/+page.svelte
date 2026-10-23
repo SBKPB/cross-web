@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { developerDocuments, developerRepository } from '$lib/developers';
-  import DeveloperDocument from '$lib/components/developers/DeveloperDocument.svelte';
-  import Seo from '$lib/components/Seo.svelte';
+  import { developerDocuments, developerRepository } from '#lib/developers.ts';
+  import DeveloperDocument from '#lib/components/developers/DeveloperDocument.svelte';
+  import Seo from '#lib/components/Seo.svelte';
   import type { PageData } from './$types';
   let { data }: { data: PageData } = $props();
 </script>

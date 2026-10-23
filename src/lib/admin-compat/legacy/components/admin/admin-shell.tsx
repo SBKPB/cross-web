@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from "react";
-import { AdminSidebar } from "$lib/admin-compat/legacy/components/admin/admin-sidebar";
-import { AdminTopbar } from "$lib/admin-compat/legacy/components/admin/admin-topbar";
-import { AdminMobileNav } from "$lib/admin-compat/legacy/components/admin/admin-mobile-nav";
-import { SubscriptionBanner } from "$lib/admin-compat/legacy/components/admin/subscription-banner";
+import { AdminSidebar } from "#lib/admin-compat/legacy/components/admin/admin-sidebar.tsx";
+import { AdminTopbar } from "#lib/admin-compat/legacy/components/admin/admin-topbar.tsx";
+import { AdminMobileNav } from "#lib/admin-compat/legacy/components/admin/admin-mobile-nav.tsx";
+import { SubscriptionBanner } from "#lib/admin-compat/legacy/components/admin/subscription-banner.tsx";
 
 interface AdminShellProps {
   children: ReactNode;

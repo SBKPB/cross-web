@@ -1,8 +1,8 @@
 <script lang="ts">
 	import ArrowRight from "@lucide/svelte/icons/arrow-right";
 	import Loader2 from "@lucide/svelte/icons/loader-circle";
-	import { inkOn } from "$lib/color-contrast";
-	import { cn } from "$lib/utils";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 components/booking/sticky-submit-button.tsx：固定在底部的下一步／送出按鈕
 	let {

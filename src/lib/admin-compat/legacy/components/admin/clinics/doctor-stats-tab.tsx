@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import Link from "$lib/admin-compat/link";
+import Link from "#lib/admin-compat/link.tsx";
 import { Clock, Hourglass, Loader2, Lock, Stethoscope } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { canAccessFeature, canStartTrial } from "$lib/feature-access";
-import { cn } from "$lib/utils";
-import type { DoctorDuration, MedicalFacility } from "$lib/types/clinic";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { canAccessFeature, canStartTrial } from "#lib/feature-access.ts";
+import { cn } from "#lib/utils.ts";
+import type { DoctorDuration, MedicalFacility } from "#lib/types/clinic.ts";
 
 const RANGES = [
   { label: "近 7 天", value: 7 },

@@ -3,10 +3,10 @@
 	import Crown from "@lucide/svelte/icons/crown";
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import Phone from "@lucide/svelte/icons/phone";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import ClinicLogo from "$lib/components/clinics/ClinicLogo.svelte";
-	import { categoryLabel, type ServiceTaxonomy } from "$lib/api/service-categories";
-	import type { LandingClinic } from "$lib/seo/landing-data";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import ClinicLogo from "#lib/components/clinics/ClinicLogo.svelte";
+	import { categoryLabel, type ServiceTaxonomy } from "#lib/api/service-categories.ts";
+	import type { LandingClinic } from "#lib/seo/landing-data.ts";
 
 	/**
 	 * 在地落地頁的診所清單（伺服器渲染、純連結卡）。

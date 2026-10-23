@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import Link from "$lib/admin-compat/link";
+import Link from "#lib/admin-compat/link.tsx";
 import {
   ArrowRight,
   CheckCircle2,
@@ -9,14 +9,14 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { adminApplicationsApi } from "$lib/api/admin/applications";
-import { lumaPageContainer } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
-import type { ApplicationStatus, FacilityApplication } from "$lib/types/clinic";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { adminApplicationsApi } from "#lib/api/admin/applications.ts";
+import { lumaPageContainer } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
+import type { ApplicationStatus, FacilityApplication } from "#lib/types/clinic.ts";
 
 // 「待驗證信箱」不列 tab：新流程下申請人是在同一頁輸驗證碼即開通，這個狀態只
 // 存在於送出到輸碼之間的數秒，tab 裡看到的都是半途放棄的殘骸，對審核沒有意義。

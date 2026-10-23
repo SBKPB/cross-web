@@ -14,10 +14,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { STAFF_ROLES } from "$lib/constants/clinic-constants";
-import { cn } from "$lib/utils";
-import type { ApiStaff } from "$lib/types/clinic";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { STAFF_ROLES } from "#lib/constants/clinic-constants.ts";
+import { cn } from "#lib/utils.ts";
+import type { ApiStaff } from "#lib/types/clinic.ts";
 
 interface StaffDetailDialogProps {
   open: boolean;

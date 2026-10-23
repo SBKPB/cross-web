@@ -7,20 +7,20 @@
 	import Phone from "@lucide/svelte/icons/phone";
 	import Star from "@lucide/svelte/icons/star";
 	import User from "@lucide/svelte/icons/user";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
 	import {
 		Dialog,
 		DialogContent,
 		DialogDescription,
 		DialogHeader,
 		DialogTitle,
-	} from "$lib/components/ui/dialog/index.js";
-	import { categoryLabel } from "$lib/api/service-categories";
-	import { HOSPITAL_LEVELS } from "$lib/constants/clinic-constants";
-	import { useServiceTaxonomy } from "$lib/hooks/service-taxonomy.svelte";
-	import { getServicePriceBadge } from "$lib/service-price";
-	import type { Clinic } from "$lib/types/clinic";
+	} from "#lib/components/ui/dialog/index.js";
+	import { categoryLabel } from "#lib/api/service-categories.ts";
+	import { HOSPITAL_LEVELS } from "#lib/constants/clinic-constants.ts";
+	import { useServiceTaxonomy } from "#lib/hooks/service-taxonomy.svelte.ts";
+	import { getServicePriceBadge } from "#lib/service-price.ts";
+	import type { Clinic } from "#lib/types/clinic.ts";
 
 	let {
 		clinic,

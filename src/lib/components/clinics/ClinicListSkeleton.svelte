@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader } from "$lib/components/ui/card/index.js";
-	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
+	import { Card, CardContent, CardHeader } from "#lib/components/ui/card/index.js";
+	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
 	import { GRID_CLASS } from "./ClinicList.svelte";
 
 	/** 載入中的骨架卡片網格，版面與真實卡片一致，避免內容跳動 */

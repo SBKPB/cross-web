@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
+	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
 
 	// 移植自舊版 app/booking/[clinic-id]/loading.tsx：預約資料載入中的骨架
 </script>

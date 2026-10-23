@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Stethoscope from "@lucide/svelte/icons/stethoscope";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { categoryLabel } from "$lib/api/service-categories";
-	import { DEPARTMENT_COLORS } from "$lib/constants/clinic-constants";
-	import { useServiceTaxonomy } from "$lib/hooks/service-taxonomy.svelte";
-	import type { FacilityType } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { categoryLabel } from "#lib/api/service-categories.ts";
+	import { DEPARTMENT_COLORS } from "#lib/constants/clinic-constants.ts";
+	import { useServiceTaxonomy } from "#lib/hooks/service-taxonomy.svelte.ts";
+	import type { FacilityType } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 	import SectionCard from "./SectionCard.svelte";
 
 	let {

@@ -4,8 +4,8 @@
 	import Clock from "@lucide/svelte/icons/clock";
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import User from "@lucide/svelte/icons/user";
-	import { formatAppointmentDateTime } from "$lib/booking/calendar";
-	import type { BookingResponse } from "$lib/types/booking";
+	import { formatAppointmentDateTime } from "#lib/booking/calendar.ts";
+	import type { BookingResponse } from "#lib/types/booking.ts";
 
 	// 移植自舊版 components/booking/success-card.tsx
 	let { booking, primaryColor = "#1d4ed8" }: { booking: BookingResponse; primaryColor?: string } = $props();

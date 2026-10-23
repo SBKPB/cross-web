@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { Textarea } from "$lib/components/ui/textarea/index.js";
-	import { inkOn } from "$lib/color-contrast";
+	import { Checkbox } from "#lib/components/ui/checkbox/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import { Textarea } from "#lib/components/ui/textarea/index.js";
+	import { inkOn } from "#lib/color-contrast.ts";
 	import { getBookingStore } from "./booking-context.svelte";
 
 	// 移植自舊版 components/booking/booking-form.tsx：備註與同意條款（存在預約流程狀態）

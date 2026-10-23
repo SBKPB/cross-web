@@ -1,14 +1,14 @@
 <script lang="ts">
 	// 只供 tests/dialog-focus.test.mjs 使用：用真正的共用 ui 元件與診所對話框重現「以鍵盤開啟、關閉對話框」
-	import ClinicDetailDialog from "$lib/components/clinics/ClinicDetailDialog.svelte";
-	import ShareClinicDialog from "$lib/components/clinics/ShareClinicDialog.svelte";
+	import ClinicDetailDialog from "#lib/components/clinics/ClinicDetailDialog.svelte";
+	import ShareClinicDialog from "#lib/components/clinics/ShareClinicDialog.svelte";
 	import {
 		Dialog,
 		DialogContent,
 		DialogDescription,
 		DialogTitle,
 		DialogTrigger,
-	} from "$lib/components/ui/dialog/index.js";
+	} from "#lib/components/ui/dialog/index.js";
 	import {
 		AlertDialog,
 		AlertDialogAction,
@@ -19,15 +19,15 @@
 		AlertDialogHeader,
 		AlertDialogTitle,
 		AlertDialogTrigger,
-	} from "$lib/components/ui/alert-dialog/index.js";
+	} from "#lib/components/ui/alert-dialog/index.js";
 	import {
 		Sheet,
 		SheetContent,
 		SheetDescription,
 		SheetTitle,
 		SheetTrigger,
-	} from "$lib/components/ui/sheet/index.js";
-	import type { Clinic } from "$lib/types/clinic";
+	} from "#lib/components/ui/sheet/index.js";
+	import type { Clinic } from "#lib/types/clinic.ts";
 
 	let { scenario }: { scenario: string } = $props();
 	let open = $state(false);

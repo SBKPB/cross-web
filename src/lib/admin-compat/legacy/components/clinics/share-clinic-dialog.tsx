@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Check, Copy, Download, ExternalLink, Share2 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
 
 // 民眾端正式網域（與 layout metadataBase 一致）
 const SITE_URL = "https://cross.twinhao.com";

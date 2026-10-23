@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Check from "@lucide/svelte/icons/check";
 	import Clock from "@lucide/svelte/icons/clock";
-	import { inkOn } from "$lib/color-contrast";
-	import { getServicePriceBadge } from "$lib/service-price";
-	import type { ServiceOption } from "$lib/types/booking";
-	import type { PaymentType } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import { getServicePriceBadge } from "#lib/service-price.ts";
+	import type { ServiceOption } from "#lib/types/booking.ts";
+	import type { PaymentType } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 components/booking/service-card.tsx
 	let {

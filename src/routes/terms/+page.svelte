@@ -1,6 +1,6 @@
 <script lang="ts">
-	import PageIntro from "$lib/components/public/PageIntro.svelte";
-	import PublicFrame from "$lib/components/public/PublicFrame.svelte";
+	import PageIntro from "#lib/components/public/PageIntro.svelte";
+	import PublicFrame from "#lib/components/public/PublicFrame.svelte";
 </script>
 
 <PublicFrame>

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { NO_PREFERENCE_DOCTOR } from "$lib/constants/booking-constants";
-	import type { DoctorOption } from "$lib/types/booking";
+	import { NO_PREFERENCE_DOCTOR } from "#lib/constants/booking-constants.ts";
+	import type { DoctorOption } from "#lib/types/booking.ts";
 	import DoctorCard from "./DoctorCard.svelte";
 
 	// 移植自舊版 components/booking/doctor-selector.tsx

@@ -3,14 +3,14 @@
 	import PlusIcon from "@lucide/svelte/icons/plus";
 	import UserCheck from "@lucide/svelte/icons/user-check";
 	import UserPlus from "@lucide/svelte/icons/user-plus";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { RadioGroup, RadioGroupItem } from "$lib/components/ui/radio-group/index.js";
-	import { memberPatientApi } from "$lib/api/member-patient";
-	import { getAuth } from "$lib/auth/auth.svelte";
-	import { MAX_PATIENTS, RELATION_LABELS } from "$lib/constants/patient-constants";
-	import { pickDefaultPatient, patientSummary, sortPatients } from "$lib/patient";
-	import type { MemberPatientRead } from "$lib/types/member-patient";
-	import { cn } from "$lib/utils";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { RadioGroup, RadioGroupItem } from "#lib/components/ui/radio-group/index.js";
+	import { memberPatientApi } from "#lib/api/member-patient.ts";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { MAX_PATIENTS, RELATION_LABELS } from "#lib/constants/patient-constants.ts";
+	import { pickDefaultPatient, patientSummary, sortPatients } from "#lib/patient.ts";
+	import type { MemberPatientRead } from "#lib/types/member-patient.ts";
+	import { cn } from "#lib/utils.ts";
 	import NewPatientDialog from "./NewPatientDialog.svelte";
 
 	/**

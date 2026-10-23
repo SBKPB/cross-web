@@ -47,7 +47,7 @@
 </script>
 
 <script lang="ts">
-	import { jsonLdScript } from "$lib/seo/serialize-json-ld";
+	import { jsonLdScript } from "#lib/seo/serialize-json-ld.ts";
 
 	/**
 	 * 每頁可覆寫的 <head> 標籤（對應舊 Next metadata 合併後的輸出）。

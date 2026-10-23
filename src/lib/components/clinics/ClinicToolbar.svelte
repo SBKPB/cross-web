@@ -20,9 +20,9 @@
 	import Search from "@lucide/svelte/icons/search";
 	import SlidersHorizontal from "@lucide/svelte/icons/sliders-horizontal";
 	import X from "@lucide/svelte/icons/x";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "$lib/components/ui/select/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Input } from "#lib/components/ui/input/index.js";
+	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#lib/components/ui/select/index.js";
 	import {
 		Sheet,
 		SheetClose,
@@ -32,17 +32,17 @@
 		SheetHeader,
 		SheetTitle,
 		SheetTrigger,
-	} from "$lib/components/ui/sheet/index.js";
-	import { categoriesFor, categoryLabel, facilityTypeLabel } from "$lib/api/service-categories";
+	} from "#lib/components/ui/sheet/index.js";
+	import { categoriesFor, categoryLabel, facilityTypeLabel } from "#lib/api/service-categories.ts";
 	import {
 		CITY_OPTIONS,
 		HOSPITAL_LEVEL_OPTIONS,
 		HOSPITAL_LEVELS,
 		PAYMENT_TYPES,
-	} from "$lib/constants/clinic-constants";
-	import { useServiceTaxonomy } from "$lib/hooks/service-taxonomy.svelte";
-	import type { ClinicFilters } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	} from "#lib/constants/clinic-constants.ts";
+	import { useServiceTaxonomy } from "#lib/hooks/service-taxonomy.svelte.ts";
+	import type { ClinicFilters } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 
 	let {
 		filters,

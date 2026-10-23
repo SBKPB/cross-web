@@ -24,7 +24,7 @@ test("src 執行期 import 的套件都列在 dependencies（框架本身除外�
     const source = readFileSync(file, "utf8");
     for (const m of source.matchAll(/^\s*import\s+(type\s+)?(?:[^"';]*?from\s+)?["']([^"']+)["']/gm)) {
       const [, typeOnly, spec] = m;
-      if (typeOnly || /^(\.|\$|node:)/.test(spec)) continue;
+      if (typeOnly || /^(\.|\$|#|node:)/.test(spec)) continue;
       const name = spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0];
       if (FRAMEWORK.has(name) || pkg.dependencies?.[name]) continue;
       misplaced.set(name, [...(misplaced.get(name) ?? []), file]);

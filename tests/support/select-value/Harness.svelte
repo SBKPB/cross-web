@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "$lib/components/ui/select/index.js";
+	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#lib/components/ui/select/index.js";
 
 	// 每一列一個收合的 Select；測試讀各列 [data-slot=select-value] 的文字
 	const items = [

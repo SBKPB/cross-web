@@ -3,11 +3,11 @@
 	import KeyRound from "@lucide/svelte/icons/key-round";
 	import Loader2 from "@lucide/svelte/icons/loader-circle";
 	import { page } from "$app/state";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card } from "$lib/components/ui/card/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { MIN_PASSWORD, validateVerifyPassword } from "$lib/join/join-form";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card } from "#lib/components/ui/card/index.js";
+	import { Input } from "#lib/components/ui/input/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import { MIN_PASSWORD, validateVerifyPassword } from "#lib/join/join-form.ts";
 
 	/**
 	 * 申請人點驗證信後設定後台密碼（移植自舊版 components/join/verify-form.tsx）。

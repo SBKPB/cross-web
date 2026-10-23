@@ -5,9 +5,9 @@
 	import Monitor from "@lucide/svelte/icons/monitor";
 	import Moon from "@lucide/svelte/icons/moon";
 	import Sun from "@lucide/svelte/icons/sun";
-	import { cn } from "$lib/utils";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import * as Popover from "$lib/components/ui/popover/index.js";
+	import { cn } from "#lib/utils.ts";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import * as Popover from "#lib/components/ui/popover/index.js";
 
 	let { class: className }: { class?: string } = $props();
 

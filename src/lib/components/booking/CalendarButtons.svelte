@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Calendar from "@lucide/svelte/icons/calendar";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { appleCalendarData, googleCalendarUrl, isAppleDevice } from "$lib/booking/calendar";
-	import type { BookingResponse } from "$lib/types/booking";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { appleCalendarData, googleCalendarUrl, isAppleDevice } from "#lib/booking/calendar.ts";
+	import type { BookingResponse } from "#lib/types/booking.ts";
 
 	// 移植自舊版 components/booking/calendar-buttons.tsx（連結與 ICS 內容見 $lib/booking/calendar）
 	let { booking, primaryColor = "#1d4ed8" }: { booking: BookingResponse; primaryColor?: string } = $props();

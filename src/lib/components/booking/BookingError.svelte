@@ -1,6 +1,6 @@
 <script lang="ts">
 	import AlertTriangle from "@lucide/svelte/icons/triangle-alert";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
 
 	// 移植自舊版 components/booking/booking-error.tsx：預約資料載入失敗（後端任一請求失敗）
 	const handleRetry = () => {

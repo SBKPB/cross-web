@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Check from "@lucide/svelte/icons/check";
-	import { inkOn } from "$lib/color-contrast";
-	import { BOOKING_STEPS } from "$lib/constants/booking-constants";
-	import { cn } from "$lib/utils";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import { BOOKING_STEPS } from "#lib/constants/booking-constants.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 components/booking/booking-stepper.tsx
 	let {

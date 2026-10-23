@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { favoritesApi } from "$lib/api/favorites";
-	import { getAuth } from "$lib/auth/auth.svelte";
-	import { canAccessAdmin } from "$lib/auth/roles";
+	import { favoritesApi } from "#lib/api/favorites.ts";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { canAccessAdmin } from "#lib/auth/roles.ts";
 
 	/**
 	 * 進入診所詳情時記錄一次瀏覽（跨裝置同步）。

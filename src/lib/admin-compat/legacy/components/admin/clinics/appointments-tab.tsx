@@ -9,12 +9,12 @@ import {
   Loader2,
   Plus,
 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { lumaCardHover, lumaDialogFooter } from "$lib/styles/luma";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { lumaCardHover, lumaDialogFooter } from "#lib/styles/luma.ts";
 import {
   Dialog,
   DialogContent,
@@ -22,17 +22,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "$lib/admin-compat/legacy/components/ui/select";
-import { cn } from "$lib/utils";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import type { ApiAppointment, AppointmentStatus } from "$lib/types/clinic";
+} from "#lib/admin-compat/legacy/components/ui/select.tsx";
+import { cn } from "#lib/utils.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import type { ApiAppointment, AppointmentStatus } from "#lib/types/clinic.ts";
 import { AppointmentCreateDialog } from "./appointment-create-dialog";
 
 const METHOD_LABELS: Record<string, string> = {

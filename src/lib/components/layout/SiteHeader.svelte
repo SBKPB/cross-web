@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button } from "$lib/components/ui/button/index.js";
-	import ThemeToggle from "$lib/components/ThemeToggle.svelte";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import ThemeToggle from "#lib/components/ThemeToggle.svelte";
 	import AuthButton from "./AuthButton.svelte";
 
 	let { home = false }: { home?: boolean } = $props();

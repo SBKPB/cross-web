@@ -1,5 +1,5 @@
-import Image from "$lib/admin-compat/image";
-import Link from "$lib/admin-compat/link";
+import Image from "#lib/admin-compat/image.tsx";
+import Link from "#lib/admin-compat/link.tsx";
 import { Check } from "lucide-react";
 
 interface AuthSplitLayoutProps {

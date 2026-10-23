@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useRouter } from "$lib/admin-compat/navigation";
-import { useAuth } from "$lib/admin-compat/auth";
-import { getAdminHomePath, isSystemAdmin } from "$lib/auth/roles";
+import { useRouter } from "#lib/admin-compat/navigation.ts";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { getAdminHomePath, isSystemAdmin } from "#lib/auth/roles.ts";
 
 export function useRequireSystemAdmin() {
   const router = useRouter();

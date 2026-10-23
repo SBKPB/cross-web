@@ -1,4 +1,4 @@
-import { STATIC_PAGE_CACHE } from "$lib/cache-control";
+import { STATIC_PAGE_CACHE } from "#lib/cache-control.ts";
 import type { PageLoad } from "./$types";
 
 // 舊版為 SSG：CDN 長期快取（setHeaders 只在 server 端生效，瀏覽器端換頁時是 no-op）。

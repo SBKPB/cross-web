@@ -8,10 +8,10 @@ import {
   Loader2,
   Pencil,
 } from "lucide-react";
-import { RenewSubscriptionDialog } from "$lib/admin-compat/legacy/components/admin/clinics/renew-subscription-dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { Checkbox } from "$lib/admin-compat/legacy/components/ui/checkbox";
+import { RenewSubscriptionDialog } from "#lib/admin-compat/legacy/components/admin/clinics/renew-subscription-dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { Checkbox } from "#lib/admin-compat/legacy/components/ui/checkbox.tsx";
 import {
   Dialog,
   DialogContent,
@@ -19,27 +19,27 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "$lib/admin-compat/legacy/components/ui/select";
-import { useAuth } from "$lib/admin-compat/auth";
-import { isSystemAdmin } from "$lib/auth/roles";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { lumaDialogFooter, lumaIconBadge } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
+} from "#lib/admin-compat/legacy/components/ui/select.tsx";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { isSystemAdmin } from "#lib/auth/roles.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { lumaDialogFooter, lumaIconBadge } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
 import type {
   MedicalFacility,
   SubscriptionPlan,
   SubscriptionStatus,
-} from "$lib/types/clinic";
+} from "#lib/types/clinic.ts";
 
 interface SubscriptionSectionProps {
   facility: MedicalFacility;

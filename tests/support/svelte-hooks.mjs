@@ -1,6 +1,6 @@
 // node 模組 hooks：讓 node --test 能直接載入 src 內含 runes 的 .svelte.ts／.svelte.js 模組並真的跑 $effect。
 // - .svelte.ts／.svelte.js：剝除型別後以 svelte/compiler 的 compileModule（client）編譯
-// - $lib/*：對應 src/lib/*；$app/navigation：換成記錄呼叫的假模組（app-navigation.mjs）
+// - #lib/*：對應 src/lib/*；$app/navigation：換成記錄呼叫的假模組（app-navigation.mjs）
 // - src 內 .svelte.ts 匯入的 svelte：換成 svelte-context.mjs（getContext／setContext 不需元件 context）
 // - 其餘 svelte／esm-env：用 browser 條件解析（server 版的 $effect 不會執行）
 // 用法：測試檔先 register("./support/svelte-hooks.mjs", import.meta.url)，之後一律用動態 import。
@@ -26,7 +26,7 @@ export async function resolve(specifier, context, next) {
   if (specifier === "svelte" && parent.startsWith(SRC) && /\.svelte\.(ts|js)$/.test(parent)) {
     return { url: SVELTE_CONTEXT, shortCircuit: true };
   }
-  if (specifier.startsWith("$lib/")) {
+  if (specifier.startsWith("#lib/")) {
     const base = new URL(`src/lib/${specifier.slice(5)}`, ROOT).href;
     for (const ext of ["", ".ts", ".svelte.ts", ".js", ".svelte.js"]) {
       const url = new URL(base + ext);

@@ -1,9 +1,9 @@
 import { BarChart3 } from "lucide-react";
 
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { useAuth } from "$lib/admin-compat/auth";
-import { isFacilityUser } from "$lib/auth/roles";
-import { FacilityAnalyticsView } from "$lib/admin-compat/legacy/components/admin/clinics/analytics-tab";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { isFacilityUser } from "#lib/auth/roles.ts";
+import { FacilityAnalyticsView } from "#lib/admin-compat/legacy/components/admin/clinics/analytics-tab.tsx";
 
 /**
  * 院所帳號的客戶分析頁。呈現層與診所詳情頁的「客戶分析」分頁共用

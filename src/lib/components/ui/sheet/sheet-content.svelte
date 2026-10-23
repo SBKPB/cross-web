@@ -5,8 +5,8 @@
 <script lang="ts">
 	import { Dialog as SheetPrimitive } from "bits-ui";
 	import XIcon from '@lucide/svelte/icons/x';
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { cn, type WithoutChildrenOrChild } from "#lib/utils.js";
 	import { radixAutoFocus } from "../dialog/radix-auto-focus.js";
 	import SheetOverlay from "./sheet-overlay.svelte";
 	import SheetPortal from "./sheet-portal.svelte";

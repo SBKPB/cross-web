@@ -3,7 +3,7 @@
 	import Heart from "@lucide/svelte/icons/heart";
 	import Users from "@lucide/svelte/icons/users";
 	import { page } from "$app/state";
-	import { cn } from "$lib/utils";
+	import { cn } from "#lib/utils.ts";
 
 	const LINKS = [
 		{ href: "/member", label: "我的預約", icon: CalendarDays },

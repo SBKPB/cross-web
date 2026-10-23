@@ -3,13 +3,13 @@
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import Share2 from "@lucide/svelte/icons/share-2";
 	import Star from "@lucide/svelte/icons/star";
-	import FavoriteButton from "$lib/components/clinics/FavoriteButton.svelte";
-	import ShareClinicDialog from "$lib/components/clinics/ShareClinicDialog.svelte";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { FACILITY_TYPE_LABELS, HOSPITAL_LEVELS, PAYMENT_TYPES } from "$lib/constants/clinic-constants";
-	import type { Clinic } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	import FavoriteButton from "#lib/components/clinics/FavoriteButton.svelte";
+	import ShareClinicDialog from "#lib/components/clinics/ShareClinicDialog.svelte";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { FACILITY_TYPE_LABELS, HOSPITAL_LEVELS, PAYMENT_TYPES } from "#lib/constants/clinic-constants.ts";
+	import type { Clinic } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 
 	let { clinic, class: className }: { clinic: Clinic; class?: string } = $props();
 

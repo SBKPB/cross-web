@@ -14,20 +14,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "$lib/admin-compat/legacy/components/ui/select";
-import { Checkbox } from "$lib/admin-compat/legacy/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/admin-compat/legacy/components/ui/tabs";
+} from "#lib/admin-compat/legacy/components/ui/select.tsx";
+import { Checkbox } from "#lib/admin-compat/legacy/components/ui/checkbox.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "#lib/admin-compat/legacy/components/ui/tabs.tsx";
 import type {
   MedicalFacility,
   MedicalFacilityCreate,
@@ -35,17 +35,17 @@ import type {
   PaymentType,
   FacilityType,
   BreakTime,
-} from "$lib/types/clinic";
+} from "#lib/types/clinic.ts";
 import {
   PAYMENT_TYPE_OPTIONS,
   FACILITY_TYPE_FORM_OPTIONS,
-} from "$lib/constants/clinic-constants";
-import Image from "$lib/admin-compat/image";
-import { useServiceTaxonomy } from "$lib/admin-compat/legacy/lib/hooks/use-service-taxonomy";
-import { categoriesFor } from "$lib/api/service-categories";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { lumaDialogFooter, lumaIconBadge } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
+} from "#lib/constants/clinic-constants.ts";
+import Image from "#lib/admin-compat/image.tsx";
+import { useServiceTaxonomy } from "#lib/admin-compat/legacy/lib/hooks/use-service-taxonomy.ts";
+import { categoriesFor } from "#lib/api/service-categories.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { lumaDialogFooter, lumaIconBadge } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
 
 // 表單分區卡：相關欄位群組，柔色底 + 細邊框，與後台其他區塊一致
 const sectionCard = "rounded-2xl bg-muted/30 p-4 ring-1 ring-foreground/5";

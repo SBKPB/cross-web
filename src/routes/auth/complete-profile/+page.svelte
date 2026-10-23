@@ -3,25 +3,25 @@
 	import { untrack } from "svelte";
 	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { memberPatientApi } from "$lib/api/member-patient";
-	import { getAuth } from "$lib/auth/auth.svelte";
-	import { safeNextUrl } from "$lib/auth/social-login";
-	import PublicFrame from "$lib/components/public/PublicFrame.svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { RadioGroup, RadioGroupItem } from "$lib/components/ui/radio-group/index.js";
-	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "$lib/components/ui/select/index.js";
+	import { memberPatientApi } from "#lib/api/member-patient.ts";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { safeNextUrl } from "#lib/auth/social-login.ts";
+	import PublicFrame from "#lib/components/public/PublicFrame.svelte";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#lib/components/ui/card/index.js";
+	import { Input } from "#lib/components/ui/input/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import { RadioGroup, RadioGroupItem } from "#lib/components/ui/radio-group/index.js";
+	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#lib/components/ui/select/index.js";
 	import {
 		IDENTIFIER_ERROR_MESSAGES,
 		IDENTIFIER_PLACEHOLDERS,
 		IDENTIFIER_TYPE_LABELS,
-	} from "$lib/constants/patient-constants";
-	import { lumaIconBadge } from "$lib/styles/luma";
-	import type { IdentifierType } from "$lib/types/member-patient";
-	import { cn } from "$lib/utils";
-	import { validateIdentifier } from "$lib/validation/tw-identifier";
+	} from "#lib/constants/patient-constants.ts";
+	import { lumaIconBadge } from "#lib/styles/luma.ts";
+	import type { IdentifierType } from "#lib/types/member-patient.ts";
+	import { cn } from "#lib/utils.ts";
+	import { validateIdentifier } from "#lib/validation/tw-identifier.ts";
 
 	// 移植自舊版 app/auth/complete-profile（layout 為 PublicFrame）：首次登入建立本人就診資料。
 	// 伺服器端與載入期間只顯示轉圈；登入守門、查詢既有看診對象都在瀏覽器端。

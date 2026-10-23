@@ -4,9 +4,9 @@
 
 <script lang="ts">
 	import SearchX from "@lucide/svelte/icons/search-x";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import type { Clinic } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import type { Clinic } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 	import ClinicCard from "./ClinicCard.svelte";
 	import ClinicDetailDialog from "./ClinicDetailDialog.svelte";
 

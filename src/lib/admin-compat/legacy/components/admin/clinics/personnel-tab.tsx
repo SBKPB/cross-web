@@ -10,12 +10,12 @@ import {
   EyeOffIcon,
   Loader2,
 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { StaffDetailDialog } from "$lib/admin-compat/legacy/components/admin/clinics/staff-detail-dialog";
-import { lumaCardHover, lumaDialogFooter } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { StaffDetailDialog } from "#lib/admin-compat/legacy/components/admin/clinics/staff-detail-dialog.tsx";
+import { lumaCardHover, lumaDialogFooter } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
 
 /** 哪些角色支援「點卡片看詳細」與學歷欄位 */
 const HAS_DETAIL_VIEW: ReadonlySet<string> = new Set(["doctor", "therapist"]);
@@ -26,23 +26,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Checkbox } from "$lib/admin-compat/legacy/components/ui/checkbox";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Checkbox } from "#lib/admin-compat/legacy/components/ui/checkbox.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "$lib/admin-compat/legacy/components/ui/select";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { STAFF_ROLES, STAFF_ROLE_OPTIONS } from "$lib/constants/clinic-constants";
+} from "#lib/admin-compat/legacy/components/ui/select.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { STAFF_ROLES, STAFF_ROLE_OPTIONS } from "#lib/constants/clinic-constants.ts";
 import { StaffServicesDialog } from "./staff-services-dialog";
 import { StaffLeaveDialog } from "./staff-leave-dialog";
-import type { ApiStaff, ApiStaffCreate, ApiStaffUpdate, ApiStaffRole } from "$lib/types/clinic";
+import type { ApiStaff, ApiStaffCreate, ApiStaffUpdate, ApiStaffRole } from "#lib/types/clinic.ts";
 
 interface PersonnelTabProps {
   facilityId: string;

@@ -7,8 +7,8 @@
 	import Cpu from "@lucide/svelte/icons/cpu";
 	import Layers from "@lucide/svelte/icons/layers";
 	import Smartphone from "@lucide/svelte/icons/smartphone";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card, CardContent } from "$lib/components/ui/card/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card, CardContent } from "#lib/components/ui/card/index.js";
 	import PlatformFlow from "./PlatformFlow.svelte";
 
 	const capabilities = [

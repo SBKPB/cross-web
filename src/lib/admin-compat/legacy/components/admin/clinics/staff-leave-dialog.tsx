@@ -15,15 +15,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Calendar } from "$lib/admin-compat/legacy/components/ui/calendar";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { lumaCardInner, lumaDialogFooter } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
-import type { ApiStaff, ApiStaffLeave } from "$lib/types/clinic";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Calendar } from "#lib/admin-compat/legacy/components/ui/calendar.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { lumaCardInner, lumaDialogFooter } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
+import type { ApiStaff, ApiStaffLeave } from "#lib/types/clinic.ts";
 
 interface StaffLeaveDialogProps {
   open: boolean;

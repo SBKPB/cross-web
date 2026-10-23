@@ -2,10 +2,10 @@
 	import CalendarX2 from "@lucide/svelte/icons/calendar-x-2";
 	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
 	import ChevronRight from "@lucide/svelte/icons/chevron-right";
-	import { groupDatesByMonth } from "$lib/booking/booking-flow";
-	import { inkOn } from "$lib/color-contrast";
-	import type { BookableDate } from "$lib/types/booking";
-	import { cn } from "$lib/utils";
+	import { groupDatesByMonth } from "#lib/booking/booking-flow.ts";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import type { BookableDate } from "#lib/types/booking.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 components/booking/date-picker.tsx（自製月份切換 + 7 欄日期格，不是 react-day-picker）。
 	// 換服務／人員時由 BookingFlow 以 {#key} 重掛載，月份回到第一個（舊版 key={service-doctor}）。

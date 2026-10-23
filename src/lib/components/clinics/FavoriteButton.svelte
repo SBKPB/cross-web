@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Heart from "@lucide/svelte/icons/heart";
 	import { goto } from "$app/navigation";
-	import { getAuth } from "$lib/auth/auth.svelte";
-	import { canAccessAdmin } from "$lib/auth/roles";
-	import { useFavorites } from "$lib/hooks/favorites.svelte";
-	import { cn } from "$lib/utils";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { canAccessAdmin } from "#lib/auth/roles.ts";
+	import { useFavorites } from "#lib/hooks/favorites.svelte.ts";
+	import { cn } from "#lib/utils.ts";
 
 	/**
 	 * 收藏愛心按鈕。

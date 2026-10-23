@@ -6,19 +6,21 @@ Cross 以「線上預約與院所營運管理」為核心，優先完成醫美�
 
 ## 目前架構（2026-10-23）
 
-Cross Web 使用 SvelteKit 2 / Svelte 5，UI 一律繁體中文。正式網址 https://cross.twinhao.com，發布紀錄位於上層 `docs/deployment-sveltekit-2026-10-23.md`。
+Cross Web 使用 SvelteKit 3.1 / Svelte 5，UI 一律繁體中文。正式網址 https://cross.twinhao.com，發布紀錄位於上層 `docs/deployment-sveltekit-2026-10-23.md`。
 
-- 路由：`src/routes/`；共用程式、型別、元件：`src/lib/`，匯入別名 `$lib/*`。
+- 路由：`src/routes/`；共用程式、型別、元件：`src/lib/`，匯入採用 `package.json` 的 `#lib/*` subpath imports（含副檔名）。
 - 公開頁、預約、會員、開發者文件、看板使用 Svelte。UI 使用 Svelte 5 runes、Tailwind 4、shadcn-svelte / Bits UI，沿用既有設計 tokens。
-- 後台：`src/lib/admin-compat/` 保留 React 19 / Radix UI 元件，以客戶端相容層掛載。由 SvelteKit 控制路由、權限、共用登入狀態與主題；沒有 Next.js 執行階段。詳見 `docs/admin-compatibility.md`。
-- API 代理：`src/routes/api/v1/[...path]/+server.ts`；本機 Vite proxy 指向 `http://localhost:8001`。`BACKEND_URL` 為伺服器變數，`NEXT_PUBLIC_` 前綴沿用既有公開變數。
+- 院所工作區：`src/lib/components/admin/workspace/`，今日工作台、預約、叫號、排班（含批次）及客戶清單使用原生 Svelte 5。`AdminPage.svelte` 在掛載前檢查院所歸屬與角色。
+- 既有相容層：平台管理員頁、院所編輯／Logo、人員／服務／公告設定、詳細客戶檔案、分析、訂閱與修改密碼仍由 `admin-compat/` 按需載入 React 19 / Radix。日常工作頁不載入 React；沒有 Next.js 執行階段。完整範圍見 `docs/admin-compatibility.md`。
+- API 代理：`src/routes/api/v1/[...path]/+server.ts`；本機 Vite proxy 指向 `http://localhost:8001`。`BACKEND_URL` 為伺服器變數，`src/env.ts` 明確宣告允許公開的既有 `NEXT_PUBLIC_` 變數，私密後端網址不會進入瀏覽器。
 - 登入與主題沿用 `access_token` / `refresh_token` / `theme` 儲存鍵；不要建立另一份 React token 狀態。
 - 需登入頁面關閉 SSR。公開文件與公開頁保留 SSR 與 SEO；看板使用遮罩姓名並設 noindex。
+- 框架設定：`vite.config.ts` 的 `sveltekit(...)`，SvelteKit 3 不使用 `svelte.config.js`；TypeScript extends `$app/tsconfig`。
 - Vercel 專案 `cross-web`，`vercel.json` 指定 `sveltekit`，區域 `sin1`，Node 24。先 staged production 驗收，再 promote 相同產物。
 
 ## 開發與驗證
 
-- Node 22 或 24；pnpm 10.34.5。Node 26 不受目前 Vercel adapter 支援。
+- Node 22.17 以上或 24；pnpm 10.34.5。Node 26 不受目前 Vercel adapter 支援。
 - `pnpm dev`，預設 http://localhost:5173。
 - `pnpm check`、`pnpm lint`、`pnpm build`、`pnpm test`。瀏覽器測試前先建置，允許本機測試伺服器與無頭 Chrome；測試會拒絕過期產物。
 - `pnpm preview`。唯讀正式 API 驗收需明確覆寫本機的 `BACKEND_URL`，不可拿 `.env.local` 的本機後端結果當正式資料。
@@ -43,3 +45,10 @@ Cross Web 使用 SvelteKit 2 / Svelte 5，UI 一律繁體中文。正式網址 h
 ## Security
 
 Run Snyk code scanning on new first-party code. Fix any issues found and rescan until clean.
+
+## 預約工作區規則
+
+- 可用時段依已授權的班表、休假、院所營業時間與預約時長快照計算，改期需排除原預約；送出仍由後端鎖定並檢查衝突。不得將前端時段計算當作授權或交易邊界。
+- 列表失敗不得顯示成無預約；保留舊資料時標示更新時間。取消、未到與完成服務必須核對客戶與時段，409 等錯誤應在介面顯示。
+- 日期、人員、服務、狀態與頁籤以網址保留；客戶姓名／電話搜尋留在元件狀態，不新增到工作區網址。
+- 瀏覽器寫入驗收均攔截 API 並使用虛構資料；`ADMIN_WORKSPACE_ORIGIN` 可驗收部署頁面，所有 API 仍被測試替身攔截。

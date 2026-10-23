@@ -2,8 +2,8 @@
 	import MapPinned from "@lucide/svelte/icons/map-pinned";
 	import Phone from "@lucide/svelte/icons/phone";
 	import Store from "@lucide/svelte/icons/store";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { cn } from "$lib/utils";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { cn } from "#lib/utils.ts";
 
 	/** 未開通線上預約的院所：顯示現場預約；電話預約由後台勾選才顯示 */
 	let {

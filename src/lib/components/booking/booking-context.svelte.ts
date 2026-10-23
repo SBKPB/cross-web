@@ -4,7 +4,7 @@ import {
   initialBookingState,
   type BookingAction,
   type BookingState,
-} from "$lib/booking/booking-reducer";
+} from "#lib/booking/booking-reducer.ts";
 
 /**
  * 預約流程狀態（移植自舊版 booking-context.tsx 的 BookingProvider / useBooking / useBookingDispatch）。

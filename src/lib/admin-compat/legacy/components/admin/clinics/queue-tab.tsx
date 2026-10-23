@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import Link from "$lib/admin-compat/link";
+import Link from "#lib/admin-compat/link.tsx";
 import {
   BellRing,
   CalendarIcon,
@@ -10,9 +10,9 @@ import {
   Users,
 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
 import {
   Table,
   TableBody,
@@ -20,23 +20,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "$lib/admin-compat/legacy/components/ui/table";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { ApiError } from "$lib/api/client";
-import { canAccessFeature, canStartTrial } from "$lib/feature-access";
+} from "#lib/admin-compat/legacy/components/ui/table.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { ApiError } from "#lib/api/client.ts";
+import { canAccessFeature, canStartTrial } from "#lib/feature-access.ts";
 import {
   APPOINTMENT_STATUS_LABELS,
   taipeiToday,
-} from "$lib/constants/appointment";
-import { usePollOnVisible } from "$lib/admin-compat/legacy/lib/hooks/use-poll-on-visible";
-import { cn } from "$lib/utils";
+} from "#lib/constants/appointment.ts";
+import { usePollOnVisible } from "#lib/admin-compat/legacy/lib/hooks/use-poll-on-visible.ts";
+import { cn } from "#lib/utils.ts";
 import type {
   AppointmentStatus,
   MedicalFacility,
   QueueGroup,
   QueueBoard,
-} from "$lib/types/clinic";
+} from "#lib/types/clinic.ts";
 
 const STATUS_PILL: Record<AppointmentStatus, string> = {
   confirmed: "bg-primary/10 text-primary",

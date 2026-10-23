@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { ScheduleEntry, ScheduleSession } from "$lib/types/schedule";
+	import type { ScheduleEntry, ScheduleSession } from "#lib/types/schedule.ts";
 
 	const SESSIONS: { key: ScheduleSession; label: string; hint: string }[] = [
 		{ key: "morning", label: "早診", hint: "上午" },
@@ -27,8 +27,8 @@
 
 <script lang="ts">
 	import CalendarDays from "@lucide/svelte/icons/calendar-days";
-	import type { WeeklySchedule } from "$lib/types/schedule";
-	import { cn } from "$lib/utils";
+	import type { WeeklySchedule } from "#lib/types/schedule.ts";
+	import { cn } from "#lib/utils.ts";
 	import SectionCard from "./SectionCard.svelte";
 
 	let { schedule, class: className }: { schedule: WeeklySchedule; class?: string } = $props();

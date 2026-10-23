@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
-	import { cn, type WithoutChild, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { cn, type WithoutChild, type WithoutChildrenOrChild } from "#lib/utils.js";
 	import { radixAutoFocus } from "../dialog/radix-auto-focus.js";
 	import AlertDialogOverlay from "./alert-dialog-overlay.svelte";
 	import AlertDialogPortal from "./alert-dialog-portal.svelte";

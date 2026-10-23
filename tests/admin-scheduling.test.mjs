@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { availableTimes, addDateDays, validDate, appointmentEnd } from '../src/lib/admin/scheduling.ts';
+import { matchingStaff } from '../src/lib/admin/workspace.ts';
+const date='2030-03-01';
+const facility={slot_duration:30,business_hours:{friday:{open:'09:00',close:'18:00',breaks:[{start:'12:00',end:'13:00'}]}}};
+const base={date,staffId:'a',duration:60,facility,schedules:[],leaves:[],appointments:[],now:new Date('2026-10-23T00:00:00Z')};
+const appointment=(overrides={})=>({id:'one',staff_id:'a',appointment_date:date,appointment_time:'10:00:00',duration_minutes:90,status:'confirmed',...overrides});
+test('完整療程避開營業邊界、休息及原預約時長快照',()=>{const slots=availableTimes({...base,appointments:[appointment()]});assert(slots.includes('09:00'));assert(!slots.includes('09:30'));assert(!slots.includes('10:30'));assert(!slots.includes('11:30'));assert(slots.includes('13:00'));assert(slots.includes('17:00'));assert(!slots.includes('17:30'));});
+test('改期排除自己；取消釋出時段，未到與已完成仍依後端規則佔用',()=>{assert(availableTimes({...base,excludeId:'one',appointments:[appointment()]}).includes('10:00'));for(const status of ['no_show','completed','in_progress'])assert(!availableTimes({...base,appointments:[appointment({status})]}).includes('10:00'));assert(availableTimes({...base,appointments:[appointment({status:'cancelled'})]}).includes('10:00'));});
+test('人員排班與休假優先，其他人員預約不影響選定人員',()=>{const schedules=[{staff_id:'a',date,is_available:true,start_time:'14:00',end_time:'16:00'}];assert.deepEqual(availableTimes({...base,schedules}),['14:00','14:30','15:00']);assert.deepEqual(availableTimes({...base,schedules,leaves:[{staff_id:'a',date}]}),[]);assert(availableTimes({...base,appointments:[appointment({staff_id:'b'})]}).includes('10:00'));});
+test('台北凌晨判定當日與過去時間，不使用 UTC 日期',()=>{const input={...base,date:'2026-10-23',duration:30,facility:{slot_duration:30,business_hours:{friday:{open:'00:00',close:'02:00'}}},now:new Date('2026-10-22T16:30:01Z')};assert.deepEqual(availableTimes(input),['01:00','01:30']);});
+test('舊跨日預約仍阻擋次日重疊；服務不可跨日',()=>{const input={...base,duration:30,facility:{slot_duration:30,business_hours:null},appointments:[appointment({appointment_date:'2030-02-28',appointment_time:'23:30',duration_minutes:90})]};assert(!availableTimes(input).includes('00:30'));assert(availableTimes(input).includes('01:00'));assert(!availableTimes(input).includes('23:30'));});
+test('日期運算、無效日期與預約結束時間保持正確',()=>{assert.equal(addDateDays('2028-02-28',1),'2028-02-29');assert.equal(addDateDays('2026-12-31',1),'2027-01-01');assert.equal(validDate('2026-02-30','2026-10-23'),'2026-10-23');assert.equal(appointmentEnd(appointment()),'11:30');});
+test('服務人員對應有設定時篩選；舊院所未設定時保留可預約人員',()=>{const catalog={staff:[{id:'a'},{id:'b'}],assignments:{a:['laser'],b:['consult']}};assert.deepEqual(matchingStaff(catalog,'laser'),[{id:'a'}]);assert.deepEqual(matchingStaff({...catalog,assignments:{a:[],b:[]}},'laser'),catalog.staff);});
+test('空營業時間物件沿用後端未設定規則，不誤判成休診',()=>{assert(availableTimes({...base,facility:{slot_duration:30,business_hours:{}},duration:30}).includes('09:00'));});

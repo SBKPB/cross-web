@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Link from "$lib/admin-compat/link";
+import Link from "#lib/admin-compat/link.tsx";
 import {
   AlertTriangle,
   ArrowRight,
@@ -16,28 +16,28 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { useAuth } from "$lib/admin-compat/auth";
-import { isFacilityUser, isSystemAdmin } from "$lib/auth/roles";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { isFacilityUser, isSystemAdmin } from "#lib/auth/roles.ts";
 import {
   PLAN_LABELS,
   canAccessFeature,
   canStartTrial,
   daysUntilExpiry,
   isTrialActive,
-} from "$lib/feature-access";
-import type { FacilitySummary } from "$lib/types/auth";
-import { FACILITY_TYPE_LABELS } from "$lib/constants/clinic-constants";
-import { QUEUE_ACTIVE_STATUSES } from "$lib/constants/appointment";
-import { cn } from "$lib/utils";
+} from "#lib/feature-access.ts";
+import type { FacilitySummary } from "#lib/types/auth.ts";
+import { FACILITY_TYPE_LABELS } from "#lib/constants/clinic-constants.ts";
+import { QUEUE_ACTIVE_STATUSES } from "#lib/constants/appointment.ts";
+import { cn } from "#lib/utils.ts";
 import type {
   ApiAppointment,
   AppointmentStatus,
   FacilityType,
   MedicalFacility,
   SubscriptionStatus,
-} from "$lib/types/clinic";
+} from "#lib/types/clinic.ts";
 
 // ===== 對照表 =====
 const SUB_STATUS: Record<SubscriptionStatus, { label: string; dot: string }> = {

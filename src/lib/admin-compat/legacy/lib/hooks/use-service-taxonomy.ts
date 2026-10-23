@@ -4,7 +4,7 @@ import {
   FALLBACK_TAXONOMY,
   serviceCategoriesApi,
   type ServiceTaxonomy,
-} from "$lib/api/service-categories";
+} from "#lib/api/service-categories.ts";
 
 // 模組級快取：整個 app 只打一次 /service-categories，多元件共用
 let cache: ServiceTaxonomy | null = null;

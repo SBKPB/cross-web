@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Sparkles from "@lucide/svelte/icons/sparkles";
-	import { groupServicesByCategory } from "$lib/booking/booking-flow";
-	import type { ServiceOption } from "$lib/types/booking";
-	import type { PaymentType } from "$lib/types/clinic";
+	import { groupServicesByCategory } from "#lib/booking/booking-flow.ts";
+	import type { ServiceOption } from "#lib/types/booking.ts";
+	import type { PaymentType } from "#lib/types/clinic.ts";
 	import ServiceCard from "./ServiceCard.svelte";
 
 	// 移植自舊版 components/booking/service-list.tsx

@@ -4,14 +4,14 @@
 	import Heart from "@lucide/svelte/icons/heart";
 	import { untrack } from "svelte";
 	import { goto } from "$app/navigation";
-	import { favoritesApi } from "$lib/api/favorites";
-	import { requireMember } from "$lib/auth/auth.svelte";
-	import ClinicCard from "$lib/components/clinics/ClinicCard.svelte";
-	import ClinicListSkeleton from "$lib/components/clinics/ClinicListSkeleton.svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card } from "$lib/components/ui/card/index.js";
-	import { useFavorites } from "$lib/hooks/favorites.svelte";
-	import type { Clinic } from "$lib/types/clinic";
+	import { favoritesApi } from "#lib/api/favorites.ts";
+	import { requireMember } from "#lib/auth/auth.svelte.ts";
+	import ClinicCard from "#lib/components/clinics/ClinicCard.svelte";
+	import ClinicListSkeleton from "#lib/components/clinics/ClinicListSkeleton.svelte";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card } from "#lib/components/ui/card/index.js";
+	import { useFavorites } from "#lib/hooks/favorites.svelte.ts";
+	import type { Clinic } from "#lib/types/clinic.ts";
 
 	// 移植自舊版 app/member/favorites/page.tsx
 	// 守衛：未登入導向登入頁，後台帳號導回後台

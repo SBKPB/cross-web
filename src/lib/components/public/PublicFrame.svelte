@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
-	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
+	import SiteFooter from "#lib/components/layout/SiteFooter.svelte";
+	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
 
 	let { children, footer = true }: { children: Snippet; footer?: boolean } = $props();
 </script>

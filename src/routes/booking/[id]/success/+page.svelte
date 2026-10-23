@@ -2,12 +2,12 @@
 	import { untrack } from "svelte";
 	import ArrowLeft from "@lucide/svelte/icons/arrow-left";
 	import { page } from "$app/state";
-	import { bookingApi } from "$lib/api/booking";
-	import CalendarButtons from "$lib/components/booking/CalendarButtons.svelte";
-	import SuccessCard from "$lib/components/booking/SuccessCard.svelte";
-	import PublicFrame from "$lib/components/public/PublicFrame.svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import type { BookingResponse } from "$lib/types/booking";
+	import { bookingApi } from "#lib/api/booking.ts";
+	import CalendarButtons from "#lib/components/booking/CalendarButtons.svelte";
+	import SuccessCard from "#lib/components/booking/SuccessCard.svelte";
+	import PublicFrame from "#lib/components/public/PublicFrame.svelte";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import type { BookingResponse } from "#lib/types/booking.ts";
 
 	// 移植自舊版 app/booking/[clinic-id]/success/page.tsx（外框為 app/booking/layout.tsx 的 PublicFrame，無 footer）
 	let { data } = $props();

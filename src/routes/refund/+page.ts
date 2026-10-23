@@ -1,5 +1,5 @@
-import { STATIC_PAGE_CACHE } from "$lib/cache-control";
-import type { SeoProps } from "$lib/components/Seo.svelte";
+import { STATIC_PAGE_CACHE } from "#lib/cache-control.ts";
+import type { SeoProps } from "#lib/components/Seo.svelte";
 import type { PageLoad } from "./$types";
 
 const DESCRIPTION =

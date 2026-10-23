@@ -4,11 +4,11 @@
   import Check from '@lucide/svelte/icons/check';
   import Hospital from '@lucide/svelte/icons/hospital';
   import Users from '@lucide/svelte/icons/users';
-  import Seo from '$lib/components/Seo.svelte';
-  import PublicFrame from '$lib/components/public/PublicFrame.svelte';
-  import { Button } from '$lib/components/ui/button';
-  import { Card, CardContent } from '$lib/components/ui/card';
-  import { partnerEmail } from '$lib/developers';
+  import Seo from '#lib/components/Seo.svelte';
+  import PublicFrame from '#lib/components/public/PublicFrame.svelte';
+  import { Button } from '#lib/components/ui/button/index.ts';
+  import { Card, CardContent } from '#lib/components/ui/card/index.ts';
+  import { partnerEmail } from '#lib/developers.ts';
   let { data } = $props();
   const contact = `mailto:${partnerEmail}?subject=${encodeURIComponent('Cross 院所預約導入諮詢')}`;
   const capabilities = [

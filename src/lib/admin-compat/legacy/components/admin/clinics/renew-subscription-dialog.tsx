@@ -7,15 +7,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { lumaDialogFooter, lumaIconBadge } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
-import type { BillingCycle, MedicalFacility } from "$lib/types/clinic";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { lumaDialogFooter, lumaIconBadge } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
+import type { BillingCycle, MedicalFacility } from "#lib/types/clinic.ts";
 
 interface RenewSubscriptionDialogProps {
   open: boolean;

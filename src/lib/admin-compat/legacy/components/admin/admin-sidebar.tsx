@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Image from "$lib/admin-compat/image";
-import Link from "$lib/admin-compat/link";
-import { usePathname } from "$lib/admin-compat/navigation";
+import Image from "#lib/admin-compat/image.tsx";
+import Link from "#lib/admin-compat/link.tsx";
+import { usePathname } from "#lib/admin-compat/navigation.ts";
 import {
   BarChart3,
   Building2,
@@ -14,15 +14,15 @@ import {
   UserCog,
   type LucideIcon,
 } from "lucide-react";
-import { cn } from "$lib/utils";
-import { useAuth } from "$lib/admin-compat/auth";
+import { cn } from "#lib/utils.ts";
+import { useAuth } from "#lib/admin-compat/auth.ts";
 import {
   getAdminHomePath,
   isFacilityUser,
   isSystemAdmin,
-} from "$lib/auth/roles";
-import type { User } from "$lib/types/auth";
-import { ChangePasswordDialog } from "$lib/admin-compat/legacy/components/admin/change-password-dialog";
+} from "#lib/auth/roles.ts";
+import type { User } from "#lib/types/auth.ts";
+import { ChangePasswordDialog } from "#lib/admin-compat/legacy/components/admin/change-password-dialog.tsx";
 
 interface NavItem {
   href: string;

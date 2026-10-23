@@ -1,28 +1,28 @@
 <script lang="ts">
 	// 只供 tests/duplicate-keys.test.mjs 使用：後端陣列含重複 id / code / 星期時，各元件要照舊版（React 只警告）全部渲染，
 	// 不能因 Svelte keyed each 的 each_key_duplicate 整頁壞掉。資料刻意每種陣列都重複一次。
-	import { setAuth } from "$lib/auth/auth.svelte";
-	import ClinicCard from "$lib/components/clinics/ClinicCard.svelte";
-	import ClinicDetailDialog from "$lib/components/clinics/ClinicDetailDialog.svelte";
-	import ClinicList from "$lib/components/clinics/ClinicList.svelte";
-	import AnnouncementsSection from "$lib/components/clinic-detail/AnnouncementsSection.svelte";
-	import BusinessHoursSection from "$lib/components/clinic-detail/BusinessHoursSection.svelte";
-	import ClinicDetailHeader from "$lib/components/clinic-detail/ClinicDetailHeader.svelte";
-	import DepartmentBadges from "$lib/components/clinic-detail/DepartmentBadges.svelte";
-	import DoctorDetailDialog from "$lib/components/clinic-detail/DoctorDetailDialog.svelte";
-	import DoctorTeamSection from "$lib/components/clinic-detail/DoctorTeamSection.svelte";
-	import ScheduleTimetable from "$lib/components/clinic-detail/ScheduleTimetable.svelte";
-	import ServicePreviewList from "$lib/components/clinic-detail/ServicePreviewList.svelte";
-	import LandingClinicGrid from "$lib/components/seo/LandingClinicGrid.svelte";
-	import DatePicker from "$lib/components/booking/DatePicker.svelte";
-	import DoctorSelector from "$lib/components/booking/DoctorSelector.svelte";
-	import ServiceList from "$lib/components/booking/ServiceList.svelte";
-	import TimeSlotGrid from "$lib/components/booking/TimeSlotGrid.svelte";
-	import type { BookableDate, DoctorOption, ServiceOption, TimeSlot } from "$lib/types/booking";
-	import { FALLBACK_TAXONOMY } from "$lib/api/service-categories";
-	import type { LandingClinic } from "$lib/seo/landing-data";
-	import type { AnnouncementPublic, Clinic, ClinicDoctorDetail, Member, Service } from "$lib/types/clinic";
-	import type { ScheduleEntry, WeeklySchedule } from "$lib/types/schedule";
+	import { setAuth } from "#lib/auth/auth.svelte.ts";
+	import ClinicCard from "#lib/components/clinics/ClinicCard.svelte";
+	import ClinicDetailDialog from "#lib/components/clinics/ClinicDetailDialog.svelte";
+	import ClinicList from "#lib/components/clinics/ClinicList.svelte";
+	import AnnouncementsSection from "#lib/components/clinic-detail/AnnouncementsSection.svelte";
+	import BusinessHoursSection from "#lib/components/clinic-detail/BusinessHoursSection.svelte";
+	import ClinicDetailHeader from "#lib/components/clinic-detail/ClinicDetailHeader.svelte";
+	import DepartmentBadges from "#lib/components/clinic-detail/DepartmentBadges.svelte";
+	import DoctorDetailDialog from "#lib/components/clinic-detail/DoctorDetailDialog.svelte";
+	import DoctorTeamSection from "#lib/components/clinic-detail/DoctorTeamSection.svelte";
+	import ScheduleTimetable from "#lib/components/clinic-detail/ScheduleTimetable.svelte";
+	import ServicePreviewList from "#lib/components/clinic-detail/ServicePreviewList.svelte";
+	import LandingClinicGrid from "#lib/components/seo/LandingClinicGrid.svelte";
+	import DatePicker from "#lib/components/booking/DatePicker.svelte";
+	import DoctorSelector from "#lib/components/booking/DoctorSelector.svelte";
+	import ServiceList from "#lib/components/booking/ServiceList.svelte";
+	import TimeSlotGrid from "#lib/components/booking/TimeSlotGrid.svelte";
+	import type { BookableDate, DoctorOption, ServiceOption, TimeSlot } from "#lib/types/booking.ts";
+	import { FALLBACK_TAXONOMY } from "#lib/api/service-categories.ts";
+	import type { LandingClinic } from "#lib/seo/landing-data.ts";
+	import type { AnnouncementPublic, Clinic, ClinicDoctorDetail, Member, Service } from "#lib/types/clinic.ts";
+	import type { ScheduleEntry, WeeklySchedule } from "#lib/types/schedule.ts";
 
 	setAuth();
 

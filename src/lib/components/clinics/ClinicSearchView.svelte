@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { untrack } from "svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "$lib/components/ui/select/index.js";
-	import { clinicsApi } from "$lib/api/clinics";
-	import { buildCategoryLabelMap } from "$lib/api/service-categories";
-	import { EMPTY_FILTERS, filterAndSortClinics, SORT_OPTIONS, type SortKey } from "$lib/clinic-search";
-	import { useServiceTaxonomy } from "$lib/hooks/service-taxonomy.svelte";
-	import type { Clinic, ClinicFilters } from "$lib/types/clinic";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#lib/components/ui/select/index.js";
+	import { clinicsApi } from "#lib/api/clinics.ts";
+	import { buildCategoryLabelMap } from "#lib/api/service-categories.ts";
+	import { EMPTY_FILTERS, filterAndSortClinics, SORT_OPTIONS, type SortKey } from "#lib/clinic-search.ts";
+	import { useServiceTaxonomy } from "#lib/hooks/service-taxonomy.svelte.ts";
+	import type { Clinic, ClinicFilters } from "#lib/types/clinic.ts";
 	import ClinicList from "./ClinicList.svelte";
 	import ClinicListSkeleton from "./ClinicListSkeleton.svelte";
 	import ClinicToolbar from "./ClinicToolbar.svelte";

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { api } from '$lib/api/client';
-  import { pollOnVisible } from '$lib/hooks/poll-on-visible.svelte';
-  import type { DisplayBoard } from '$lib/types/clinic';
-  import Seo from '$lib/components/Seo.svelte';
+  import { api } from '#lib/api/client.ts';
+  import { pollOnVisible } from '#lib/hooks/poll-on-visible.svelte.ts';
+  import type { DisplayBoard } from '#lib/types/clinic.ts';
+  import Seo from '#lib/components/Seo.svelte';
   import type { PageData } from './$types';
   let { data }: { data: PageData } = $props();
   let board = $state<DisplayBoard | null>(null);

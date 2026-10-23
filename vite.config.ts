@@ -1,9 +1,11 @@
+import adapter from '@sveltejs/adapter-vercel';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [tailwindcss(), sveltekit({ adapter: adapter({ regions: ['sin1'] }), preprocess: vitePreprocess() })],
 	oxc: { jsx: { runtime: "automatic" } },
 	// 建置預覽走 SvelteKit 的實際 API 代理，不沿用開發環境的本機後端。
 	preview: { proxy: {} },

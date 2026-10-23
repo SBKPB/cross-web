@@ -1,27 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "$lib/admin-compat/navigation";
+import { useRouter } from "#lib/admin-compat/navigation.ts";
 import {
   PlusIcon,
   SearchIcon,
   ChevronRightIcon,
   BuildingIcon,
 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
-import { ClinicFormDialog } from "$lib/admin-compat/legacy/components/admin/clinics";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { useRequireSystemAdmin } from "$lib/admin-compat/legacy/lib/auth/use-require-system-admin";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { PAYMENT_TYPES } from "$lib/constants/clinic-constants";
-import { useServiceTaxonomy } from "$lib/admin-compat/legacy/lib/hooks/use-service-taxonomy";
-import { categoryLabel } from "$lib/api/service-categories";
-import { cn } from "$lib/utils";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { ClinicFormDialog } from "#lib/admin-compat/legacy/components/admin/clinics/index.ts";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { useRequireSystemAdmin } from "#lib/admin-compat/legacy/lib/auth/use-require-system-admin.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { PAYMENT_TYPES } from "#lib/constants/clinic-constants.ts";
+import { useServiceTaxonomy } from "#lib/admin-compat/legacy/lib/hooks/use-service-taxonomy.ts";
+import { categoryLabel } from "#lib/api/service-categories.ts";
+import { cn } from "#lib/utils.ts";
 import type {
   MedicalFacility,
   MedicalFacilityCreate,
   MedicalFacilityUpdate,
-} from "$lib/types/clinic";
+} from "#lib/types/clinic.ts";
 
 export default function AdminClinicsPage() {
   useRequireSystemAdmin();

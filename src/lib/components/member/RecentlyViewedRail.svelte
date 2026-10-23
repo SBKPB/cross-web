@@ -2,13 +2,13 @@
 	import History from "@lucide/svelte/icons/history";
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import { untrack } from "svelte";
-	import { favoritesApi } from "$lib/api/favorites";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Card } from "$lib/components/ui/card/index.js";
-	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
-	import { FACILITY_TYPE_COLORS, FACILITY_TYPE_LABELS } from "$lib/constants/clinic-constants";
-	import type { Clinic } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	import { favoritesApi } from "#lib/api/favorites.ts";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { Card } from "#lib/components/ui/card/index.js";
+	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
+	import { FACILITY_TYPE_COLORS, FACILITY_TYPE_LABELS } from "#lib/constants/clinic-constants.ts";
+	import type { Clinic } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 
 	/**
 	 * 最近瀏覽橫向 rail（民眾端會員頁，移植自舊版 components/member/recently-viewed-rail.tsx）。

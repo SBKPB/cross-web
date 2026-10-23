@@ -37,7 +37,7 @@ before(async () => {
     plugins: [svelte({ configFile: false, preprocess: vitePreprocess() })],
     resolve: {
       alias: {
-        $lib: join(ROOT, "src/lib"),
+        "#lib": join(ROOT, "src/lib"),
         "$app/navigation": join(ROOT, "tests/support/app-navigation.mjs"),
         "$app/state": join(HARNESS, "app-state.js"),
       },

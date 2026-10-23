@@ -74,7 +74,7 @@ test('未登入後台轉至登入頁；登入與登出沿用 Svelte 的同一份
   } finally { await page.close(); }
 });
 
-test('系統管理頁可載入；院所頁保留 tab、Radix 對話框與 multipart Logo 上傳', async () => {
+test('系統管理頁可載入；院所工作區保留設定、對話框與 multipart Logo 上傳', async () => {
   const { page, errors, requests } = await setup();
   try {
     for (const path of ['/admin/users', '/admin/settings', '/admin/applications', '/admin/clinics']) {
@@ -83,12 +83,12 @@ test('系統管理頁可載入；院所頁保留 tab、Radix 對話框與 multip
       await page.waitForLoadState('networkidle');
     }
     await page.goto(`${preview.origin}/admin/clinics/${id}`);
-    await page.getByRole('heading', { name: clinic.name, exact: true }).waitFor();
-    for (const tab of ['人員', '服務項目', '排班/休假', '公告', '患者', '叫號台', '看診統計', '客戶分析']) {
-      await page.getByRole('tab', { name: tab, exact: true }).click();
+    await page.locator('[data-native-workspace]').waitFor();
+    for (const tab of ['personnel', 'services', 'schedule', 'announcements', 'patients', 'queue', 'stats', 'analytics']) {
+      await page.goto(`${preview.origin}/admin/clinics/${id}?tab=${tab}`);
       await page.waitForLoadState('networkidle');
     }
-    await page.getByRole('tab', { name: '基本資訊', exact: true }).click();
+    await page.goto(`${preview.origin}/admin/clinics/${id}?tab=info`);
     await page.getByRole('button', { name: '編輯資訊' }).click();
     await page.waitForTimeout(200);
     assert.deepEqual(errors, [], '開啟編輯對話框時不應發生執行錯誤');

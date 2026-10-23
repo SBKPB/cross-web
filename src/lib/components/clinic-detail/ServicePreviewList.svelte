@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Clock from "@lucide/svelte/icons/clock";
 	import Sparkles from "@lucide/svelte/icons/sparkles";
-	import { getServicePriceBadge } from "$lib/service-price";
-	import type { PaymentType, Service } from "$lib/types/clinic";
+	import { getServicePriceBadge } from "#lib/service-price.ts";
+	import type { PaymentType, Service } from "#lib/types/clinic.ts";
 	import SectionCard from "./SectionCard.svelte";
 
 	let {

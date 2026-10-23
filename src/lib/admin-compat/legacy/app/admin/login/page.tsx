@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "$lib/admin-compat/navigation";
-import Image from "$lib/admin-compat/image";
-import Link from "$lib/admin-compat/link";
+import { useRouter } from "#lib/admin-compat/navigation.ts";
+import Image from "#lib/admin-compat/image.tsx";
+import Link from "#lib/admin-compat/link.tsx";
 import { Loader2, AlertCircle } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "$lib/admin-compat/legacy/components/ui/card";
-import { AuthSplitLayout } from "$lib/admin-compat/legacy/components/auth/auth-split-layout";
-import { useAuth } from "$lib/admin-compat/auth";
-import { getAdminHomePath } from "$lib/auth/roles";
+} from "#lib/admin-compat/legacy/components/ui/card.tsx";
+import { AuthSplitLayout } from "#lib/admin-compat/legacy/components/auth/auth-split-layout.tsx";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { getAdminHomePath } from "#lib/auth/roles.ts";
 
 export default function AdminLoginPage() {
   const router = useRouter();

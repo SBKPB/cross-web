@@ -18,7 +18,7 @@
 	import Database from "@lucide/svelte/icons/database";
 	import Smartphone from "@lucide/svelte/icons/smartphone";
 	import Waves from "@lucide/svelte/icons/waves";
-	import { Card, CardContent } from "$lib/components/ui/card/index.js";
+	import { Card, CardContent } from "#lib/components/ui/card/index.js";
 
 	const STEPS = [
 		{ icon: Waves, label: "合成訊號" },

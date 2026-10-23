@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { ApiError } from "$lib/api/client";
-	import { memberApi } from "$lib/api/member";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import { ApiError } from "#lib/api/client.ts";
+	import { memberApi } from "#lib/api/member.ts";
+	import { Button } from "#lib/components/ui/button/index.js";
 	import {
 		Dialog,
 		DialogContent,
@@ -9,10 +9,10 @@
 		DialogFooter,
 		DialogHeader,
 		DialogTitle,
-	} from "$lib/components/ui/dialog/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import type { User } from "$lib/types/auth";
+	} from "#lib/components/ui/dialog/index.js";
+	import { Input } from "#lib/components/ui/input/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import type { User } from "#lib/types/auth.ts";
 
 	// 移植自舊版 components/member/edit-profile-dialog.tsx
 	let {

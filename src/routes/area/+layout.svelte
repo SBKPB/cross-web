@@ -1,6 +1,6 @@
 <script lang="ts">
-	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
-	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
+	import SiteFooter from "#lib/components/layout/SiteFooter.svelte";
+	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
 
 	// 對應舊版 app/area/layout.tsx：在地落地頁原本是沒有 header / footer 的裸頁，只靠麵包屑回上層；
 	// 首頁的縣市入口把落地頁變成主要導覽目的地後補上站台外框。

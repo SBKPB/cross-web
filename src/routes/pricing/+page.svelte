@@ -2,12 +2,12 @@
 	import ArrowRight from "@lucide/svelte/icons/arrow-right";
 	import CalendarDays from "@lucide/svelte/icons/calendar-days";
 	import Check from "@lucide/svelte/icons/check";
-	import Seo from "$lib/components/Seo.svelte";
-	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
-	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card, CardContent } from "$lib/components/ui/card/index.js";
-	import { partnerEmail } from "$lib/developers";
+	import Seo from "#lib/components/Seo.svelte";
+	import SiteFooter from "#lib/components/layout/SiteFooter.svelte";
+	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card, CardContent } from "#lib/components/ui/card/index.js";
+	import { partnerEmail } from "#lib/developers.ts";
 	const contact = `mailto:${partnerEmail}?subject=${encodeURIComponent("Cross 院所預約方案諮詢")}`;
 
 	let { data } = $props();

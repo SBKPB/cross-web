@@ -178,6 +178,6 @@ test("isFavorite 是響應式的：載入、切換、回滾、重置都會讓讀
 test("root layout 以 auth.user?.id 掛上 resetFavoritesOnUserChange（舊版 AuthProvider 行為）", async () => {
   const { readFile } = await import("node:fs/promises");
   const layout = await readFile(new URL("../src/routes/+layout.svelte", import.meta.url), "utf8");
-  assert.match(layout, /import \{ resetFavoritesOnUserChange \} from "\$lib\/hooks\/favorites\.svelte";/);
+  assert.match(layout, /import \{ resetFavoritesOnUserChange \} from "\#lib\/hooks\/favorites\.svelte\.ts";/);
   assert.match(layout, /resetFavoritesOnUserChange\(\(\) => auth\.user\?\.id\);/);
 });

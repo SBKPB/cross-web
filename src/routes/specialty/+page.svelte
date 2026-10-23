@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Stethoscope from "@lucide/svelte/icons/stethoscope";
-	import Seo from "$lib/components/Seo.svelte";
+	import Seo from "#lib/components/Seo.svelte";
 
 	// 移植自舊 Next 的 app/specialty/page.tsx。
 	// 行內元素彼此緊貼書寫：舊版 JSX 換行不產生空白，Svelte 換行會變成一個空格。

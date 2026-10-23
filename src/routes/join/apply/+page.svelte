@@ -1,10 +1,10 @@
 <script lang="ts">
 	import ArrowLeft from "@lucide/svelte/icons/arrow-left";
-	import Seo from "$lib/components/Seo.svelte";
-	import JoinForm from "$lib/components/join/JoinForm.svelte";
-	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
-	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
-	import PageIntro from "$lib/components/public/PageIntro.svelte";
+	import Seo from "#lib/components/Seo.svelte";
+	import JoinForm from "#lib/components/join/JoinForm.svelte";
+	import SiteFooter from "#lib/components/layout/SiteFooter.svelte";
+	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
+	import PageIntro from "#lib/components/public/PageIntro.svelte";
 
 	/**
 	 * 申請流程的第一步（填寫資料），移植自舊版 app/join/apply/page.tsx。

@@ -3,9 +3,9 @@
 	import CalendarClock from "@lucide/svelte/icons/calendar-clock";
 	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { bookingApi } from "$lib/api/booking";
-	import { getAuth } from "$lib/auth/auth.svelte";
-	import { AvailableSlots } from "$lib/booking/available-slots.svelte";
+	import { bookingApi } from "#lib/api/booking.ts";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { AvailableSlots } from "#lib/booking/available-slots.svelte.ts";
 	import {
 		bookingAuthPath,
 		bookingSuccessPath,
@@ -14,14 +14,14 @@
 		restoreBookingDraft,
 		saveBookingDraft,
 		submitHint as submitHintFor,
-	} from "$lib/booking/booking-flow";
-	import { availableSlotForSelection } from "$lib/booking-draft";
-	import { isDemoClinic } from "$lib/clinic-discovery";
-	import { inkOn } from "$lib/color-contrast";
-	import PatientSelector from "$lib/components/patient/PatientSelector.svelte";
-	import type { ClinicConfig, DoctorOption, ServiceOption } from "$lib/types/booking";
-	import type { PaymentType } from "$lib/types/clinic";
-	import type { MemberPatientRead } from "$lib/types/member-patient";
+	} from "#lib/booking/booking-flow.ts";
+	import { availableSlotForSelection } from "#lib/booking-draft.ts";
+	import { isDemoClinic } from "#lib/clinic-discovery.ts";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import PatientSelector from "#lib/components/patient/PatientSelector.svelte";
+	import type { ClinicConfig, DoctorOption, ServiceOption } from "#lib/types/booking.ts";
+	import type { PaymentType } from "#lib/types/clinic.ts";
+	import type { MemberPatientRead } from "#lib/types/member-patient.ts";
 	import { setBookingStore } from "./booking-context.svelte";
 	import BookingForm from "./BookingForm.svelte";
 	import BookingSection from "./BookingSection.svelte";

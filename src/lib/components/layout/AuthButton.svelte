@@ -2,9 +2,9 @@
 	import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
 	import LogIn from "@lucide/svelte/icons/log-in";
 	import UserIcon from "@lucide/svelte/icons/user";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { getAuth } from "$lib/auth/auth.svelte";
-	import { canAccessAdmin, getAdminHomePath } from "$lib/auth/roles";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { canAccessAdmin, getAdminHomePath } from "#lib/auth/roles.ts";
 
 	/**
 	 * 民眾端 header 的登入 / 帳號按鈕

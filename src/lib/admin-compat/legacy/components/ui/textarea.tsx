@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "$lib/utils";
+import { cn } from "#lib/utils.ts";
 
 /**
  * 邊框刻意偏離 Luma registry 預設的 border-transparent：填色 bg-input/50 疊在

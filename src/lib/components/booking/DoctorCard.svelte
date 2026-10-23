@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Check from "@lucide/svelte/icons/check";
 	import User from "@lucide/svelte/icons/user";
-	import { inkOn } from "$lib/color-contrast";
-	import type { DoctorOption } from "$lib/types/booking";
-	import { cn } from "$lib/utils";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import type { DoctorOption } from "#lib/types/booking.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 components/booking/doctor-card.tsx
 	let {

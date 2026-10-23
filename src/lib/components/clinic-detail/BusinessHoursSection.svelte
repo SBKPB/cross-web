@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Clock from "@lucide/svelte/icons/clock";
-	import type { BusinessHours } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	import type { BusinessHours } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 	import SectionCard from "./SectionCard.svelte";
 
 	let { businessHours, class: className }: { businessHours: BusinessHours[]; class?: string } = $props();

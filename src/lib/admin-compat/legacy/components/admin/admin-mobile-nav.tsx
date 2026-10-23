@@ -1,5 +1,5 @@
-import { Sheet, SheetContent, SheetTitle } from "$lib/admin-compat/legacy/components/ui/sheet";
-import { AdminSidebarContent } from "$lib/admin-compat/legacy/components/admin/admin-sidebar";
+import { Sheet, SheetContent, SheetTitle } from "#lib/admin-compat/legacy/components/ui/sheet.tsx";
+import { AdminSidebarContent } from "#lib/admin-compat/legacy/components/admin/admin-sidebar.tsx";
 
 interface AdminMobileNavProps {
   open: boolean;

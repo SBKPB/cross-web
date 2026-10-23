@@ -7,10 +7,10 @@ import {
   Clock3,
   Loader2,
 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { cn } from "$lib/utils";
-import { lumaDialogFooter } from "$lib/styles/luma";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { cn } from "#lib/utils.ts";
+import { lumaDialogFooter } from "#lib/styles/luma.ts";
 import {
   Dialog,
   DialogContent,
@@ -18,12 +18,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import type { ApiService, ApiServiceCreate, ApiServiceUpdate } from "$lib/types/clinic";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import type { ApiService, ApiServiceCreate, ApiServiceUpdate } from "#lib/types/clinic.ts";
 
 interface ServicesTabProps {
   facilityId: string;
@@ -174,6 +174,7 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
                   <Button
                     variant="ghost"
                     size="icon-sm"
+                    aria-label={`編輯${s.service_name}`}
                     onClick={() => handleEdit(s)}
                   >
                     <PencilIcon className="size-4" />
@@ -181,6 +182,7 @@ export function ServicesTab({ facilityId }: ServicesTabProps) {
                   <Button
                     variant="ghost"
                     size="icon-sm"
+                    aria-label={`刪除${s.service_name}`}
                     onClick={() => handleDelete(s)}
                   >
                     <TrashIcon className="size-4" />

@@ -1,6 +1,6 @@
 // 元件測試共用：以 vite 把 tests/support/<harness>/（index.html + main.js + Harness.svelte）建置成靜態頁，
 // 用本機 http 伺服器提供（找不到的路徑一律 404，例如 /api/v1/service-categories → 元件用 fallback 字彙），
-// 測試再以系統 Chrome（playwright-core）載入。$lib 指向真正的 src/lib，$app/* 換成 tests/support 的替身。
+// 測試再以系統 Chrome（playwright-core）載入。#lib 指向真正的 src/lib，$app/* 換成 tests/support 的替身。
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -29,7 +29,7 @@ export async function startHarness(name) {
     plugins: [svelte({ configFile: false, preprocess: vitePreprocess() })],
     resolve: {
       alias: {
-        $lib: join(ROOT, "src/lib"),
+        "#lib": join(ROOT, "src/lib"),
         "$app/navigation": join(SUPPORT, "app-navigation.mjs"),
         "$app/state": join(SUPPORT, "duplicate-keys/app-state.js"),
       },

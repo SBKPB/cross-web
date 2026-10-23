@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Seo from "$lib/components/Seo.svelte";
-	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
-	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
-	import PageIntro from "$lib/components/public/PageIntro.svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card, CardContent } from "$lib/components/ui/card/index.js";
+	import Seo from "#lib/components/Seo.svelte";
+	import SiteFooter from "#lib/components/layout/SiteFooter.svelte";
+	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
+	import PageIntro from "#lib/components/public/PageIntro.svelte";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card, CardContent } from "#lib/components/ui/card/index.js";
 
 	let { data } = $props();
 

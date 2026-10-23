@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Auth } from '$lib/auth/auth.svelte';
+import type { Auth } from '#lib/auth/auth.svelte.ts';
 
 export type AdminAuth = Pick<Auth, 'user' | 'isLoading' | 'isAuthenticated' | 'sessionExpiredMessage' | 'login' | 'loginWithGoogle' | 'loginWithApple' | 'register' | 'logout' | 'refreshUser' | 'clearSessionExpiredMessage'>;
 export const AdminAuthContext = createContext<AdminAuth | null>(null);

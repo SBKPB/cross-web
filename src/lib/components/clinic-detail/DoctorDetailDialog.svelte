@@ -3,10 +3,10 @@
 	import GraduationCap from "@lucide/svelte/icons/graduation-cap";
 	import Stethoscope from "@lucide/svelte/icons/stethoscope";
 	import User from "@lucide/svelte/icons/user";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Dialog, DialogContent, DialogHeader, DialogTitle } from "$lib/components/ui/dialog/index.js";
-	import { MEMBER_ROLES } from "$lib/constants/clinic-constants";
-	import type { ClinicDoctorDetail, Member } from "$lib/types/clinic";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { Dialog, DialogContent, DialogHeader, DialogTitle } from "#lib/components/ui/dialog/index.js";
+	import { MEMBER_ROLES } from "#lib/constants/clinic-constants.ts";
+	import type { ClinicDoctorDetail, Member } from "#lib/types/clinic.ts";
 
 	let {
 		open = $bindable(false),

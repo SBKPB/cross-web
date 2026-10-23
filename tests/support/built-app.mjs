@@ -11,7 +11,7 @@ const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 // 每次 build 都會重寫的檔案，用它的修改時間代表「最近一次建置」
 const BUILD_STAMP = join(ROOT, ".svelte-kit/output/client/_app/version.json");
 // 改了會影響建置產物的來源（app.html 的主題初始化腳本也在其中）
-const SOURCES = ["src", "static", "svelte.config.js", "vite.config.ts"];
+const SOURCES = ["src", "static", "vite.config.ts"];
 
 function newestFile(path) {
   if (!existsSync(path)) return null;

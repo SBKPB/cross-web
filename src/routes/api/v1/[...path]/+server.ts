@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { BACKEND_URL } from "$app/env/private";
 import type { RequestHandler } from './$types';
 
 // 後端代理：移植自舊 Next 的 api/[...path]/route.ts。
@@ -7,10 +7,10 @@ import type { RequestHandler } from './$types';
 // BACKEND_URL 未設定（含 Vercel preview 部署）時，刻意指向「正式後端」：
 // 目前沒有 staging 後端，preview 要能打到真實 API 才有辦法驗證，故以正式後端為預設值。
 // 此網址在程式碼中只在這裡出現一次。
-const BACKEND_URL = env.BACKEND_URL || 'https://cross-backend-vrqytyiqxq-de.a.run.app';
+const backendUrl = BACKEND_URL || 'https://cross-backend-vrqytyiqxq-de.a.run.app';
 
 const handler: RequestHandler = async ({ request, url }) => {
-	const targetUrl = `${BACKEND_URL}${url.pathname}${url.search}`;
+	const targetUrl = `${backendUrl}${url.pathname}${url.search}`;
 
 	const headers = new Headers();
 	for (const [key, value] of request.headers.entries()) {

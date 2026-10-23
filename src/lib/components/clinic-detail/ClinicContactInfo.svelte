@@ -2,8 +2,8 @@
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import Navigation from "@lucide/svelte/icons/navigation";
 	import Phone from "@lucide/svelte/icons/phone";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import type { Clinic } from "$lib/types/clinic";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import type { Clinic } from "#lib/types/clinic.ts";
 	import SectionCard from "./SectionCard.svelte";
 
 	let { clinic, class: className }: { clinic: Clinic; class?: string } = $props();

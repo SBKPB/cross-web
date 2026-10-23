@@ -8,21 +8,21 @@
 	import Stethoscope from "@lucide/svelte/icons/stethoscope";
 	import Store from "@lucide/svelte/icons/store";
 	import { onMount, untrack } from "svelte";
-	import { categoriesFor } from "$lib/api/service-categories";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "$lib/components/ui/select/index.js";
-	import { Textarea } from "$lib/components/ui/textarea/index.js";
-	import { PAYMENT_TYPE_OPTIONS, TAIWAN_CITIES } from "$lib/constants/clinic-constants";
+	import { categoriesFor } from "#lib/api/service-categories.ts";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Input } from "#lib/components/ui/input/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#lib/components/ui/select/index.js";
+	import { Textarea } from "#lib/components/ui/textarea/index.js";
+	import { PAYMENT_TYPE_OPTIONS, TAIWAN_CITIES } from "#lib/constants/clinic-constants.ts";
 	import {
 		JOIN_CATEGORIES,
 		JOIN_CATEGORY_ACCENT,
 		SERVICE_PLACEHOLDERS,
 		TEAM_SIZE_OPTIONS,
 		type JoinCategoryOption,
-	} from "$lib/constants/join-constants";
-	import { useServiceTaxonomy } from "$lib/hooks/service-taxonomy.svelte";
+	} from "#lib/constants/join-constants.ts";
+	import { useServiceTaxonomy } from "#lib/hooks/service-taxonomy.svelte.ts";
 	import {
 		INITIAL_JOIN_FORM,
 		JOIN_PENDING_STORAGE_KEY,
@@ -35,9 +35,9 @@
 		validateOtpForm,
 		verifyCodeErrorMessage,
 		type JoinFormState,
-	} from "$lib/join/join-form";
-	import type { PaymentType } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	} from "#lib/join/join-form.ts";
+	import type { PaymentType } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 components/join/join-form.tsx：三段申請表單 → 送出後同頁輸入 6 位數驗證碼並設定密碼 → 立即開通後台
 	const CATEGORY_ICONS = {

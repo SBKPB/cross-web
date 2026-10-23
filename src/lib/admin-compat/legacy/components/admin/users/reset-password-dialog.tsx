@@ -7,15 +7,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { lumaDialogFooter } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
-import { adminUsersApi } from "$lib/api/admin/users";
-import { ApiError } from "$lib/api/client";
-import type { AdminUser } from "$lib/types/user";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { lumaDialogFooter } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
+import { adminUsersApi } from "#lib/api/admin/users.ts";
+import { ApiError } from "#lib/api/client.ts";
+import type { AdminUser } from "#lib/types/user.ts";
 
 interface ResetPasswordDialogProps {
   open: boolean;

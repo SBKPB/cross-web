@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "$lib/admin-compat/navigation";
+import { useRouter } from "#lib/admin-compat/navigation.ts";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { useAuth } from "$lib/admin-compat/auth";
-import { isFacilityUser, isSystemAdmin } from "$lib/auth/roles";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { SubscriptionSection } from "$lib/admin-compat/legacy/components/admin/clinics/subscription-section";
-import { lumaPageContainer } from "$lib/styles/luma";
-import type { MedicalFacility } from "$lib/types/clinic";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { isFacilityUser, isSystemAdmin } from "#lib/auth/roles.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { SubscriptionSection } from "#lib/admin-compat/legacy/components/admin/clinics/subscription-section.tsx";
+import { lumaPageContainer } from "#lib/styles/luma.ts";
+import type { MedicalFacility } from "#lib/types/clinic.ts";
 
 export default function MySubscriptionPage() {
   const router = useRouter();

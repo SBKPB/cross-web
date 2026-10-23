@@ -1,9 +1,9 @@
 <script lang="ts">
 	// 只供 tests/clinic-list-keys.test.mjs 使用：ClinicList 以 clinic.id 為 key，卡片內的狀態（收藏按鈕的 busy）
 	// 要跟著同一間診所走；後端清單有重複 id 時退回索引 key，照舊版（React 只警告）全部渲染、不丟 each_key_duplicate。
-	import { setAuth } from "$lib/auth/auth.svelte";
-	import ClinicList from "$lib/components/clinics/ClinicList.svelte";
-	import type { Clinic } from "$lib/types/clinic";
+	import { setAuth } from "#lib/auth/auth.svelte.ts";
+	import ClinicList from "#lib/components/clinics/ClinicList.svelte";
+	import type { Clinic } from "#lib/types/clinic.ts";
 
 	// 已登入的民眾（收藏按鈕才會真的呼叫 API、進入 busy）
 	const auth = setAuth();

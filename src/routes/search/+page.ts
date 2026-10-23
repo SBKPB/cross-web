@@ -1,6 +1,6 @@
 import { DYNAMIC_PAGE_CACHE } from "../../lib/cache-control.ts";
 import { parseSearchFilters } from "../../lib/clinic-search.ts";
-import type { SeoProps } from "$lib/components/Seo.svelte";
+import type { SeoProps } from "#lib/components/Seo.svelte";
 import type { PageLoad } from "./$types";
 
 // 移植自舊 Next 的 app/search/page.tsx。店家清單在瀏覽器端抓（同舊版 ClinicSearchView），這裡只解析網址參數。

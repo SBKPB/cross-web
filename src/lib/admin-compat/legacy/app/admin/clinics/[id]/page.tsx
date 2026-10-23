@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import Image from "$lib/admin-compat/image";
-import { useParams, useRouter } from "$lib/admin-compat/navigation";
+import Image from "#lib/admin-compat/image.tsx";
+import { useParams, useRouter } from "#lib/admin-compat/navigation.ts";
 import {
   BarChart3,
   BellRing,
@@ -20,35 +20,35 @@ import {
   UserRound,
   UsersIcon,
 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/admin-compat/legacy/components/ui/tabs";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { ClinicFormDialog, ClinicDeleteDialog } from "$lib/admin-compat/legacy/components/admin/clinics";
-import { ShareClinicDialog } from "$lib/admin-compat/legacy/components/clinics/share-clinic-dialog";
-import { PersonnelTab } from "$lib/admin-compat/legacy/components/admin/clinics/personnel-tab";
-import { ServicesTab } from "$lib/admin-compat/legacy/components/admin/clinics/services-tab";
-import { AppointmentsTab } from "$lib/admin-compat/legacy/components/admin/clinics/appointments-tab";
-import { QueueTab } from "$lib/admin-compat/legacy/components/admin/clinics/queue-tab";
-import { PatientsTab } from "$lib/admin-compat/legacy/components/admin/clinics/patients-tab";
-import { DoctorStatsTab } from "$lib/admin-compat/legacy/components/admin/clinics/doctor-stats-tab";
-import { FacilityAnalyticsView } from "$lib/admin-compat/legacy/components/admin/clinics/analytics-tab";
-import { ScheduleTab } from "$lib/admin-compat/legacy/components/admin/clinics/schedule-tab";
-import { AnnouncementsTab } from "$lib/admin-compat/legacy/components/admin/clinics/announcements-tab";
-import { SubscriptionSection } from "$lib/admin-compat/legacy/components/admin/clinics/subscription-section";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "#lib/admin-compat/legacy/components/ui/tabs.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { ClinicFormDialog, ClinicDeleteDialog } from "#lib/admin-compat/legacy/components/admin/clinics/index.ts";
+import { ShareClinicDialog } from "#lib/admin-compat/legacy/components/clinics/share-clinic-dialog.tsx";
+import { PersonnelTab } from "#lib/admin-compat/legacy/components/admin/clinics/personnel-tab.tsx";
+import { ServicesTab } from "#lib/admin-compat/legacy/components/admin/clinics/services-tab.tsx";
+import { AppointmentsTab } from "#lib/admin-compat/legacy/components/admin/clinics/appointments-tab.tsx";
+import { QueueTab } from "#lib/admin-compat/legacy/components/admin/clinics/queue-tab.tsx";
+import { PatientsTab } from "#lib/admin-compat/legacy/components/admin/clinics/patients-tab.tsx";
+import { DoctorStatsTab } from "#lib/admin-compat/legacy/components/admin/clinics/doctor-stats-tab.tsx";
+import { FacilityAnalyticsView } from "#lib/admin-compat/legacy/components/admin/clinics/analytics-tab.tsx";
+import { ScheduleTab } from "#lib/admin-compat/legacy/components/admin/clinics/schedule-tab.tsx";
+import { AnnouncementsTab } from "#lib/admin-compat/legacy/components/admin/clinics/announcements-tab.tsx";
+import { SubscriptionSection } from "#lib/admin-compat/legacy/components/admin/clinics/subscription-section.tsx";
 import {
   PAYMENT_TYPES,
   FACILITY_TYPE_LABELS,
-} from "$lib/constants/clinic-constants";
-import { useServiceTaxonomy } from "$lib/admin-compat/legacy/lib/hooks/use-service-taxonomy";
-import { categoryLabel } from "$lib/api/service-categories";
-import { cn } from "$lib/utils";
-import { lumaPageContainer, lumaSectionTitle } from "$lib/styles/luma";
+} from "#lib/constants/clinic-constants.ts";
+import { useServiceTaxonomy } from "#lib/admin-compat/legacy/lib/hooks/use-service-taxonomy.ts";
+import { categoryLabel } from "#lib/api/service-categories.ts";
+import { cn } from "#lib/utils.ts";
+import { lumaPageContainer, lumaSectionTitle } from "#lib/styles/luma.ts";
 import type {
   MedicalFacility,
   MedicalFacilityUpdate,
   SubscriptionPlan,
   SubscriptionStatus,
-} from "$lib/types/clinic";
+} from "#lib/types/clinic.ts";
 
 // 方案 → 徽章（標頭直覺顯示「目前方案」；完整狀態 / 到期 / 編輯在下方訂閱資訊）
 const PLAN_PILL: Record<SubscriptionPlan, { label: string; cls: string }> = {

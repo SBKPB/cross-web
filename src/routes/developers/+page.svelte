@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { developerDocuments, developerPreviewVersion, developerRepository } from '$lib/developers';
-  import { renderDeveloperMarkdown } from '$lib/developer-markdown';
-  import DeveloperDocument from '$lib/components/developers/DeveloperDocument.svelte';
-  import { Button } from '$lib/components/ui/button';
-  import Seo from '$lib/components/Seo.svelte';
+  import { developerDocuments, developerPreviewVersion, developerRepository } from '#lib/developers.ts';
+  import { renderDeveloperMarkdown } from '#lib/developer-markdown.ts';
+  import DeveloperDocument from '#lib/components/developers/DeveloperDocument.svelte';
+  import { Button } from '#lib/components/ui/button/index.ts';
+  import Seo from '#lib/components/Seo.svelte';
   import type { PageData } from './$types';
   let { data }: { data: PageData } = $props();
   const example = renderDeveloperMarkdown('```Python 客戶端\npython examples/python/upload.py --kind ecg\n```');

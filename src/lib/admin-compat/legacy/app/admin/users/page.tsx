@@ -9,10 +9,10 @@ import {
   CalendarPlus,
   KeyRound,
 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Badge } from "$lib/admin-compat/legacy/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "$lib/admin-compat/legacy/components/ui/tabs";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Badge } from "#lib/admin-compat/legacy/components/ui/badge.tsx";
+import { Tabs, TabsList, TabsTrigger } from "#lib/admin-compat/legacy/components/ui/tabs.tsx";
 import {
   Table,
   TableBody,
@@ -20,18 +20,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "$lib/admin-compat/legacy/components/ui/table";
+} from "#lib/admin-compat/legacy/components/ui/table.tsx";
 import {
   UserFormDialog,
   UserRoleDialog,
   UserDeleteDialog,
   ResetPasswordDialog,
-} from "$lib/admin-compat/legacy/components/admin/users";
-import { RenewSubscriptionDialog } from "$lib/admin-compat/legacy/components/admin/clinics/renew-subscription-dialog";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { useRequireSystemAdmin } from "$lib/admin-compat/legacy/lib/auth/use-require-system-admin";
-import { isStaffRole } from "$lib/auth/roles";
-import { cn } from "$lib/utils";
+} from "#lib/admin-compat/legacy/components/admin/users/index.ts";
+import { RenewSubscriptionDialog } from "#lib/admin-compat/legacy/components/admin/clinics/renew-subscription-dialog.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { useRequireSystemAdmin } from "#lib/admin-compat/legacy/lib/auth/use-require-system-admin.ts";
+import { isStaffRole } from "#lib/auth/roles.ts";
+import { cn } from "#lib/utils.ts";
 import {
   lumaPageContainer,
   lumaTableHeader,
@@ -39,16 +39,16 @@ import {
   lumaTableShell,
   lumaTabsList,
   lumaTabsTrigger,
-} from "$lib/styles/luma";
-import { adminUsersApi } from "$lib/api/admin/users";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
+} from "#lib/styles/luma.ts";
+import { adminUsersApi } from "#lib/api/admin/users.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
 import type {
   AdminUser,
   AdminUserCreate,
   AdminUserUpdate,
   Role,
-} from "$lib/types/user";
-import type { MedicalFacility } from "$lib/types/clinic";
+} from "#lib/types/user.ts";
+import type { MedicalFacility } from "#lib/types/clinic.ts";
 
 type UserTab = "staff" | "patient";
 

@@ -14,33 +14,33 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "$lib/admin-compat/legacy/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "$lib/admin-compat/legacy/components/ui/radio-group";
-import { Checkbox } from "$lib/admin-compat/legacy/components/ui/checkbox";
+} from "#lib/admin-compat/legacy/components/ui/select.tsx";
+import { RadioGroup, RadioGroupItem } from "#lib/admin-compat/legacy/components/ui/radio-group.tsx";
+import { Checkbox } from "#lib/admin-compat/legacy/components/ui/checkbox.tsx";
 import {
   isStaffRole,
   requiresFacility,
   STAFF_ROLE_NAMES,
-} from "$lib/auth/roles";
-import { lumaDialogFooter } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
+} from "#lib/auth/roles.ts";
+import { lumaDialogFooter } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
 import type {
   AdminUser,
   AdminUserCreate,
   AdminUserUpdate,
   Role,
-} from "$lib/types/user";
-import type { MedicalFacility } from "$lib/types/clinic";
+} from "#lib/types/user.ts";
+import type { MedicalFacility } from "#lib/types/clinic.ts";
 
 interface UserFormDialogProps {
   open: boolean;

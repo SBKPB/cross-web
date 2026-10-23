@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { CalendarDays, Loader2, Megaphone, Plus, Trash2 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { cn } from "$lib/utils";
-import type { Announcement } from "$lib/types/clinic";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { cn } from "#lib/utils.ts";
+import type { Announcement } from "#lib/types/clinic.ts";
 
 const MAX_ACTIVE = 3;
 

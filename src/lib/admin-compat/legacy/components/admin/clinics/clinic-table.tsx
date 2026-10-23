@@ -6,14 +6,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "$lib/admin-compat/legacy/components/ui/table";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { cn } from "$lib/utils";
-import type { MedicalFacility } from "$lib/types/clinic";
-import { PAYMENT_TYPES } from "$lib/constants/clinic-constants";
-import { useServiceTaxonomy } from "$lib/admin-compat/legacy/lib/hooks/use-service-taxonomy";
-import { categoryLabel } from "$lib/api/service-categories";
+} from "#lib/admin-compat/legacy/components/ui/table.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { cn } from "#lib/utils.ts";
+import type { MedicalFacility } from "#lib/types/clinic.ts";
+import { PAYMENT_TYPES } from "#lib/constants/clinic-constants.ts";
+import { useServiceTaxonomy } from "#lib/admin-compat/legacy/lib/hooks/use-service-taxonomy.ts";
+import { categoryLabel } from "#lib/api/service-categories.ts";
 
 interface ClinicTableProps {
   clinics: MedicalFacility[];

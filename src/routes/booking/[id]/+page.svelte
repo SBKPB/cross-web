@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { bookingApi } from "$lib/api/booking";
-	import { loadBookingPage, type BookingPageResult } from "$lib/booking/booking-flow";
-	import BookingError from "$lib/components/booking/BookingError.svelte";
-	import BookingFlow from "$lib/components/booking/BookingFlow.svelte";
-	import BookingLoading from "$lib/components/booking/BookingLoading.svelte";
-	import NextErrorFallback from "$lib/components/NextErrorFallback.svelte";
-	import PublicFrame from "$lib/components/public/PublicFrame.svelte";
+	import { bookingApi } from "#lib/api/booking.ts";
+	import { loadBookingPage, type BookingPageResult } from "#lib/booking/booking-flow.ts";
+	import BookingError from "#lib/components/booking/BookingError.svelte";
+	import BookingFlow from "#lib/components/booking/BookingFlow.svelte";
+	import BookingLoading from "#lib/components/booking/BookingLoading.svelte";
+	import NextErrorFallback from "#lib/components/NextErrorFallback.svelte";
+	import PublicFrame from "#lib/components/public/PublicFrame.svelte";
 
 	// 移植自舊版 app/booking/[clinic-id]/page.tsx + loading.tsx + app/booking/layout.tsx（PublicFrame，無 footer）
 	let { data } = $props();

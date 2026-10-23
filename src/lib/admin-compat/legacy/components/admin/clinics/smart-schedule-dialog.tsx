@@ -23,27 +23,27 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Checkbox } from "$lib/admin-compat/legacy/components/ui/checkbox";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Checkbox } from "#lib/admin-compat/legacy/components/ui/checkbox.tsx";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/admin-compat/legacy/components/ui/tabs";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { STAFF_ROLES } from "$lib/constants/clinic-constants";
-import { cn } from "$lib/utils";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "#lib/admin-compat/legacy/components/ui/tabs.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { STAFF_ROLES } from "#lib/constants/clinic-constants.ts";
+import { cn } from "#lib/utils.ts";
 import type {
   ApiScheduleBatchItem,
   ApiScheduleBatchResult,
   ApiStaff,
-} from "$lib/types/clinic";
-import type { ScheduleSession } from "$lib/types/schedule";
+} from "#lib/types/clinic.ts";
+import type { ScheduleSession } from "#lib/types/schedule.ts";
 
 // 診次預設時間（與排班月曆 / 公開門診時刻表一致）
 const SESSIONS: Record<

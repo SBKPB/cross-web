@@ -14,13 +14,13 @@
 	import Trash2 from "@lucide/svelte/icons/trash-2";
 	import Users from "@lucide/svelte/icons/users";
 	import { untrack, type Component } from "svelte";
-	import { memberApi } from "$lib/api/member";
-	import { memberAppointmentApi, type MemberAppointment } from "$lib/api/member-appointment";
-	import { memberPatientApi } from "$lib/api/member-patient";
-	import { getAuth, requireMember } from "$lib/auth/auth.svelte";
-	import EditProfileDialog from "$lib/components/member/EditProfileDialog.svelte";
-	import RecentlyViewedRail from "$lib/components/member/RecentlyViewedRail.svelte";
-	import ThemeToggle from "$lib/components/ThemeToggle.svelte";
+	import { memberApi } from "#lib/api/member.ts";
+	import { memberAppointmentApi, type MemberAppointment } from "#lib/api/member-appointment.ts";
+	import { memberPatientApi } from "#lib/api/member-patient.ts";
+	import { getAuth, requireMember } from "#lib/auth/auth.svelte.ts";
+	import EditProfileDialog from "#lib/components/member/EditProfileDialog.svelte";
+	import RecentlyViewedRail from "#lib/components/member/RecentlyViewedRail.svelte";
+	import ThemeToggle from "#lib/components/ThemeToggle.svelte";
 	import {
 		AlertDialog,
 		AlertDialogCancel,
@@ -29,14 +29,14 @@
 		AlertDialogFooter,
 		AlertDialogHeader,
 		AlertDialogTitle,
-	} from "$lib/components/ui/alert-dialog/index.js";
-	import { Avatar, AvatarFallback } from "$lib/components/ui/avatar/index.js";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card } from "$lib/components/ui/card/index.js";
-	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
-	import { Tabs, TabsContent, TabsList, TabsTrigger } from "$lib/components/ui/tabs/index.js";
-	import { APPOINTMENT_STATUS_LABELS, QUEUE_ACTIVE_STATUSES } from "$lib/constants/appointment";
+	} from "#lib/components/ui/alert-dialog/index.js";
+	import { Avatar, AvatarFallback } from "#lib/components/ui/avatar/index.js";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card } from "#lib/components/ui/card/index.js";
+	import { Skeleton } from "#lib/components/ui/skeleton/index.js";
+	import { Tabs, TabsContent, TabsList, TabsTrigger } from "#lib/components/ui/tabs/index.js";
+	import { APPOINTMENT_STATUS_LABELS, QUEUE_ACTIVE_STATUSES } from "#lib/constants/appointment.ts";
 	import {
 		STATUS_VARIANT,
 		formatMemberSince,
@@ -46,7 +46,7 @@
 		getInitials,
 		groupMemberAppointments,
 		memberDisplayName,
-	} from "$lib/member/appointments";
+	} from "#lib/member/appointments.ts";
 
 	// 移植自舊版 app/member/page.tsx
 	const auth = getAuth();

@@ -10,26 +10,26 @@ import {
   UserRound,
 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
-import { Textarea } from "$lib/admin-compat/legacy/components/ui/textarea";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { APPOINTMENT_STATUS_LABELS } from "$lib/constants/appointment";
-import { lumaDialogFooter } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
+import { Textarea } from "#lib/admin-compat/legacy/components/ui/textarea.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { APPOINTMENT_STATUS_LABELS } from "#lib/constants/appointment.ts";
+import { lumaDialogFooter } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
 import type {
   ApiPatientDetail,
   ApiPatientTimelineItem,
   AppointmentStatus,
-} from "$lib/types/clinic";
+} from "#lib/types/clinic.ts";
 import { ageFrom, formatPatientDate } from "./patients-tab";
 
 const STATUS_PILL: Record<AppointmentStatus, string> = {

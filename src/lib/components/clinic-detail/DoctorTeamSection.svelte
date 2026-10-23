@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { MemberRole } from "$lib/types/clinic";
+	import type { MemberRole } from "#lib/types/clinic.ts";
 
 	const ROLE_GROUPS: { key: "all" | MemberRole; label: string; roles: MemberRole[] }[] = [
 		{ key: "all", label: "全部", roles: [] },
@@ -13,9 +13,9 @@
 <script lang="ts">
 	import User from "@lucide/svelte/icons/user";
 	import Users from "@lucide/svelte/icons/users";
-	import { MEMBER_ROLES } from "$lib/constants/clinic-constants";
-	import type { ClinicDoctorDetail, Member } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	import { MEMBER_ROLES } from "#lib/constants/clinic-constants.ts";
+	import type { ClinicDoctorDetail, Member } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 	import DoctorDetailDialog from "./DoctorDetailDialog.svelte";
 	import SectionCard from "./SectionCard.svelte";
 

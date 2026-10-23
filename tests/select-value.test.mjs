@@ -35,7 +35,7 @@ before(async () => {
     root: HARNESS,
     logLevel: "error",
     plugins: [svelte({ configFile: false, preprocess: vitePreprocess() })],
-    resolve: { alias: { $lib: join(ROOT, "src/lib") } },
+    resolve: { alias: { "#lib": join(ROOT, "src/lib") } },
     build: { outDir, emptyOutDir: true, minify: false },
   });
   server = createServer(async (req, res) => {

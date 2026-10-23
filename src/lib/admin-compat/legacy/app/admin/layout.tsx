@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useRouter, usePathname } from "$lib/admin-compat/navigation";
-import { useAuth } from "$lib/admin-compat/auth";
-import { canAccessAdmin } from "$lib/auth/roles";
-import { AdminShell } from "$lib/admin-compat/legacy/components/admin/admin-shell";
+import { useRouter, usePathname } from "#lib/admin-compat/navigation.ts";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { canAccessAdmin } from "#lib/auth/roles.ts";
+import { AdminShell } from "#lib/admin-compat/legacy/components/admin/admin-shell.tsx";
 
 export default function AdminLayout({
   children,

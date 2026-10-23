@@ -6,8 +6,8 @@
   import Hospital from '@lucide/svelte/icons/hospital';
   import Search from '@lucide/svelte/icons/search';
   import Users from '@lucide/svelte/icons/users';
-  import { Button } from '$lib/components/ui/button';
-  import { Card, CardContent } from '$lib/components/ui/card';
+  import { Button } from '#lib/components/ui/button/index.ts';
+  import { Card, CardContent } from '#lib/components/ui/card/index.ts';
 
   const categories = [
     { label: '看診諮詢', type: 'healthcare' }, { label: '醫美療程', type: 'aesthetic' },

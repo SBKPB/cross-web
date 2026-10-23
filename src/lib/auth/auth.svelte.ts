@@ -1,10 +1,10 @@
 import { getContext, setContext } from "svelte";
 import { goto } from "$app/navigation";
-import { authApi } from "$lib/api/auth";
-import { memberApi } from "$lib/api/member";
-import { onTokenExpired } from "$lib/auth/auth-events";
-import { canAccessAdmin, getAdminHomePath, isSystemAdmin } from "$lib/auth/roles";
-import type { User } from "$lib/types/auth";
+import { authApi } from "#lib/api/auth.ts";
+import { memberApi } from "#lib/api/member.ts";
+import { onTokenExpired } from "#lib/auth/auth-events.ts";
+import { canAccessAdmin, getAdminHomePath, isSystemAdmin } from "#lib/auth/roles.ts";
+import type { User } from "#lib/types/auth.ts";
 
 /**
  * 登入狀態（移植自舊版 auth-context.tsx，行為相同）。

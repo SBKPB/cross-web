@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Seo from "$lib/components/Seo.svelte";
-	import LandingClinicGrid from "$lib/components/seo/LandingClinicGrid.svelte";
+	import Seo from "#lib/components/Seo.svelte";
+	import LandingClinicGrid from "#lib/components/seo/LandingClinicGrid.svelte";
 
 	// 移植自舊 Next 的 app/specialty/[code]/page.tsx。
 	// 行內元素與文字彼此緊貼書寫：舊版 JSX 換行不產生空白，Svelte 換行會變成一個空格。

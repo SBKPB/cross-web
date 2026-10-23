@@ -7,12 +7,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Checkbox } from "$lib/admin-compat/legacy/components/ui/checkbox";
-import { lumaDialogFooter } from "$lib/styles/luma";
-import { cn } from "$lib/utils";
-import type { AdminUser, Role } from "$lib/types/user";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Checkbox } from "#lib/admin-compat/legacy/components/ui/checkbox.tsx";
+import { lumaDialogFooter } from "#lib/styles/luma.ts";
+import { cn } from "#lib/utils.ts";
+import type { AdminUser, Role } from "#lib/types/user.ts";
 
 interface UserRoleDialogProps {
   open: boolean;

@@ -6,15 +6,15 @@
 	import Download from "@lucide/svelte/icons/download";
 	import ExternalLink from "@lucide/svelte/icons/external-link";
 	import Share2 from "@lucide/svelte/icons/share-2";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
 	import {
 		Dialog,
 		DialogContent,
 		DialogDescription,
 		DialogHeader,
 		DialogTitle,
-	} from "$lib/components/ui/dialog/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
+	} from "#lib/components/ui/dialog/index.js";
+	import { Input } from "#lib/components/ui/input/index.js";
 
 	// 民眾端正式網域（與 layout metadataBase 一致）
 	const SITE_URL = "https://cross.twinhao.com";

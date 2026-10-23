@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import Seo from "$lib/components/Seo.svelte";
-	import VerifyForm from "$lib/components/join/VerifyForm.svelte";
-	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
-	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
-	import PageIntro from "$lib/components/public/PageIntro.svelte";
+	import Seo from "#lib/components/Seo.svelte";
+	import VerifyForm from "#lib/components/join/VerifyForm.svelte";
+	import SiteFooter from "#lib/components/layout/SiteFooter.svelte";
+	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
+	import PageIntro from "#lib/components/public/PageIntro.svelte";
 
 	// 移植自舊版 app/join/verify/page.tsx：VerifyForm 讀 ?token=，舊版包在 Suspense 裡，伺服器端只輸出「載入中…」。
 	// 這裡同樣在掛載後才渲染表單（伺服器 HTML 與 token 無關，可安全進 CDN 快取）。

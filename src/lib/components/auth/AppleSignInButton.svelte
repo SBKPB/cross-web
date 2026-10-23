@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { env } from "$env/dynamic/public";
+	import { NEXT_PUBLIC_APPLE_CLIENT_ID, NEXT_PUBLIC_APPLE_REDIRECT_URI } from "$app/env/public";
 	import {
 		APPLE_SCRIPT_SRC,
 		appleAuthOptions,
@@ -8,7 +8,7 @@
 		appleRedirectUri,
 		appleResponseHandler,
 		appleSignIn,
-	} from "$lib/auth/social-login";
+	} from "#lib/auth/social-login.ts";
 	import { SOCIAL_BUTTON_CLASS } from "./social-button";
 
 	// 移植自舊版 AppleSignInButton（react-apple-signin-auth 的 AppleSignin + 自訂 render）：
@@ -23,7 +23,7 @@
 		disabled?: boolean;
 	} = $props();
 
-	const clientId = env.NEXT_PUBLIC_APPLE_CLIENT_ID ?? "";
+	const clientId = NEXT_PUBLIC_APPLE_CLIENT_ID ?? "";
 
 	onMount(() => {
 		if (!clientId) return;
@@ -41,7 +41,7 @@
 		void appleSignIn({
 			authOptions: appleAuthOptions(
 				clientId,
-				appleRedirectUri(env.NEXT_PUBLIC_APPLE_REDIRECT_URI, window.location.origin),
+				appleRedirectUri(NEXT_PUBLIC_APPLE_REDIRECT_URI, window.location.origin),
 			),
 			// disabled 取點擊當下的值（套件在點擊時捕捉 onSuccess）
 			onSuccess: appleResponseHandler({ disabled, onSuccess, onError }),

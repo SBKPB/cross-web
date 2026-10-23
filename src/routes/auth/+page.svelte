@@ -2,14 +2,14 @@
 	import Building2 from "@lucide/svelte/icons/building-2";
 	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { getAuth } from "$lib/auth/auth.svelte";
-	import { isBookingNext, safeNextUrl } from "$lib/auth/social-login";
-	import AppleSignInButton from "$lib/components/auth/AppleSignInButton.svelte";
-	import AuthSplitLayout from "$lib/components/auth/AuthSplitLayout.svelte";
-	import GoogleSignInButton from "$lib/components/auth/GoogleSignInButton.svelte";
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card/index.js";
-	import { lumaIconBadge } from "$lib/styles/luma";
-	import { cn } from "$lib/utils";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { isBookingNext, safeNextUrl } from "#lib/auth/social-login.ts";
+	import AppleSignInButton from "#lib/components/auth/AppleSignInButton.svelte";
+	import AuthSplitLayout from "#lib/components/auth/AuthSplitLayout.svelte";
+	import GoogleSignInButton from "#lib/components/auth/GoogleSignInButton.svelte";
+	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#lib/components/ui/card/index.js";
+	import { lumaIconBadge } from "#lib/styles/luma.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 app/auth/page.tsx：民眾端登入（Google / Apple）。
 	// 伺服器端與載入登入狀態期間只顯示轉圈（舊版 Suspense fallback 與 isLoading 同一個轉圈）；?next= 在瀏覽器端才讀。

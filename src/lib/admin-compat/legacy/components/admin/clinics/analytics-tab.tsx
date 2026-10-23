@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import Link from "$lib/admin-compat/link";
+import Link from "#lib/admin-compat/link.tsx";
 import {
   CalendarCheck,
   CheckCircle2,
@@ -12,16 +12,16 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
 import {
   PLAN_LABELS,
   canAccessFeature,
   canStartTrial,
-} from "$lib/feature-access";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import type { FacilityAnalytics, VisitorCount } from "$lib/types/clinic";
-import type { SubscriptionPlan, SubscriptionStatus } from "$lib/types/clinic";
+} from "#lib/feature-access.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import type { FacilityAnalytics, VisitorCount } from "#lib/types/clinic.ts";
+import type { SubscriptionPlan, SubscriptionStatus } from "#lib/types/clinic.ts";
 
 /**
  * 這個元件只需要訂閱相關欄位，不需要完整院所物件——

@@ -1,18 +1,18 @@
 <script lang="ts">
-	import AnnouncementsSection from "$lib/components/clinic-detail/AnnouncementsSection.svelte";
-	import BookingCard from "$lib/components/clinic-detail/BookingCard.svelte";
-	import BusinessHoursSection from "$lib/components/clinic-detail/BusinessHoursSection.svelte";
-	import ClinicContactInfo from "$lib/components/clinic-detail/ClinicContactInfo.svelte";
-	import ClinicDetailHeader from "$lib/components/clinic-detail/ClinicDetailHeader.svelte";
-	import DepartmentBadges from "$lib/components/clinic-detail/DepartmentBadges.svelte";
-	import DoctorTeamSection from "$lib/components/clinic-detail/DoctorTeamSection.svelte";
-	import RecordView from "$lib/components/clinic-detail/RecordView.svelte";
-	import ScheduleTimetable from "$lib/components/clinic-detail/ScheduleTimetable.svelte";
-	import ServicePreviewList from "$lib/components/clinic-detail/ServicePreviewList.svelte";
-	import StickyBookingButton from "$lib/components/clinic-detail/StickyBookingButton.svelte";
-	import TrackView from "$lib/components/clinic-detail/TrackView.svelte";
-	import WalkInCard from "$lib/components/clinic-detail/WalkInCard.svelte";
-	import Seo from "$lib/components/Seo.svelte";
+	import AnnouncementsSection from "#lib/components/clinic-detail/AnnouncementsSection.svelte";
+	import BookingCard from "#lib/components/clinic-detail/BookingCard.svelte";
+	import BusinessHoursSection from "#lib/components/clinic-detail/BusinessHoursSection.svelte";
+	import ClinicContactInfo from "#lib/components/clinic-detail/ClinicContactInfo.svelte";
+	import ClinicDetailHeader from "#lib/components/clinic-detail/ClinicDetailHeader.svelte";
+	import DepartmentBadges from "#lib/components/clinic-detail/DepartmentBadges.svelte";
+	import DoctorTeamSection from "#lib/components/clinic-detail/DoctorTeamSection.svelte";
+	import RecordView from "#lib/components/clinic-detail/RecordView.svelte";
+	import ScheduleTimetable from "#lib/components/clinic-detail/ScheduleTimetable.svelte";
+	import ServicePreviewList from "#lib/components/clinic-detail/ServicePreviewList.svelte";
+	import StickyBookingButton from "#lib/components/clinic-detail/StickyBookingButton.svelte";
+	import TrackView from "#lib/components/clinic-detail/TrackView.svelte";
+	import WalkInCard from "#lib/components/clinic-detail/WalkInCard.svelte";
+	import Seo from "#lib/components/Seo.svelte";
 
 	let { data } = $props();
 

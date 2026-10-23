@@ -1,14 +1,14 @@
-import Link from "$lib/admin-compat/link";
-import { usePathname } from "$lib/admin-compat/navigation";
-import { Bell, ChevronRight, Menu } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { useAuth } from "$lib/admin-compat/auth";
+import Link from "#lib/admin-compat/link.tsx";
+import { usePathname } from "#lib/admin-compat/navigation.ts";
+import { ChevronRight, Menu } from "lucide-react";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { useAuth } from "#lib/admin-compat/auth.ts";
 import {
   getAdminHomePath,
   isFacilityUser,
   isSystemAdmin,
-} from "$lib/auth/roles";
-import type { User } from "$lib/types/auth";
+} from "#lib/auth/roles.ts";
+import type { User } from "#lib/types/auth.ts";
 
 const SYSTEM_BREADCRUMB_MAP: Record<string, string> = {
   "/admin/clinics": "院所管理",
@@ -74,7 +74,7 @@ export function AdminTopbar({ onOpenMobileNav }: AdminTopbarProps) {
           href={homePath}
           className="shrink-0 font-medium text-muted-foreground transition hover:text-foreground"
         >
-          Console
+          管理後台
         </Link>
         {breadcrumbs.map((crumb) => (
           <span key={crumb.href} className="flex min-w-0 items-center gap-2">
@@ -96,14 +96,6 @@ export function AdminTopbar({ onOpenMobileNav }: AdminTopbarProps) {
       </nav>
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          aria-label="通知"
-          className="relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
-        >
-          <Bell className="size-[18px]" />
-          <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
-        </button>
         <div className="flex items-center gap-2 rounded-full bg-card py-1 pl-1 pr-3 ring-1 ring-foreground/5">
           <span className="grid size-7 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
             {initial}

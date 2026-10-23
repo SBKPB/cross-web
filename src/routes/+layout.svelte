@@ -2,16 +2,16 @@
 	import "../app.css";
 	import { onMount } from "svelte";
 	import { ModeWatcher } from "mode-watcher";
-	import { browser } from "$app/environment";
+	import { browser } from "$app/env";
 	import { beforeNavigate } from "$app/navigation";
 	import { page } from "$app/state";
-	import { env } from "$env/dynamic/public";
-	import { setAuth } from "$lib/auth/auth.svelte";
-	import SessionExpiredDialog from "$lib/components/auth/SessionExpiredDialog.svelte";
-	import Seo, { SITE_NAME, SITE_URL } from "$lib/components/Seo.svelte";
-	import { resetFavoritesOnUserChange } from "$lib/hooks/favorites.svelte";
-	import { createSmoothScrollPause } from "$lib/navigation/smooth-scroll";
-	import { jsonLdScript } from "$lib/seo/serialize-json-ld";
+	import { NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } from "$app/env/public";
+	import { setAuth } from "#lib/auth/auth.svelte.ts";
+	import SessionExpiredDialog from "#lib/components/auth/SessionExpiredDialog.svelte";
+	import Seo, { SITE_NAME, SITE_URL } from "#lib/components/Seo.svelte";
+	import { resetFavoritesOnUserChange } from "#lib/hooks/favorites.svelte.ts";
+	import { createSmoothScrollPause } from "#lib/navigation/smooth-scroll.ts";
+	import { jsonLdScript } from "#lib/seo/serialize-json-ld.ts";
 
 	let { children } = $props();
 
@@ -53,8 +53,8 @@
 	<meta name="application-name" content={SITE_NAME} />
 	<!-- keywords 由 Seo 輸出（頁面可覆寫，預設為全站值） -->
 	<!-- 在 Vercel 設環境變數 NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION 後自動填入 GSC 驗證碼 -->
-	{#if env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
-		<meta name="google-site-verification" content={env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION} />
+	{#if NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
+		<meta name="google-site-verification" content={NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION} />
 	{/if}
 	<link rel="icon" href="/favicon.ico" sizes="64x64" type="image/x-icon" />
 	<link rel="icon" href="/icon.png" sizes="512x512" type="image/png" />

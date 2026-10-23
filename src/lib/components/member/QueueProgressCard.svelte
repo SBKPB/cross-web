@@ -1,8 +1,8 @@
 <script lang="ts">
 	import BellRing from "@lucide/svelte/icons/bell-ring";
-	import type { MemberQueueStatus } from "$lib/api/member-appointment";
-	import { Card } from "$lib/components/ui/card/index.js";
-	import { cn } from "$lib/utils";
+	import type { MemberQueueStatus } from "#lib/api/member-appointment.ts";
+	import { Card } from "#lib/components/ui/card/index.js";
+	import { cn } from "#lib/utils.ts";
 
 	/** 看診進度卡：目前叫號 / 您的號碼 / 還差 N 位；輪到本人時整卡高亮（移植自舊版 QueueProgressCard） */
 	let { status }: { status: MemberQueueStatus } = $props();

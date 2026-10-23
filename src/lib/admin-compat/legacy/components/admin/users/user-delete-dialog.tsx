@@ -6,10 +6,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { lumaDialogFooter } from "$lib/styles/luma";
-import type { AdminUser } from "$lib/types/user";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { lumaDialogFooter } from "#lib/styles/luma.ts";
+import type { AdminUser } from "#lib/types/user.ts";
 
 interface UserDeleteDialogProps {
   open: boolean;

@@ -2,8 +2,8 @@
 	import ArrowLeft from "@lucide/svelte/icons/arrow-left";
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import Phone from "@lucide/svelte/icons/phone";
-	import { cn } from "$lib/utils";
-	import type { ClinicConfig } from "$lib/types/booking";
+	import { cn } from "#lib/utils.ts";
+	import type { ClinicConfig } from "#lib/types/booking.ts";
 
 	// 移植自舊版 components/booking/clinic-header.tsx（標記逐一對照，元素間不留空白文字節點，同舊版 JSX 輸出）
 	let { clinic, class: className }: { clinic: ClinicConfig; class?: string } = $props();

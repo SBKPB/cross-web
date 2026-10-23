@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Component, Snippet } from "svelte";
-	import { cn } from "$lib/utils";
+	import { cn } from "#lib/utils.ts";
 
 	/** 詳細頁共用區段卡片：統一的圓角、陰影、圖示標題節奏 */
 	let {

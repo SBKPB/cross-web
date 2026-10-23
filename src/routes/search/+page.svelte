@@ -1,9 +1,9 @@
 <script lang="ts">
-	import ClinicSearchView from "$lib/components/clinics/ClinicSearchView.svelte";
-	import SiteFooter from "$lib/components/layout/SiteFooter.svelte";
-	import SiteHeader from "$lib/components/layout/SiteHeader.svelte";
-	import PageIntro from "$lib/components/public/PageIntro.svelte";
-	import Seo from "$lib/components/Seo.svelte";
+	import ClinicSearchView from "#lib/components/clinics/ClinicSearchView.svelte";
+	import SiteFooter from "#lib/components/layout/SiteFooter.svelte";
+	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
+	import PageIntro from "#lib/components/public/PageIntro.svelte";
+	import Seo from "#lib/components/Seo.svelte";
 
 	// 移植自舊 Next 的 app/search/page.tsx。外框標記照舊版（main 沒有 PublicFrame 的 id 與 min-w-0），不共用 PublicFrame。
 	// 同一路由換網址參數（例如從 /search?type=x 點「預約服務」）時元件不重掛載、篩選維持原狀，

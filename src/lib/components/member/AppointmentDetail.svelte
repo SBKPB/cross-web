@@ -13,9 +13,9 @@
 		memberAppointmentApi,
 		type MemberAppointment,
 		type MemberQueueStatus,
-	} from "$lib/api/member-appointment";
-	import { requireMember } from "$lib/auth/auth.svelte";
-	import QueueProgressCard from "$lib/components/member/QueueProgressCard.svelte";
+	} from "#lib/api/member-appointment.ts";
+	import { requireMember } from "#lib/auth/auth.svelte.ts";
+	import QueueProgressCard from "#lib/components/member/QueueProgressCard.svelte";
 	import {
 		AlertDialog,
 		AlertDialogAction,
@@ -25,12 +25,12 @@
 		AlertDialogFooter,
 		AlertDialogHeader,
 		AlertDialogTitle,
-	} from "$lib/components/ui/alert-dialog/index.js";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card } from "$lib/components/ui/card/index.js";
-	import { APPOINTMENT_STATUS_LABELS, QUEUE_ACTIVE_STATUSES } from "$lib/constants/appointment";
-	import { pollOnVisible } from "$lib/hooks/poll-on-visible.svelte";
+	} from "#lib/components/ui/alert-dialog/index.js";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card } from "#lib/components/ui/card/index.js";
+	import { APPOINTMENT_STATUS_LABELS, QUEUE_ACTIVE_STATUSES } from "#lib/constants/appointment.ts";
+	import { pollOnVisible } from "#lib/hooks/poll-on-visible.svelte.ts";
 	import {
 		STATUS_HERO,
 		STATUS_VARIANT,
@@ -38,8 +38,8 @@
 		formatFullDate,
 		formatTime,
 		queueFlags,
-	} from "$lib/member/appointments";
-	import { cn } from "$lib/utils";
+	} from "#lib/member/appointments.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 app/member/appointments/[id]/page.tsx（路由頁以 {#key id} 掛載，換 id 時整頁重建，同 Next）
 	let { id }: { id: string } = $props();

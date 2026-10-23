@@ -17,8 +17,8 @@
 		DialogDescription,
 		DialogHeader,
 		DialogTitle,
-	} from "$lib/components/ui/dialog/index.js";
-	import type { AnnouncementPublic } from "$lib/types/clinic";
+	} from "#lib/components/ui/dialog/index.js";
+	import type { AnnouncementPublic } from "#lib/types/clinic.ts";
 	import SectionCard from "./SectionCard.svelte";
 
 	let { announcements, class: className }: { announcements: AnnouncementPublic[]; class?: string } = $props();

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { inkOn } from "$lib/color-contrast";
-	import { cn } from "$lib/utils";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import { cn } from "#lib/utils.ts";
 
 	/**
 	 * 預約流程共用區段卡片：圓角 / 柔色 ring / 序號徽章標題，

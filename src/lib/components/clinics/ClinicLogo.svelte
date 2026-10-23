@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Avatar, AvatarImage, AvatarFallback } from "$lib/components/ui/avatar/index.js";
-	import { cn } from "$lib/utils";
+	import { Avatar, AvatarImage, AvatarFallback } from "#lib/components/ui/avatar/index.js";
+	import { cn } from "#lib/utils.ts";
 
 	let { logo, name, class: className }: { logo?: string | null; name: string; class?: string } = $props();
 </script>

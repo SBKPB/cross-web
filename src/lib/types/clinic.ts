@@ -480,6 +480,7 @@ export interface ApiAppointment {
   staff_name: string | null;
   appointment_date: string;
   appointment_time: string;
+  duration_minutes?: number; // 預約成立時的時長快照；舊資料相容
   status: AppointmentStatus;
   booking_method: "phone" | "walk_in" | "online";
   notes: string | null;

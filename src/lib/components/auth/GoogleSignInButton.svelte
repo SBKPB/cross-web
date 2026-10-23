@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { env } from "$env/dynamic/public";
+	import { NEXT_PUBLIC_GOOGLE_CLIENT_ID } from "$app/env/public";
 	import {
 		GOOGLE_BUTTON_HEIGHT,
 		GOOGLE_BUTTON_OPTIONS,
 		GSI_SCRIPT_SRC,
 		googleCredentialCallback,
 		googleInitOptions,
-	} from "$lib/auth/social-login";
+	} from "#lib/auth/social-login.ts";
 	import { SOCIAL_BUTTON_CLASS } from "./social-button";
 
 	// 移植自舊版 GoogleSignInButton（@react-oauth/google 的 GoogleOAuthProvider + GoogleLogin）：
@@ -23,7 +23,7 @@
 		disabled?: boolean;
 	} = $props();
 
-	const clientId = env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+	const clientId = NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 
 	interface GoogleAccountsId {
 		initialize: (options: ReturnType<typeof googleInitOptions>) => void;

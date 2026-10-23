@@ -3,7 +3,7 @@
 	import Sparkles from "@lucide/svelte/icons/sparkles";
 	import Stethoscope from "@lucide/svelte/icons/stethoscope";
 	import Store from "@lucide/svelte/icons/store";
-	import type { FacilityType } from "$lib/types/clinic";
+	import type { FacilityType } from "#lib/types/clinic.ts";
 
 	const WEEKDAY_ZH: Record<string, string> = {
 		Sun: "週日",
@@ -39,26 +39,26 @@
 	import Crown from "@lucide/svelte/icons/crown";
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import Star from "@lucide/svelte/icons/star";
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import { Badge } from "#lib/components/ui/badge/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
 	import {
 		Card,
 		CardContent,
 		CardDescription,
 		CardHeader,
 		CardTitle,
-	} from "$lib/components/ui/card/index.js";
-	import { categoryLabel } from "$lib/api/service-categories";
+	} from "#lib/components/ui/card/index.js";
+	import { categoryLabel } from "#lib/api/service-categories.ts";
 	import {
 		FACILITY_TYPE_COLORS,
 		FACILITY_TYPE_LABELS,
 		HOSPITAL_LEVELS,
 		PAYMENT_TYPES,
 		parseAreaFromAddress,
-	} from "$lib/constants/clinic-constants";
-	import { useServiceTaxonomy } from "$lib/hooks/service-taxonomy.svelte";
-	import type { Clinic } from "$lib/types/clinic";
-	import { cn } from "$lib/utils";
+	} from "#lib/constants/clinic-constants.ts";
+	import { useServiceTaxonomy } from "#lib/hooks/service-taxonomy.svelte.ts";
+	import type { Clinic } from "#lib/types/clinic.ts";
+	import { cn } from "#lib/utils.ts";
 	import FavoriteButton from "./FavoriteButton.svelte";
 	import ClinicLogo from "./ClinicLogo.svelte";
 

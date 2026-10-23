@@ -1,6 +1,6 @@
 <script lang="ts">
 	import MapPin from "@lucide/svelte/icons/map-pin";
-	import Seo from "$lib/components/Seo.svelte";
+	import Seo from "#lib/components/Seo.svelte";
 
 	// 移植自舊 Next 的 app/area/page.tsx。
 	// 行內元素彼此緊貼書寫：舊版 JSX 換行不產生空白，Svelte 換行會變成一個空格。

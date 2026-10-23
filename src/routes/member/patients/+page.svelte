@@ -5,11 +5,11 @@
 	import Trash2Icon from "@lucide/svelte/icons/trash-2";
 	import UserCheck from "@lucide/svelte/icons/user-check";
 	import { untrack } from "svelte";
-	import { memberPatientApi } from "$lib/api/member-patient";
-	import { requireMember } from "$lib/auth/auth.svelte";
-	import NewPatientDialog from "$lib/components/patient/NewPatientDialog.svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Card } from "$lib/components/ui/card/index.js";
+	import { memberPatientApi } from "#lib/api/member-patient.ts";
+	import { requireMember } from "#lib/auth/auth.svelte.ts";
+	import NewPatientDialog from "#lib/components/patient/NewPatientDialog.svelte";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { Card } from "#lib/components/ui/card/index.js";
 	import {
 		Dialog,
 		DialogContent,
@@ -17,9 +17,9 @@
 		DialogFooter,
 		DialogHeader,
 		DialogTitle,
-	} from "$lib/components/ui/dialog/index.js";
-	import { IDENTIFIER_TYPE_LABELS, MAX_PATIENTS, RELATION_LABELS } from "$lib/constants/patient-constants";
-	import type { MemberPatientRead } from "$lib/types/member-patient";
+	} from "#lib/components/ui/dialog/index.js";
+	import { IDENTIFIER_TYPE_LABELS, MAX_PATIENTS, RELATION_LABELS } from "#lib/constants/patient-constants.ts";
+	import type { MemberPatientRead } from "#lib/types/member-patient.ts";
 
 	// 移植自舊版 app/member/patients/page.tsx
 	// 守衛：未登入導向登入頁，後台帳號導回後台，不渲染民眾端內容

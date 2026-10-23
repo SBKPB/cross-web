@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
 import {
   Dialog,
   DialogContent,
@@ -11,18 +11,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "$lib/admin-compat/legacy/components/ui/select";
-import { cn } from "$lib/utils";
-import { lumaDialogFooter } from "$lib/styles/luma";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import type { ApiService, ApiStaff } from "$lib/types/clinic";
+} from "#lib/admin-compat/legacy/components/ui/select.tsx";
+import { cn } from "#lib/utils.ts";
+import { lumaDialogFooter } from "#lib/styles/luma.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import type { ApiService, ApiStaff } from "#lib/types/clinic.ts";
 
 interface AppointmentCreateDialogProps {
   facilityId: string;

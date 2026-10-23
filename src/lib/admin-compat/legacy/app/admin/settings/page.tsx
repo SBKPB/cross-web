@@ -10,16 +10,16 @@ import {
   X,
 } from "lucide-react";
 
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { cn } from "$lib/utils";
-import { FACILITY_TYPE_LABELS } from "$lib/constants/clinic-constants";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { cn } from "#lib/utils.ts";
+import { FACILITY_TYPE_LABELS } from "#lib/constants/clinic-constants.ts";
 import {
   adminServiceCategoriesApi,
   type ServiceCategoryAdmin,
-} from "$lib/api/admin/service-categories";
-import type { FacilityType } from "$lib/types/clinic";
-import { useRequireSystemAdmin } from "$lib/admin-compat/legacy/lib/auth/use-require-system-admin";
+} from "#lib/api/admin/service-categories.ts";
+import type { FacilityType } from "#lib/types/clinic.ts";
+import { useRequireSystemAdmin } from "#lib/admin-compat/legacy/lib/auth/use-require-system-admin.ts";
 
 // 大類顯示順序（固定 4 類；付款軸不在此管理）
 const FACILITY_ORDER: FacilityType[] = [

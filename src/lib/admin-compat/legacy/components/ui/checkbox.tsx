@@ -2,7 +2,7 @@ import * as React from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { CheckIcon } from "lucide-react";
 
-import { cn } from "$lib/utils";
+import { cn } from "#lib/utils.ts";
 
 /**
  * 未勾選狀態刻意偏離 Luma registry 預設（原為 border-transparent + bg-input/90）：

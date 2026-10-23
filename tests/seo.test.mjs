@@ -5,7 +5,7 @@ import { compile } from "svelte/compiler";
 import { render } from "svelte/server";
 
 // 把真正的 Seo.svelte 編成 SSR 模組後 render，比對輸出的 <head> 標籤。
-// $app/state 換成固定網址的替身，$lib 與 svelte 換成實際檔案路徑（data: 模組只能 import 絕對網址）。
+// $app/state 換成固定網址的替身，#lib 與 svelte 換成實際檔案路徑（data: 模組只能 import 絕對網址）。
 const ORIGIN = "https://cross.twinhao.com";
 // 目前請求的來源刻意用 preview 網域：og:image 要用固定的正式網域（舊版 metadataBase），不能跟著請求來源變
 const REQUEST_ORIGIN = "https://cross-abc123-office.vercel.app";
@@ -15,7 +15,7 @@ const code = compile(source, { generate: "server", filename: "Seo.svelte" })
   .js.code.replace(/(["'])svelte\/internal\/server\1/, JSON.stringify(import.meta.resolve("svelte/internal/server")))
   .replace(/(["'])\$app\/state\1/, JSON.stringify(stub(`export const page = { url: new URL("${REQUEST_ORIGIN}/") };`)))
   .replace(
-    /(["'])\$lib\/seo\/serialize-json-ld\1/,
+    /(["'])\#lib\/seo\/serialize-json-ld\.ts\1/,
     JSON.stringify(new URL("../src/lib/seo/serialize-json-ld.ts", import.meta.url).href),
   );
 const { default: Seo } = await import(stub(code));

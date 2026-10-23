@@ -1,5 +1,5 @@
-import { STATIC_PAGE_CACHE } from "$lib/cache-control";
-import type { SeoProps } from "$lib/components/Seo.svelte";
+import { STATIC_PAGE_CACHE } from "#lib/cache-control.ts";
+import type { SeoProps } from "#lib/components/Seo.svelte";
 import type { PageLoad } from "./$types";
 
 // 舊版首頁沒有自己的 metadata（沿用 root layout 預設，canonical "/"），也不抓資料：

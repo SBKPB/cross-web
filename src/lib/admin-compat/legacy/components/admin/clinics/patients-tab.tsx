@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Search, UserRound } from "lucide-react";
 
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Checkbox } from "$lib/admin-compat/legacy/components/ui/checkbox";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Checkbox } from "#lib/admin-compat/legacy/components/ui/checkbox.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
 import {
   Table,
   TableBody,
@@ -11,11 +11,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "$lib/admin-compat/legacy/components/ui/table";
-import { AdminEmptyState } from "$lib/admin-compat/legacy/components/admin/ui/admin-empty-state";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { cn } from "$lib/utils";
-import type { ApiPatientListItem } from "$lib/types/clinic";
+} from "#lib/admin-compat/legacy/components/ui/table.tsx";
+import { AdminEmptyState } from "#lib/admin-compat/legacy/components/admin/ui/admin-empty-state.tsx";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { cn } from "#lib/utils.ts";
+import type { ApiPatientListItem } from "#lib/types/clinic.ts";
 import { PatientDetailDialog } from "./patient-detail-dialog";
 
 const GENDER_LABELS = { M: "男", F: "女" } as const;

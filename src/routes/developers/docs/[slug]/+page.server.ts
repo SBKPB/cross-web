@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { developerDocuments } from '$lib/developers';
-import { renderDeveloperMarkdown } from '$lib/developer-markdown';
+import { developerDocuments } from '#lib/developers.ts';
+import { renderDeveloperMarkdown } from '#lib/developer-markdown.ts';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ params }) => {

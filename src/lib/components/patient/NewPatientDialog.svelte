@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from "svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import { Button } from "#lib/components/ui/button/index.js";
 	import {
 		Dialog,
 		DialogContent,
@@ -8,21 +8,21 @@
 		DialogFooter,
 		DialogHeader,
 		DialogTitle,
-	} from "$lib/components/ui/dialog/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
-	import { RadioGroup, RadioGroupItem } from "$lib/components/ui/radio-group/index.js";
-	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "$lib/components/ui/select/index.js";
-	import { memberPatientApi } from "$lib/api/member-patient";
+	} from "#lib/components/ui/dialog/index.js";
+	import { Input } from "#lib/components/ui/input/index.js";
+	import { Label } from "#lib/components/ui/label/index.js";
+	import { RadioGroup, RadioGroupItem } from "#lib/components/ui/radio-group/index.js";
+	import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#lib/components/ui/select/index.js";
+	import { memberPatientApi } from "#lib/api/member-patient.ts";
 	import {
 		IDENTIFIER_ERROR_MESSAGES,
 		IDENTIFIER_PLACEHOLDERS,
 		IDENTIFIER_TYPE_LABELS,
 		RELATION_LABELS,
-	} from "$lib/constants/patient-constants";
-	import { canSubmitPatientForm, identifierErrorOnChange, patientSaveErrorMessage } from "$lib/patient";
-	import type { IdentifierType, MemberPatientRead } from "$lib/types/member-patient";
-	import { validateIdentifier } from "$lib/validation/tw-identifier";
+	} from "#lib/constants/patient-constants.ts";
+	import { canSubmitPatientForm, identifierErrorOnChange, patientSaveErrorMessage } from "#lib/patient.ts";
+	import type { IdentifierType, MemberPatientRead } from "#lib/types/member-patient.ts";
+	import { validateIdentifier } from "#lib/validation/tw-identifier.ts";
 
 	// 移植自舊版 components/patient/new-patient-dialog.tsx（新增／編輯看診對象）
 

@@ -19,30 +19,30 @@ import {
   Sparkles,
   XIcon,
 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { Card } from "$lib/admin-compat/legacy/components/ui/card";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { Card } from "#lib/admin-compat/legacy/components/ui/card.tsx";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "$lib/admin-compat/legacy/components/ui/dialog";
-import { Input } from "$lib/admin-compat/legacy/components/ui/input";
-import { Label } from "$lib/admin-compat/legacy/components/ui/label";
+} from "#lib/admin-compat/legacy/components/ui/dialog.tsx";
+import { Input } from "#lib/admin-compat/legacy/components/ui/input.tsx";
+import { Label } from "#lib/admin-compat/legacy/components/ui/label.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "$lib/admin-compat/legacy/components/ui/select";
-import { cn } from "$lib/utils";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { SmartScheduleDialog } from "$lib/admin-compat/legacy/components/admin/clinics/smart-schedule-dialog";
-import { STAFF_ROLES } from "$lib/constants/clinic-constants";
-import type { ApiSchedule, ApiStaff, ApiStaffLeave } from "$lib/types/clinic";
-import type { ScheduleSession } from "$lib/types/schedule";
+} from "#lib/admin-compat/legacy/components/ui/select.tsx";
+import { cn } from "#lib/utils.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { SmartScheduleDialog } from "#lib/admin-compat/legacy/components/admin/clinics/smart-schedule-dialog.tsx";
+import { STAFF_ROLES } from "#lib/constants/clinic-constants.ts";
+import type { ApiSchedule, ApiStaff, ApiStaffLeave } from "#lib/types/clinic.ts";
+import type { ScheduleSession } from "#lib/types/schedule.ts";
 
 interface ScheduleTabProps {
   facilityId: string;

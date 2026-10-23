@@ -1,13 +1,13 @@
 import { useState } from "react";
-import Link from "$lib/admin-compat/link";
+import Link from "#lib/admin-compat/link.tsx";
 import { AlertTriangle, Clock, Sparkles, Loader2 } from "lucide-react";
-import { Button } from "$lib/admin-compat/legacy/components/ui/button";
-import { useAuth } from "$lib/admin-compat/auth";
-import { isFacilityUser } from "$lib/auth/roles";
-import { canStartTrial, daysUntilExpiry, isExpired } from "$lib/feature-access";
-import { adminClinicsApi } from "$lib/api/admin/clinics";
-import { TRIAL_DAYS } from "$lib/constants/pricing-constants";
-import { cn } from "$lib/utils";
+import { Button } from "#lib/admin-compat/legacy/components/ui/button.tsx";
+import { useAuth } from "#lib/admin-compat/auth.ts";
+import { isFacilityUser } from "#lib/auth/roles.ts";
+import { canStartTrial, daysUntilExpiry, isExpired } from "#lib/feature-access.ts";
+import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
+import { TRIAL_DAYS } from "#lib/constants/pricing-constants.ts";
+import { cn } from "#lib/utils.ts";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";

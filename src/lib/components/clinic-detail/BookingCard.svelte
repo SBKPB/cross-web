@@ -2,8 +2,8 @@
 	import CalendarCheck from "@lucide/svelte/icons/calendar-check";
 	import Clock from "@lucide/svelte/icons/clock";
 	import ShieldCheck from "@lucide/svelte/icons/shield-check";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { cn } from "$lib/utils";
+	import { Button } from "#lib/components/ui/button/index.js";
+	import { cn } from "#lib/utils.ts";
 
 	/** 桌機側欄的預約 CTA 卡片（手機改用底部 sticky bar） */
 	let { clinicId, class: className }: { clinicId: string; class?: string } = $props();

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { groupSlotsByPeriod } from "$lib/booking/booking-flow";
-	import { inkOn } from "$lib/color-contrast";
-	import { TIME_PERIODS } from "$lib/constants/booking-constants";
-	import type { TimeOfDay, TimeSlot } from "$lib/types/booking";
-	import { cn } from "$lib/utils";
+	import { groupSlotsByPeriod } from "#lib/booking/booking-flow.ts";
+	import { inkOn } from "#lib/color-contrast.ts";
+	import { TIME_PERIODS } from "#lib/constants/booking-constants.ts";
+	import type { TimeOfDay, TimeSlot } from "#lib/types/booking.ts";
+	import { cn } from "#lib/utils.ts";
 
 	// 移植自舊版 components/booking/time-slot-grid.tsx
 	let {

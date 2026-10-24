@@ -45,9 +45,9 @@ test("pnpm 允許 esbuild 執行安裝腳本（pnpm install 不報 ERR_PNPM_IGNO
   assert.match(workspace, /^onlyBuiltDependencies:\n(?:[ \t]+-.*\n)*?[ \t]+-\s*esbuild\s*$/m);
 });
 
-test("已刪除的死碼：PricingTable 與只供它使用的方案常數", async () => {
+test("方案常數僅保留現行三方案與試用天數，未恢復舊版 PricingTable", async () => {
   assert.equal(existsSync("src/lib/components/pricing/PricingTable.svelte"), false);
   const constants = await import("../src/lib/constants/pricing-constants.ts");
-  assert.deepEqual(Object.keys(constants), ["TRIAL_DAYS"]);
+  assert.deepEqual(Object.keys(constants), ["PRICING_PLANS", "TRIAL_DAYS"]);
   assert.equal(constants.TRIAL_DAYS, 90);
 });

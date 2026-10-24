@@ -4,7 +4,7 @@
 
 ## 元件與版型
 
-- `admin/layout/AdminFrame.svelte`：共用院所與平台管理外框。桌面固定側欄、手機 Sheet 選單、目前院所／使用者、修改密碼、登出及主題切換。
+- `admin/layout/AdminFrame.svelte`：共用院所與平台管理外框。桌面可收合側欄、手機 Sheet 選單、目前院所／使用者、修改密碼、登出及主題切換。
 - `admin/layout/AdminSkeleton.svelte`：使用 `ui/skeleton` 組合儀表板、卡片、清單、表格、表單、班表與時段的載入占位。
 - `admin/manage/Modal.svelte`：共用 Dialog 標題與說明、可捲動表單區與送出期間關閉保護。
 - `ui/field`：Field、Label、Set 與 Legend，控制項須保留唯一 id 與明確 label 關聯。
@@ -12,6 +12,14 @@
 - Card、Table、Avatar、Badge、Button、Input、Textarea、Checkbox、Tabs、Dialog、Sheet 與 Empty 由 `src/lib/components/ui/` 匯入。
 
 不新增 React 或 Radix React 元件。新增 UI 優先取用既有 shadcn-svelte／Luma 元件，避免用全域 CSS 重製控制項。
+
+## 側邊欄
+
+- 院所導覽依「日常作業、客戶與營運、設定與帳務」分組，平台管理使用原有平台分組。品牌入口回到目前工作區的工作台，平台管理員不會因此遺失所選院所。
+- 768–1023px 預設 80px 窄版；1024px 以上預設完整側欄。使用者可透過頁首按鈕切換，偏好保存於 `cross_admin_sidebar_collapsed`。儲存受限時仍可操作。
+- 窄版保留可辨識圖示、完整無障礙名稱、滑鼠標題與鍵盤焦點；目前頁面使用側欄語意色底板、文字與左側標記，並設定 `aria-current="page"`。
+- 手機始終使用完整文字選單，不受桌面收合偏好影響。換頁或放大至桌面寬度會關閉 Sheet，避免遮罩留在畫面上；底部「更多」標示其他管理頁面的所在位置。
+- 只有功能清單可獨立捲動，院所情境與帳戶操作保留固定位置。長院所名稱與使用者名稱截斷並提供完整標題。
 
 ## 載入與錯誤
 

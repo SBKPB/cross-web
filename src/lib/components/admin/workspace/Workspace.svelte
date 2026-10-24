@@ -181,18 +181,29 @@
         : tab}
     groups={[
       {
-        label: "日常營運",
-        items: navigation.slice(0, 6).map((item) => ({
+        label: "日常作業",
+        items: [navigation[0], navigation[1], navigation[2], navigation[4]].map(
+          (item) => ({
+            ...item,
+            href: item.key === "today" ? item.href : hrefFor(item.key),
+          }),
+        ),
+      },
+      {
+        label: "客戶與營運",
+        items: [navigation[3], navigation[5]].map((item) => ({
           ...item,
-          href: item.key === "today" ? item.href : hrefFor(item.key),
+          href: hrefFor(item.key),
         })),
       },
       {
-        label: "管理與設定",
-        items: navigation.slice(6).map((item) => ({
-          ...item,
-          href: item.key === "subscription" ? item.href : hrefFor(item.key),
-        })),
+        label: "設定與帳務",
+        items: navigation
+          .slice(6)
+          .map((item) => ({
+            ...item,
+            href: item.key === "subscription" ? item.href : hrefFor(item.key),
+          })),
       },
     ]}
     mobile={[

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  import { onMount, type Snippet } from "svelte";
+  import { afterNavigate } from "$app/navigation";
   import {
     LayoutDashboard,
     CalendarDays,
@@ -16,6 +17,8 @@
     LogOut,
     KeyRound,
     ArrowUpRight,
+    PanelLeftClose,
+    PanelLeftOpen,
   } from "@lucide/svelte";
   import * as Sheet from "#lib/components/ui/sheet/index.ts";
 
@@ -48,6 +51,54 @@
   } = $props();
   const auth = getAuth();
   let menuOpen = $state(false);
+  let collapsed = $state(false);
+  let manualSidebar = false;
+  const sidebarId = $props.id();
+  const clinicWorkspace = $derived(
+    groups.some((group) => group.items.some((item) => item.key === "today")),
+  );
+  const homeHref = $derived(
+    groups
+      .flatMap((group) => group.items)
+      .find((item) => item.key === "today" || item.key === "dashboard")?.href ??
+      "/admin/dashboard",
+  );
+  const otherMobilePage = $derived(
+    !mobile.slice(0, 3).some((item) => item.key === activeKey),
+  );
+  onMount(() => {
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const desktop = window.matchMedia("(min-width: 768px)");
+    try {
+      const saved = localStorage.getItem("cross_admin_sidebar_collapsed");
+      manualSidebar = saved === "true" || saved === "false";
+      collapsed = manualSidebar ? saved === "true" : !wide.matches;
+    } catch {
+      collapsed = !wide.matches;
+    }
+    const resize = () => {
+      if (!manualSidebar) collapsed = !wide.matches;
+      if (desktop.matches) menuOpen = false;
+    };
+    wide.addEventListener("change", resize);
+    desktop.addEventListener("change", resize);
+    return () => {
+      wide.removeEventListener("change", resize);
+      desktop.removeEventListener("change", resize);
+    };
+  });
+  afterNavigate(() => {
+    menuOpen = false;
+  });
+  function toggleSidebar() {
+    manualSidebar = true;
+    collapsed = !collapsed;
+    try {
+      localStorage.setItem("cross_admin_sidebar_collapsed", String(collapsed));
+    } catch {
+      /* 儲存受限時仍可在本頁收合。 */
+    }
+  }
   const icons: Record<string, typeof LayoutDashboard> = {
     today: LayoutDashboard,
     dashboard: LayoutDashboard,
@@ -76,99 +127,162 @@
   );
 </script>
 
-{#snippet navigation()}
-  <div class="flex h-full w-full flex-col bg-card p-4 text-foreground">
-    <header class="space-y-5 pb-6">
-      <a href="/admin/dashboard" class="flex items-center gap-3 p-2">
+{#snippet navigation(compact: boolean)}
+  <div
+    class="flex h-full min-h-0 w-full flex-col bg-sidebar px-3 py-4 text-sidebar-foreground"
+    data-sidebar-compact={compact}
+  >
+    <header class="shrink-0 space-y-4 pb-5">
+      <a
+        href={homeHref}
+        aria-label={clinicWorkspace ? "Cross · 今日工作台" : "Cross · 平台總覽"}
+        title={compact ? "Cross · 工作台" : undefined}
+        onclick={() => (menuOpen = false)}
+        class={compact
+          ? "mx-auto flex size-11 items-center justify-center rounded-xl focus-visible:outline-2 focus-visible:outline-sidebar-ring"
+          : "flex min-h-11 items-center gap-3 rounded-xl px-2 pr-10 focus-visible:outline-2 focus-visible:outline-sidebar-ring md:pr-2"}
+      >
         <span
-          class="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary"
+          class="grid size-10 shrink-0 place-items-center rounded-xl border border-sidebar-border bg-background"
         >
-          <img src="/cross-icon.png" width="32" height="32" alt="" />
+          <img src="/cross-icon.png" width="28" height="28" alt="" />
         </span>
-        <span>
-          <strong class="text-lg tracking-tight">Cross</strong>
-          <span class="mt-0.5 block text-xs text-muted-foreground">
-            {facilityName
-              ? "院所預約管理"
-              : system
-                ? "平台營運管理"
-                : "院所預約管理"}
+        <span class={compact ? "sr-only" : "min-w-0"}>
+          <strong class="text-lg tracking-tight text-foreground">Cross</strong>
+          <span class="mt-0.5 block text-[11px] text-muted-foreground">
+            {clinicWorkspace ? "院所預約管理" : "平台營運管理"}
           </span>
         </span>
       </a>
-      {#if facilityName}<div
-          class="rounded-2xl border border-border bg-background p-3"
+      {#if facilityName}
+        <div
+          title={facilityName}
+          class={compact
+            ? "mx-auto grid size-10 place-items-center rounded-xl bg-sidebar-accent text-sidebar-accent-foreground"
+            : "flex items-center gap-2.5 rounded-xl border border-sidebar-border bg-background/60 px-3 py-3"}
         >
-          <p class="mb-1 text-[11px] text-muted-foreground">目前院所</p>
-          <p class="truncate text-sm font-semibold">{facilityName}</p>
-        </div>{/if}
+          <Building2
+            class="size-[18px] shrink-0 text-sidebar-accent-foreground"
+            aria-hidden="true"
+          />
+          <div class={compact ? "sr-only" : "min-w-0"}>
+            <p class="text-[10px] text-muted-foreground">目前院所</p>
+            <p class="mt-1 truncate text-xs font-semibold text-foreground">
+              {facilityName}
+            </p>
+          </div>
+        </div>
+      {/if}
     </header>
     <nav
-      class="min-h-0 flex-1 overflow-y-auto"
-      aria-label={system ? "平台管理導覽" : "後台主要導覽"}
+      class="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-width:thin]"
+      aria-label={system && !clinicWorkspace ? "平台管理導覽" : "後台主要導覽"}
     >
-      {#each groups as group (group.label)}
-        <section class="mb-6">
-          <p class="mb-2 px-3 text-[11px] font-medium text-muted-foreground">
+      {#each groups as group, index (group.label)}
+        <section class={compact ? "mb-3" : "mb-5"}>
+          <p
+            class={compact
+              ? "sr-only"
+              : "mb-2 px-3 text-[11px] font-medium tracking-wide text-muted-foreground"}
+          >
             {group.label}
           </p>
+          {#if compact && index > 0}<div
+              class="mx-auto mb-3 w-6 border-t border-sidebar-border"
+              aria-hidden="true"
+            ></div>{/if}
           <div class="space-y-1">
             {#each group.items as item (item.key)}{@const Icon =
                 icons[item.key] ?? Settings2}
               <a
                 href={item.href}
+                aria-label={item.label}
+                title={compact ? item.label : undefined}
                 aria-current={activeKey === item.key ? "page" : undefined}
                 onclick={() => (menuOpen = false)}
-                class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors {activeKey ===
-                item.key
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'hover:bg-muted hover:text-foreground'}"
+                class="relative flex min-h-11 items-center rounded-xl text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sidebar-ring {compact
+                  ? 'mx-auto w-11 justify-center'
+                  : 'gap-3 px-3'} {activeKey === item.key
+                  ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground'
+                  : 'font-medium text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'}"
               >
-                <Icon class="size-[18px]" strokeWidth={1.7} />
-                <span>{item.label}</span>
+                {#if activeKey === item.key}<span
+                    class="absolute inset-y-3 left-0 w-[3px] rounded-full bg-sidebar-primary"
+                    aria-hidden="true"
+                  ></span>{/if}
+                <Icon
+                  class="size-[18px] shrink-0"
+                  strokeWidth={activeKey === item.key ? 2 : 1.7}
+                  aria-hidden="true"
+                />
+                <span class={compact ? "sr-only" : "truncate"}>
+                  {item.label}
+                </span>
               </a>
             {/each}
           </div>
         </section>
       {/each}
-      {#if system && facilityName}<Button
+      {#if system && clinicWorkspace}<Button
           href="/admin/clinics"
           variant="outline"
-          class="w-full"
+          size={compact ? "icon" : "default"}
+          class={compact ? "mx-auto flex size-11" : "min-h-11 w-full text-xs"}
+          aria-label="返回平台院所管理"
+          title={compact ? "返回平台院所管理" : undefined}
         >
-          <ArrowUpRight class="size-4" />返回平台院所管理
+          <ArrowUpRight class="size-4" aria-hidden="true" />
+          <span class={compact ? "sr-only" : ""}>返回平台院所管理</span>
         </Button>{/if}
     </nav>
-    <footer class="mt-4 space-y-4 border-t border-border pt-4">
-      <div class="flex min-w-0 items-center gap-3">
-        <Avatar.Root class="size-10">
-          <Avatar.Fallback>
+    <footer class="mt-3 shrink-0 space-y-2 border-t border-sidebar-border pt-3">
+      <div
+        class={compact
+          ? "flex justify-center"
+          : "flex min-w-0 items-center gap-2.5 px-2"}
+        title={userName + " · " + role}
+      >
+        <Avatar.Root class="size-9 shrink-0">
+          <Avatar.Fallback
+            class="bg-sidebar-accent text-sidebar-accent-foreground"
+          >
             {userName.slice(0, 1).toUpperCase()}
           </Avatar.Fallback>
         </Avatar.Root>
-        <div class="min-w-0">
-          <p class="truncate text-xs font-semibold">{userName}</p>
-          <p class="mt-1 text-[11px] text-muted-foreground">{role}</p>
+        <div class={compact ? "sr-only" : "min-w-0"}>
+          <p class="truncate text-xs font-semibold text-foreground">
+            {userName}
+          </p>
+          <p class="mt-1 text-[10px] text-muted-foreground">{role}</p>
         </div>
       </div>
-      <div class="flex gap-1">
+      <div class={compact ? "flex flex-col items-center gap-1" : "flex gap-1"}>
         <Button
           variant="ghost"
-          size="sm"
-          class="flex-1 text-xs"
+          size={compact ? "icon" : "sm"}
+          class={compact ? "size-11" : "min-h-11 flex-1 gap-1.5 text-xs"}
+          aria-label="修改密碼"
+          title={compact ? "修改密碼" : undefined}
           onclick={() => {
             menuOpen = false;
             password = true;
           }}
         >
-          <KeyRound class="size-3.5" />修改密碼
-        </Button><Button
+          <KeyRound class="size-4" aria-hidden="true" />
+          <span class={compact ? "sr-only" : ""}>修改密碼</span>
+        </Button>
+        <Button
           variant="ghost"
-          size="sm"
-          class="flex-1 text-xs"
+          size={compact ? "icon" : "sm"}
+          class={compact
+            ? "size-11 hover:bg-destructive/10 hover:text-destructive"
+            : "min-h-11 flex-1 gap-1.5 text-xs hover:bg-destructive/10 hover:text-destructive"}
+          aria-label="登出"
+          title={compact ? "登出" : undefined}
           onclick={() => auth.logout("/admin/login")}
         >
-          <LogOut class="size-3.5" />登出
+          <LogOut class="size-4" aria-hidden="true" />
+          <span class={compact ? "sr-only" : ""}>登出</span>
         </Button>
       </div>
     </footer>
@@ -176,9 +290,14 @@
 {/snippet}
 <div class="flex min-h-dvh">
   <aside
-    class="sticky top-0 hidden h-dvh w-[16.5rem] shrink-0 border-r border-border md:block"
+    id={`${sidebarId}-desktop-sidebar`}
+    aria-label={clinicWorkspace ? "院所側邊欄" : "平台側邊欄"}
+    data-collapsed={collapsed}
+    class="sticky top-0 hidden h-dvh shrink-0 border-r border-sidebar-border transition-[width] duration-200 motion-reduce:transition-none md:block {collapsed
+      ? 'w-20'
+      : 'w-[16.5rem]'}"
   >
-    {@render navigation()}
+    {@render navigation(collapsed)}
   </aside>
   <div class="flex min-w-0 flex-1 flex-col">
     <header
@@ -189,14 +308,32 @@
           variant="ghost"
           size="icon"
           class="md:hidden"
-          aria-label={system ? "開啟平台選單" : "開啟後台選單"}
+          aria-label={system && !clinicWorkspace
+            ? "開啟平台選單"
+            : "開啟後台選單"}
+          aria-expanded={menuOpen}
           onclick={() => (menuOpen = true)}
         >
           <Menu class="size-5" />
         </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="hidden size-11 md:inline-flex"
+          aria-label={collapsed ? "展開側邊欄" : "收合側邊欄"}
+          title={collapsed ? "展開側邊欄" : "收合側邊欄"}
+          aria-expanded={!collapsed}
+          aria-controls={`${sidebarId}-desktop-sidebar`}
+          onclick={toggleSidebar}
+        >
+          {#if collapsed}<PanelLeftOpen
+              class="size-5"
+              aria-hidden="true"
+            />{:else}<PanelLeftClose class="size-5" aria-hidden="true" />{/if}
+        </Button>
         <div class="min-w-0">
           <p class="hidden text-[11px] text-muted-foreground md:block">
-            {facilityName ? "院所工作區" : system ? "平台管理" : "院所工作區"}
+            {clinicWorkspace ? "院所工作區" : "平台管理"}
           </p>
           <p class="truncate text-sm font-semibold md:mt-1">{heading}</p>
         </div>
@@ -227,18 +364,18 @@
     showCloseButton={false}
   >
     <Sheet.Title class="sr-only">
-      {system ? "平台管理選單" : "院所管理選單"}
+      {system && !clinicWorkspace ? "平台管理選單" : "院所管理選單"}
     </Sheet.Title><Sheet.Description class="sr-only">
       選擇要操作的功能
     </Sheet.Description><Button
-      class="absolute top-4 right-3 z-10"
+      class="absolute top-4 right-3 z-10 size-11"
       variant="ghost"
       size="icon-sm"
       aria-label="關閉選單"
       onclick={() => (menuOpen = false)}
     >
       <X class="size-4" />
-    </Button>{@render navigation()}
+    </Button>{@render navigation(false)}
   </Sheet.Content>
 </Sheet.Root>
 {#if mobile.length}<div
@@ -254,13 +391,16 @@
           aria-current={activeKey === item.key ? "page" : undefined}
           class="flex flex-col items-center gap-1.5 rounded-xl py-3 text-[11px] font-medium {activeKey ===
           item.key
-            ? 'text-primary'
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
             : 'text-muted-foreground'}"
         >
           <Icon class="size-5" />{item.label}
         </a>{/each}
       <button
-        class="flex flex-col items-center gap-1.5 py-3 text-[11px] text-muted-foreground"
+        class="flex flex-col items-center gap-1.5 rounded-xl py-3 text-[11px] font-medium {otherMobilePage
+          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+          : 'text-muted-foreground'}"
+        aria-expanded={menuOpen}
         onclick={() => (menuOpen = true)}
       >
         <MoreHorizontal class="size-5" />更多

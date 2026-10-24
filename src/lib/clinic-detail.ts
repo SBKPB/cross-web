@@ -167,11 +167,12 @@ async function getServicesFromApi(fetch: Fetch, clinicId: string): Promise<Fetch
     const res = await fetch(clinicPath(clinicId, "/services"));
     if (!res.ok) return { value: [], ok: false };
     const raw = await res.json();
-    const value = raw.map((item: { id: string; service_name?: string; name?: string; description?: string | null; price: string | number; duration_minutes?: number; category?: string }) => ({
+    const value = raw.map((item: { id: string; service_name?: string; name?: string; description?: string | null; price: string | number; show_price?: boolean; duration_minutes?: number; category?: string }) => ({
       id: item.id,
       name: item.service_name ?? item.name ?? "",
       description: item.description ?? "",
       price: Number(item.price) || 0,
+      show_price: item.show_price !== false,
       duration_minutes: item.duration_minutes ?? 30,
       category: item.category ?? "一般服務",
     }));

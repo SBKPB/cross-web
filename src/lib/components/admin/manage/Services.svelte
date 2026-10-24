@@ -28,6 +28,7 @@
     name = $state(""),
     description = $state(""),
     price = $state<number | undefined>(0),
+    showPrice = $state(true),
     duration = $state<number | undefined>(30),
     active = $state(true);
   $effect(() => {
@@ -57,6 +58,7 @@
     name = s?.service_name ?? "";
     description = s?.description ?? "";
     price = s?.price ?? 0;
+    showPrice = s?.show_price ?? true;
     duration = s?.duration_minutes ?? 30;
     active = s?.is_active ?? true;
     formError = "";
@@ -71,6 +73,7 @@
         service_name: name.trim(),
         description: description.trim(),
         price: price ?? 0,
+        show_price: showPrice,
         duration_minutes: duration ?? 30,
       };
       if (selected)
@@ -127,9 +130,9 @@
               {s.service_name}{s.is_active ? "" : "（停用）"}
             </h3>
             <p class="mt-1 text-sm text-muted-foreground">
-              {s.duration_minutes} 分鐘 · NT$ {Number(s.price).toLocaleString(
-                "zh-TW",
-              )}
+              {s.duration_minutes} 分鐘 · {s.show_price === false
+                ? "不公開價格"
+                : `NT$ ${Number(s.price).toLocaleString("zh-TW")}`}
             </p>
             <p class="mt-2 whitespace-pre-wrap text-sm">{s.description}</p>
           </div>
@@ -150,7 +153,7 @@
         </li>{:else}<li>
           <AdminEmpty
             title="尚無服務項目"
-            description="先建立諮詢或療程，設定時長與價格，再到人員設定指派服務。"
+            description="先建立諮詢或療程，設定時長及是否公開價格，再到人員設定指派服務。"
           >
             <Button onclick={() => edit(null)}>建立第一個服務</Button>
           </AdminEmpty>
@@ -182,6 +185,30 @@
           id={[formId, "field-2"].join("-")}
         ></Textarea>
       </Field.Field>
+      <Field.Field
+        orientation="horizontal"
+        class="items-center justify-between gap-4 rounded-xl border border-border p-4"
+      >
+        <div class="space-y-1.5">
+          <Field.Label
+            for={`${formId}-show-price`}
+            class="cursor-pointer text-sm font-medium"
+          >
+            對客戶顯示價格
+          </Field.Label>
+          <p
+            id={`${formId}-price-hint`}
+            class="text-xs leading-6 text-muted-foreground"
+          >
+            關閉後，院所頁與預約頁只顯示服務內容及時長。原金額仍保留在後台。
+          </p>
+        </div>
+        <Checkbox
+          id={`${formId}-show-price`}
+          bind:checked={showPrice}
+          aria-describedby={`${formId}-price-hint`}
+        />
+      </Field.Field>
       <div class="grid grid-cols-2 gap-4">
         <Field.Field class="gap-2">
           <Field.Label
@@ -194,7 +221,7 @@
             min="0"
             step="1"
             bind:value={price}
-            required
+            required={showPrice}
             id={[formId, "field-3"].join("-")}
           />
         </Field.Field><Field.Field class="gap-2">

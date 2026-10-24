@@ -48,6 +48,7 @@ export interface ServiceOption {
   name: string;
   description: string;
   price: number;
+  show_price?: boolean;
   duration_minutes: number;
   category: string;
 }

@@ -17,7 +17,6 @@ import {
 const CDN_CACHES = {
   STATIC_PAGE_CACHE: [STATIC_PAGE_CACHE, 31536000],
   LANDING_PAGE_CACHE: [LANDING_PAGE_CACHE, 3600],
-  CLINIC_PAGE_CACHE: [CLINIC_PAGE_CACHE, 300],
   CLINIC_OG_CACHE: [CLINIC_OG_CACHE, 86400],
 };
 
@@ -36,11 +35,12 @@ for (const [name, [value, seconds]] of Object.entries(CDN_CACHES)) {
   });
 }
 
-test("不進 CDN 的值：診所頁降級 private, no-store；分享圖退化與舊版 opengraph-image 相同；動態頁同 Next", () => {
+test("不進 CDN 的值：診所頁與降級皆 private, no-store；分享圖退化與舊版 opengraph-image 相同；動態頁同 Next", () => {
+  assert.equal(CLINIC_PAGE_CACHE, "private, no-store");
   assert.equal(CLINIC_PAGE_DEGRADED_CACHE, "private, no-store");
   assert.equal(CLINIC_OG_DEGRADED_CACHE, "public, max-age=0, must-revalidate");
   assert.equal(DYNAMIC_PAGE_CACHE, "private, no-cache, no-store, max-age=0, must-revalidate");
-  for (const value of [CLINIC_PAGE_DEGRADED_CACHE, CLINIC_OG_DEGRADED_CACHE, DYNAMIC_PAGE_CACHE]) {
+  for (const value of [CLINIC_PAGE_CACHE, CLINIC_PAGE_DEGRADED_CACHE, CLINIC_OG_DEGRADED_CACHE, DYNAMIC_PAGE_CACHE]) {
     assert.doesNotMatch(value, /s-maxage/);
   }
 });

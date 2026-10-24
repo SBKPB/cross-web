@@ -84,6 +84,7 @@ export interface Service {
   name: string;
   description: string;
   price: number;
+  show_price?: boolean;
   duration_minutes: number;
   category: string;
 }
@@ -435,6 +436,7 @@ export interface ApiService {
   service_name: string;
   description: string | null;
   price: number;
+  show_price?: boolean;
   duration_minutes: number;
   is_active: boolean;
   created_at: string;
@@ -445,6 +447,7 @@ export interface ApiServiceCreate {
   service_name: string;
   description?: string;
   price: number;
+  show_price?: boolean;
   duration_minutes?: number;
 }
 
@@ -452,6 +455,7 @@ export interface ApiServiceUpdate {
   service_name?: string;
   description?: string;
   price?: number;
+  show_price?: boolean;
   duration_minutes?: number;
   is_active?: boolean;
 }

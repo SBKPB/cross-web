@@ -39,7 +39,7 @@
 						<!-- 後端資料可能有重複 id：以索引為 key（同舊版 React 只警告、照樣渲染） -->
 						{#each categoryServices as service, i (i)}
 							<!-- 價格 badge 統一規則（依 payment_type gating，三端一致） -->
-							{@const priceBadge = getServicePriceBadge(service.price, paymentType)}
+							{@const priceBadge = getServicePriceBadge(service.price, paymentType, service.show_price)}
 							<div
 								class="flex items-start justify-between gap-3 rounded-2xl bg-muted/40 px-4 py-3 transition-colors hover:bg-accent/40"
 							>

@@ -24,7 +24,7 @@
 	} = $props();
 
 	// 價格 badge 統一規則（依 payment_type gating，三端一致）
-	const priceBadge = $derived(getServicePriceBadge(service.price, paymentType));
+	const priceBadge = $derived(getServicePriceBadge(service.price, paymentType, service.show_price));
 </script>
 
 <button

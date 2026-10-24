@@ -12,14 +12,14 @@
 export const STATIC_PAGE_CACHE = "public, max-age=0, must-revalidate, s-maxage=31536000, stale-while-revalidate";
 
 /**
- * 診所詳情頁 /clinic/[id]：CDN 快取 5 分鐘（後台改資料最慢 5 分鐘生效）；登入相關畫面都在瀏覽器端，回應與使用者無關。
- * 只用在所有子請求都成功時；任一子請求失敗而降級渲染時改用 {@link CLINIC_PAGE_DEGRADED_CACHE}
+ * 診所詳情頁 /clinic/[id]：每次請求讀取最新公開狀態，避免院所關閉價格後仍顯示舊金額。
+ * 成功與降級回應都不進 CDN／瀏覽器快取。
  */
-export const CLINIC_PAGE_CACHE = "public, max-age=0, must-revalidate, s-maxage=300, stale-while-revalidate";
+export const CLINIC_PAGE_CACHE = "private, no-store";
 
 /**
  * 診所詳情頁降級渲染（服務、排班、公告、醫師任一子請求失敗以空值顯示，或服務分類字彙退回內建 fallback）：
- * 不進 CDN 也不讓瀏覽器快取，避免一次暫時失敗把缺內容的頁面釘在 CDN 上 5 分鐘
+ * 不進 CDN 也不讓瀏覽器快取，避免一次暫時失敗固定呈現缺少的內容
  */
 export const CLINIC_PAGE_DEGRADED_CACHE = "private, no-store";
 

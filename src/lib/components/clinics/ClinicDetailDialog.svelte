@@ -154,7 +154,7 @@
 						<div class="space-y-1.5">
 							{#each clinic.services.slice(0, 4) as service, i (i)}
 								<!-- 價格 badge 統一規則（依 payment_type gating，三端一致） -->
-								{@const priceBadge = getServicePriceBadge(service.price, clinic.payment_type)}
+								{@const priceBadge = getServicePriceBadge(service.price, clinic.payment_type, service.show_price)}
 								<div class="flex items-center justify-between text-sm">
 									<span class="text-foreground">{service.name}</span>
 									{#if priceBadge}

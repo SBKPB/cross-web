@@ -22,6 +22,7 @@ export const bookingApi = {
       name: String(item.name ?? item.service_name ?? ""),
       description: String(item.description ?? ""),
       price: Number(item.price ?? 0),
+      show_price: item.show_price !== false,
       duration_minutes: Number(item.duration_minutes ?? 30),
       category: String(item.category ?? "一般服務"),
     }));

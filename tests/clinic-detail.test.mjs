@@ -130,8 +130,8 @@ test("loadClinicDetail：單一院所端點不存在時改從清單找，其餘�
   assert.equal(detail.clinic.clinic_name, "喬鋭德鶴");
   // 有服務項目就併入 clinic.services
   assert.deepEqual(detail.clinic.services, [
-    { id: "s1", name: "部位調理", description: "", price: 600, duration_minutes: 30, category: "一般服務" },
-    { id: "s2", name: "全身", description: "", price: 0, duration_minutes: 30, category: "一般服務" },
+    { id: "s1", name: "部位調理", description: "", price: 600, show_price: true, duration_minutes: 30, category: "一般服務" },
+    { id: "s2", name: "全身", description: "", price: 0, show_price: true, duration_minutes: 30, category: "一般服務" },
   ]);
   assert.deepEqual(detail.doctorDetails, [
     { id: "m1", name: "洪尚利", role: "therapist", department: undefined, avatar: undefined, specialties: ["全身調理"], education: [], experience: ["物理治療師"], license_type: undefined },
@@ -370,7 +370,7 @@ test("buildClinicJsonLd：醫美用 HealthAndBeautyBusiness 且不列 medicalSpe
   assert.equal(noReviews.aggregateRating, undefined);
 });
 
-test("+page.server.ts load：找到院所且子請求全部成功 → 快取 300 秒並回傳頁面資料與 seo", async () => {
+test("+page.server.ts load：找到院所且子請求全部成功 → 不快取舊價格並回傳頁面資料與 seo", async () => {
   const { load } = await import("../src/routes/clinic/[id]/+page.server.ts");
   const headers = [];
   const { fetch } = fakeFetch(okRoutes());
@@ -381,7 +381,7 @@ test("+page.server.ts load：找到院所且子請求全部成功 → 快取 300
     setHeaders: (h) => headers.push(h),
   });
   assert.deepEqual(headers, [{ "cache-control": CLINIC_PAGE_CACHE }]);
-  assert.equal(CLINIC_PAGE_CACHE, "public, max-age=0, must-revalidate, s-maxage=300, stale-while-revalidate");
+  assert.equal(CLINIC_PAGE_CACHE, "private, no-store");
   assert.equal(data.clinic.clinic_name, "喬鋭德鶴");
   assert.equal(data.isDemo, false);
   assert.equal(data.seo.title, "喬鋭德鶴｜高雄市傳統整復推拿線上預約");
@@ -420,4 +420,11 @@ test("+page.server.ts load：找不到院所 → error(404)，且不設快取", 
     (e) => isHttpError(e, 404),
   );
   assert.deepEqual(headers, []);
+});
+
+test('院所詳情保留公開 API 的價格顯示設定，隱藏服務不被還原為公開價格',async()=>{
+ const routes=okRoutes();routes[`${BASE}/${ID}/services`]=()=>json([{id:'hidden-service',service_name:'虛構療程',price:0,show_price:false,duration_minutes:30}]);
+ const {fetch}=fakeFetch(routes);const detail=await loadClinicDetail(fetch,ID);
+ assert.equal(detail.clinic.services[0].show_price,false);
+ assert.equal(detail.clinic.services[0].duration_minutes,30);
 });

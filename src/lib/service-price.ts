@@ -2,6 +2,7 @@ import type { PaymentType } from "./types/clinic.ts";
 
 /**
  * 服務價格 badge 統一規則（web / Android / iOS 三端一致）：
+ * - showPrice = false → 不顯示金額或健保標籤
  * - price > 0 → 顯示「NT$ {price}」
  * - price = 0 且院所收健保（payment_type 為 nhi 或 both；缺值視為 nhi，沿用既有慣例）→ 顯示「健保給付」
  * - price = 0 且院所純自費（payment_type = self_pay）→ 不顯示任何價格 badge
@@ -13,7 +14,9 @@ export type ServicePriceBadge =
 export function getServicePriceBadge(
   price: number,
   paymentType: PaymentType | undefined,
+  showPrice = true,
 ): ServicePriceBadge | null {
+  if (!showPrice) return null;
   if (price > 0) {
     return { kind: "price", label: `NT$ ${price.toLocaleString()}` };
   }

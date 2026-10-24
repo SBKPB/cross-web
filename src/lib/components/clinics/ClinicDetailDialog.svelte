@@ -16,7 +16,7 @@
 		DialogHeader,
 		DialogTitle,
 	} from "#lib/components/ui/dialog/index.js";
-	import { categoryLabel } from "#lib/api/service-categories.ts";
+	import { categoryLabel, facilityTypeLabel } from "#lib/api/service-categories.ts";
 	import { HOSPITAL_LEVELS } from "#lib/constants/clinic-constants.ts";
 	import { useServiceTaxonomy } from "#lib/hooks/service-taxonomy.svelte.ts";
 	import { getServicePriceBadge } from "#lib/service-price.ts";
@@ -49,7 +49,7 @@
 						</DialogDescription>
 						<div class="flex items-center gap-2">
 							<Badge class="text-xs font-medium bg-accent text-primary">
-								{HOSPITAL_LEVELS[clinic.hospital_level]}
+								{clinic.facility_type && clinic.facility_type !== "healthcare" ? facilityTypeLabel(tax.current, clinic.facility_type) : HOSPITAL_LEVELS[clinic.hospital_level]}
 							</Badge>
 							<!-- 舊版 JSX 為 {rating && …}：0 時 React 會輸出文字「0」，照舊 -->
 							{#if clinic.rating}
@@ -179,13 +179,17 @@
 					</div>
 				{/if}
 
+				<p class="text-sm text-muted-foreground">{clinic.online_booking_enabled === true ? "可線上選擇服務與時段；名額以送出時為準。" : clinic.phone_booking_enabled ? "尚未開放線上預約，請聯絡院所確認時間。" : "尚未開放線上預約，請查看到訪資訊。"}</p>
+                {#if !clinic.services?.length && clinic.service_names?.length}<section class="space-y-2"><h4 class="text-sm font-medium">服務項目</h4><ul class="space-y-1.5 text-sm text-muted-foreground">{#each clinic.service_names.slice(0, 4) as name, i (i)}<li>{name}</li>{/each}</ul><p class="text-xs text-muted-foreground">完整服務與時長請見院所介紹。</p></section>{/if}
+
 				<!-- 操作按鈕（圖示與文字間不留空白，與舊版 JSX 輸出相同） -->
 				<div class="flex gap-2 pt-2">
-					<Button
+					{#if clinic.online_booking_enabled === true}<Button
 						href={`/booking/${clinic.id}`}
 						class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-						><Calendar class="h-4 w-4 mr-2" />查看可約時段</Button
-					>
+						><Calendar class="h-4 w-4 mr-2" />查看可約時段</Button>
+					{:else if clinic.phone_booking_enabled && clinic.phone}<Button href={`tel:${clinic.phone}`} class="min-h-11 flex-1"><Phone class="size-4" />電話預約</Button>
+					{:else}<p class="flex flex-1 items-center text-sm text-muted-foreground">{clinic.online_booking_enabled === false ? "目前提供現場預約" : "預約方式請見院所介紹"}</p>{/if}
 					<Button
 						href={`/clinic/${clinic.id}`}
 						class="flex-1 bg-card text-primary border border-primary/40 hover:bg-accent/50"

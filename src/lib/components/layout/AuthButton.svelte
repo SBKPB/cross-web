@@ -6,17 +6,7 @@
 	import { getAuth } from "#lib/auth/auth.svelte.ts";
 	import { canAccessAdmin, getAdminHomePath } from "#lib/auth/roles.ts";
 
-	/**
-	 * 民眾端 header 的登入 / 帳號按鈕
-	 *
-	 * - 未登入：只顯示民眾「登入」→ /auth
-	 * - 已登入（民眾）：顯示使用者名稱 → /member
-	 * - 已登入（後台帳號）：顯示「管理後台」→ 後台首頁，不導向民眾端
-	 *
-	 * 未登入時不放「診所登入」：這是民眾端 header，四個項目在民眾／院所兩種身分之間
-	 * 交錯只會讓民眾困惑。院所入口統一走「夥伴加入」與 footer 的「醫療院所」區
-	 * （那裡已有診所登入），登入後台帳號後再由「管理後台」接手。
-	 */
+	// 民眾帳戶與管理帳戶沿用同一個登入狀態；院所入口由 ClinicEntry 提供。
 	const auth = getAuth();
 	const isAdmin = $derived(canAccessAdmin(auth.user));
 </script>

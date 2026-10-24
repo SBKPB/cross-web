@@ -184,8 +184,8 @@
 		<div class="relative min-w-0 flex-1">
 			<Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 			<Input
-				aria-label="搜尋店家、醫師、服務分類或地址"
-				placeholder="店家、醫師、服務分類或地址"
+				aria-label="搜尋院所、療程、專業人員或地址"
+				placeholder="院所、療程、專業人員或地址"
 				value={filters.search}
 				oninput={(event) => update({ search: event.currentTarget.value })}
 				class="h-12 rounded-xl bg-secondary/50 pl-11 text-base"
@@ -213,7 +213,7 @@
 				<SheetContent side="bottom" class="max-h-[85dvh] rounded-t-3xl" showCloseButton={false}>
 					<SheetHeader>
 						<div class="flex items-center justify-between">
-							<SheetTitle>篩選店家</SheetTitle>
+							<SheetTitle>篩選院所</SheetTitle>
 							<SheetClose>
 								{#snippet child({ props })}
 									<Button {...props} variant="ghost" size="icon" aria-label="關閉篩選"><X /></Button>
@@ -228,7 +228,7 @@
 							<Button variant="outline" class="h-12" onclick={clearAdvanced}>重設篩選</Button>
 							<SheetClose>
 								{#snippet child({ props })}
-									<Button {...props} class="h-12 flex-1">查看 {resultCount} 間店家</Button>
+									<Button {...props} class="h-12 flex-1">查看 {resultCount} 間院所</Button>
 								{/snippet}
 							</SheetClose>
 						</div>
@@ -237,6 +237,7 @@
 			</Sheet>
 		</div>
 	</div>
+	<Button variant={filters.onlineOnly ? "default" : "outline"} class="min-h-11" aria-pressed={!!filters.onlineOnly} onclick={() => update({ onlineOnly: !filters.onlineOnly })}>只看可線上預約</Button>
 	<details class="hidden rounded-xl border-t pt-3 md:block">
 		<summary class="cursor-pointer text-sm font-medium text-muted-foreground"
 			>更多篩選{advancedCount > 0 ? `（${advancedCount}）` : ""}</summary
@@ -264,6 +265,7 @@
 						facilityType: "all",
 						serviceCategories: [],
 						paymentType: "all",
+						onlineOnly: false,
 					})}>清除全部</Button
 			>
 		</div>

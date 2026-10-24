@@ -9,6 +9,7 @@
   import { getAdminHomePath } from "#lib/auth/roles.ts";
   import { Button } from "#lib/components/ui/button/index.ts";
   import { Input } from "#lib/components/ui/input/index.ts";
+  import { clinicLineContact } from "#lib/contact.ts";
   import Feedback from "./Feedback.svelte";
   import { apiMessage } from "#lib/admin/scheduling.ts";
   const auth = getAuth();
@@ -70,5 +71,10 @@
         {busy ? "登入中…" : "登入"}
       </Button>
     </form>
+    <div class="space-y-3 border-t border-border pt-4 text-sm text-muted-foreground">
+      <p>忘記密碼或無法登入？<a href={clinicLineContact} target="_blank" rel="noopener noreferrer" class="text-primary underline underline-offset-4">LINE 聯絡協助（另開視窗）</a></p>
+      <p>尚未加入？<a href="/join" class="text-primary underline underline-offset-4">了解院所導入</a></p>
+      <p>一般會員？<a href="/auth" class="text-primary underline underline-offset-4">前往會員登入</a></p>
+    </div>
   </Card.Root>
 </AuthSplitLayout>

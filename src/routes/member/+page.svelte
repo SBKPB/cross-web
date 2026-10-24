@@ -61,20 +61,26 @@
 	let isDeletingAccount = $state(false);
 	let deleteAccountError = $state("");
 
+	let appointmentsError = $state("");
+	let patientsError = $state("");
+	let appointmentsLoaded = $state(false);
+	let updatedAt = $state("");
 	async function fetchData() {
 		isLoading = true;
-		try {
-			const [appts, patients] = await Promise.all([
-				memberAppointmentApi.list(),
-				memberPatientApi.list().catch(() => []),
-			]);
-			appointments = appts;
-			patientCount = patients.length;
-		} catch (err) {
-			console.error("Failed to load member data:", err);
-		} finally {
-			isLoading = false;
-		}
+		const [appts, patients] = await Promise.allSettled([
+			memberAppointmentApi.list(), memberPatientApi.list(),
+		]);
+		if (appts.status === "fulfilled") {
+			appointments = appts.value;
+			appointmentsLoaded = true;
+			appointmentsError = "";
+			updatedAt = new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", hour: "2-digit", minute: "2-digit" }).format(new Date());
+		} else appointmentsError = "暫時無法取得預約紀錄，請重試確認。";
+		if (patients.status === "fulfilled") {
+			patientCount = patients.value.length;
+			patientsError = "";
+		} else patientsError = "暫時無法取得預約對象資料。";
+		isLoading = false;
 	}
 
 	$effect(() => {
@@ -103,10 +109,10 @@
 	const displayName = $derived(memberDisplayName(auth.user));
 </script>
 
-{#snippet statCard(Icon: Component<{ class?: string }>, label: string, value: number | null)}
+{#snippet statCard(Icon: Component<{ class?: string }>, label: string, value: number | null, failed = false)}
 	<Card class="flex flex-col items-center gap-1 p-3 text-center shadow-sm">
 		<span class="text-primary"><Icon class="size-4" /></span>
-		{#if value === null}
+		{#if failed}<span class="text-2xl font-bold">—<span class="sr-only">尚未取得資料</span></span>{:else if value === null}
 			<Skeleton class="h-6 w-6" />
 		{:else}
 			<span class="text-2xl font-bold text-foreground tabular-nums">{value}</span>
@@ -142,7 +148,7 @@
 	<Card class="flex flex-col items-center gap-3 p-10 text-center">
 		<span class="text-muted-foreground"><CalendarDays class="size-10" /></span>
 		<p class="text-sm text-muted-foreground">{text}</p>
-		{#if showCta}<Button href="/" size="sm">立即預約</Button>{/if}
+		{#if showCta}<Button href="/search" size="sm">立即預約</Button>{/if}
 	</Card>
 {/snippet}
 
@@ -230,6 +236,41 @@
 {:else}
 	<div class="min-h-[60vh] bg-background pb-12">
 		<div class="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6">
+			<!-- 預約紀錄 -->
+			<div>
+				<div class="mb-3 flex flex-wrap items-center justify-between gap-3"><h1 class="text-xl font-semibold text-foreground">我的預約</h1><Button href="/search" size="sm" class="min-h-11">預約服務</Button></div>
+                {#if appointmentsError}<div role="alert" class="mb-4 space-y-2 rounded-2xl border border-destructive/30 bg-destructive/5 p-4"><p>{appointmentsError}</p>{#if appointmentsLoaded}<p class="text-sm text-muted-foreground">以下保留上次資料，最後更新 {updatedAt}（臺北時間）。</p>{/if}<Button variant="outline" disabled={isLoading} onclick={fetchData}>重新載入預約</Button></div>{/if}
+
+				{#if isLoading}
+					<div class="space-y-3">
+						{@render appointmentSkeleton()}
+						{@render appointmentSkeleton()}
+					</div>
+				{:else if appointmentsLoaded}
+					<Tabs value="confirmed">
+						<TabsList class="w-full">
+							<TabsTrigger value="all">全部{@render tabCount(groups.all.length)}</TabsTrigger>
+							<TabsTrigger value="confirmed">已預約{@render tabCount(groups.confirmed.length)}</TabsTrigger>
+							<TabsTrigger value="completed">已完成{@render tabCount(groups.completed.length)}</TabsTrigger>
+							<TabsTrigger value="cancelled">已取消{@render tabCount(groups.cancelled.length)}</TabsTrigger>
+						</TabsList>
+
+						<TabsContent value="all" class="mt-4">
+							{@render appointmentGroup(groups.all, "尚無預約紀錄", true)}
+						</TabsContent>
+						<TabsContent value="confirmed" class="mt-4">
+							{@render appointmentGroup(groups.confirmed, "目前沒有即將到來的預約", true, true)}
+						</TabsContent>
+						<TabsContent value="completed" class="mt-4">
+							{@render appointmentGroup(groups.completed, "尚無已完成的預約")}
+						</TabsContent>
+						<TabsContent value="cancelled" class="mt-4">
+							{@render appointmentGroup(groups.cancelled, "尚無已取消的預約")}
+						</TabsContent>
+					</Tabs>
+				{/if}
+			</div>
+
 			<!-- Profile 卡 -->
 			<div class="relative overflow-hidden rounded-3xl bg-[#163b85] p-6 text-primary-foreground">
 				<!-- 裝飾光暈 -->
@@ -244,7 +285,7 @@
 					</Avatar>
 
 					<div class="min-w-0 flex-1 pt-1">
-						<h1 class="truncate text-xl font-bold">{displayName}</h1>
+						<h2 class="truncate text-xl font-bold">{displayName}</h2>
 						<div class="mt-1.5 space-y-1 text-sm text-white/80">
 							{#if auth.user?.email}
 								<div class="flex items-center gap-1.5">
@@ -289,15 +330,16 @@
 
 			<!-- 統計卡 -->
 			<div class="grid grid-cols-3 gap-3">
-				{@render statCard(Clock, "即將看診", isLoading ? null : groups.confirmed.length)}
-				{@render statCard(CalendarCheck2, "已完成", isLoading ? null : groups.completed.length)}
-				{@render statCard(Users, "看診對象", isLoading ? null : (patientCount ?? 0))}
+				{@render statCard(Clock, "即將預約", isLoading ? null : groups.confirmed.length, !!appointmentsError && !appointmentsLoaded)}
+				{@render statCard(CalendarCheck2, "已完成", isLoading ? null : groups.completed.length, !!appointmentsError && !appointmentsLoaded)}
+				{@render statCard(Users, "預約對象", isLoading ? null : patientCount, !!patientsError)}
 			</div>
 
-			<!-- 快捷功能 -->
+			{#if patientsError}<div role="alert" class="space-y-2 rounded-xl border p-4 text-sm"><p>{patientsError}{patientCount !== null ? " 數量保留上次結果。" : ""}</p><Button variant="outline" size="sm" disabled={isLoading} onclick={fetchData}>重試預約對象資料</Button></div>{/if}
+            <!-- 快捷功能 -->
 			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-				{@render actionCard("/", CalendarPlus, "預約看診", "搜尋診所，線上掛號", true)}
-				{@render actionCard("/member/patients", Users, "看診對象管理", "管理家人與本人資料")}
+				{@render actionCard("/search", CalendarPlus, "預約服務", "尋找院所、諮詢與療程", true)}
+				{@render actionCard("/member/patients", Users, "預約對象管理", "管理家人與本人資料")}
 				{@render actionCard("/member/favorites", Heart, "我的收藏", "收藏的診所一覽")}
 			</div>
 
@@ -313,39 +355,6 @@
 			<!-- 最近瀏覽 -->
 			<RecentlyViewedRail ready={guard.ready} />
 
-			<!-- 預約紀錄 -->
-			<div>
-				<h2 class="mb-3 text-base font-semibold text-foreground">預約紀錄</h2>
-
-				{#if isLoading}
-					<div class="space-y-3">
-						{@render appointmentSkeleton()}
-						{@render appointmentSkeleton()}
-					</div>
-				{:else}
-					<Tabs value="confirmed">
-						<TabsList class="w-full">
-							<TabsTrigger value="all">全部{@render tabCount(groups.all.length)}</TabsTrigger>
-							<TabsTrigger value="confirmed">已預約{@render tabCount(groups.confirmed.length)}</TabsTrigger>
-							<TabsTrigger value="completed">已完成{@render tabCount(groups.completed.length)}</TabsTrigger>
-							<TabsTrigger value="cancelled">已取消{@render tabCount(groups.cancelled.length)}</TabsTrigger>
-						</TabsList>
-
-						<TabsContent value="all" class="mt-4">
-							{@render appointmentGroup(groups.all, "尚無預約紀錄", true)}
-						</TabsContent>
-						<TabsContent value="confirmed" class="mt-4">
-							{@render appointmentGroup(groups.confirmed, "目前沒有即將到來的預約", true, true)}
-						</TabsContent>
-						<TabsContent value="completed" class="mt-4">
-							{@render appointmentGroup(groups.completed, "尚無已完成的預約")}
-						</TabsContent>
-						<TabsContent value="cancelled" class="mt-4">
-							{@render appointmentGroup(groups.cancelled, "尚無已取消的預約")}
-						</TabsContent>
-					</Tabs>
-				{/if}
-			</div>
 
 			<!-- 帳號（危險操作） -->
 			<Card class="flex flex-row items-center justify-between gap-3 p-4">

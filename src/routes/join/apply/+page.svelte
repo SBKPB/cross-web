@@ -25,7 +25,7 @@
 			compact
 			eyebrow="CROSS PARTNERS / 開始申請"
 			title="成為 Cross 合作夥伴"
-			description="填寫店家資料、驗證信箱，通過審核後即可開始設定你的預約服務。"
+			description="填寫資料並驗證信箱，即可進後台設定。通過審核後公開上架，完成方案與排班設定後開放線上預約。"
 		/>
 		<div class="container mx-auto max-w-2xl px-4 py-10 sm:py-14">
 			<a

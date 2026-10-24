@@ -83,7 +83,7 @@
 			</div>
 		</div>
 		<nav aria-label="店家內容" class="mt-7 flex flex-wrap gap-2 border-t border-border/70 pt-5 text-sm">
-			{#if clinic.services?.length}<a href="#services" class="rounded-full bg-card px-4 py-2.5 hover:text-primary">服務與費用</a>{/if}
+			{#if clinic.services?.length}<a href="#services" class="rounded-full bg-card px-4 py-2.5 hover:text-primary">服務項目</a>{/if}
 			{#if clinic.members?.length}<a href="#team" class="rounded-full bg-card px-4 py-2.5 hover:text-primary">專業團隊</a>{/if}
 			<a href="#contact" class="rounded-full bg-card px-4 py-2.5 hover:text-primary">聯絡與交通</a>
 		</nav>

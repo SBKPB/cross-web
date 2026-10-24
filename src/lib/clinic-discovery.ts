@@ -23,6 +23,8 @@ export function matchesClinicSearch(
   const searchable = normalize([
     clinic.clinic_name,
     clinic.address,
+    ...(clinic.service_names ?? []),
+    ...(clinic.services ?? []).map((service) => service.name),
     ...clinic.departments.map((code) => categoryLabels[code] ?? code),
     ...(clinic.members ?? []).flatMap((member) => [member.name, ...(member.specialties ?? [])]),
   ].filter(Boolean).join(" "));

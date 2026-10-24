@@ -100,6 +100,7 @@
 					</div>
 				{/if}
 
+				<p class="border-t border-border pt-4 text-center text-sm text-muted-foreground">院所人員？<a href="/admin/login" class="ml-1 text-primary underline underline-offset-4">前往院所登入</a></p>
 				<p class="pt-2 text-center text-xs text-muted-foreground">
 					登入即表示同意 <a href="/terms" class="underline underline-offset-2 hover:text-foreground">服務條款</a>
 					與

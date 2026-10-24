@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ClinicShowcase from "#lib/components/home/ClinicShowcase.svelte";
   import ArrowRight from '@lucide/svelte/icons/arrow-right';
   import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
   import MessageCircle from '@lucide/svelte/icons/message-circle';
@@ -18,9 +19,9 @@
     { icon: Hospital, title: '建立院所預約入口', text: '呈現院所介紹與服務內容，讓民眾直接從網頁查看並預約。' },
   ];
   const steps = [
-    { title: '填寫院所資料', text: '提供院所類型、聯絡方式與基本資訊，送出導入申請。' },
-    { title: '確認服務與排程', text: '與團隊確認諮詢、療程、人員、預約時長及適合的方案。' },
-    { title: '設定並開放預約', text: '完成院所頁面、服務與時段設定，確認流程後開放民眾預約。' },
+    { title: '驗證信箱，開通後台', text: '提供院所與聯絡資料，完成信箱驗證後就能進後台整理設定。' },
+    { title: '設定門面並完成審核', text: '整理院所介紹、服務與人員；審核通過後公開上架，讓民眾認識院所。' },
+    { title: '確認方案與時段', text: '免費版提供門面與現場、電話代訂；開通線上預約方案並完成排班後，檢查民眾可選的實際時段。' },
   ];
 </script>
 
@@ -32,6 +33,7 @@
       <Card class="gap-0 py-0 shadow-sm"><CardContent class="p-7"><p class="home-eyebrow">從實際預約需求開始</p><h2 class="mt-4 text-xl font-semibold">先把日常流程安排好。</h2><ul class="mt-5 space-y-4">{#each ['諮詢與療程分別設定服務及時長', '依專業人員的排班開放可預約時段', '集中查看預約與處理狀態'] as text (text)}<li class="flex gap-2 text-sm leading-7"><Check class="mt-1.5 size-4 shrink-0 text-primary" aria-hidden="true" />{text}</li>{/each}</ul><p class="mt-5 border-t border-border pt-5 text-xs leading-6 text-muted-foreground">實際功能、導入範圍與費用會在開通前確認。</p></CardContent></Card>
     </div>
   </section>
+  <ClinicShowcase />
   <section class="home-container py-14 sm:py-20"><p class="home-eyebrow">院所日常管理</p><h2 class="home-heading mt-3">從接收預約，到服務每一次到訪。</h2><div class="mt-8 grid gap-5 md:grid-cols-3">{#each capabilities as item (item.title)}<Card class="gap-0 py-0 shadow-sm"><CardContent class="p-7"><item.icon class="size-6 text-primary" aria-hidden="true" /><h3 class="mt-5 font-semibold">{item.title}</h3><p class="mt-3 text-sm leading-7 text-muted-foreground">{item.text}</p></CardContent></Card>{/each}</div></section>
   <section class="border-y border-border bg-card"><div class="home-container py-14"><p class="home-eyebrow">導入流程</p><h2 class="home-heading mt-3">先確認需求，再開放預約。</h2><ol class="mt-8 grid gap-6 md:grid-cols-3">{#each steps as step, index (step.title)}<li><span class="font-mono text-sm text-primary">0{index + 1}</span><h3 class="mt-3 font-semibold">{step.title}</h3><p class="mt-3 text-sm leading-7 text-muted-foreground">{step.text}</p></li>{/each}</ol></div></section>
   <section class="home-container py-14"><div class="flex flex-col justify-between gap-6 rounded-3xl bg-accent/30 p-7 sm:p-10 md:flex-row md:items-center"><div><h2 class="text-xl font-semibold">一起確認適合你的預約流程。</h2><p class="mt-3 text-sm leading-7 text-muted-foreground">告訴我們院所類型、服務內容與排程方式，從最需要的預約場景開始。</p><Button href={clinicLineContact} target="_blank" rel="noopener noreferrer" class="mt-4 min-h-11 bg-[#007a35] text-white hover:bg-[#00652c]"><MessageCircle aria-hidden="true" />LINE 導入諮詢 <ArrowUpRight aria-hidden="true" /><span class="sr-only">（另開視窗）</span></Button></div><Button href="/join/apply" size="lg">申請院所導入 <ArrowRight aria-hidden="true" /></Button></div></section>

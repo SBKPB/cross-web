@@ -1,5 +1,9 @@
 <script lang="ts">
 	import ArrowUpRight from "@lucide/svelte/icons/arrow-up-right";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { canAccessAdmin, getAdminHomePath } from "#lib/auth/roles.ts";
+	const auth = getAuth();
+	const isAdmin = $derived(canAccessAdmin(auth.user));
 	import Heart from "@lucide/svelte/icons/heart";
 
 	type FooterLink = {
@@ -104,8 +108,8 @@
 											/>
 										</a>
 									{:else}
-										<a href={link.href} class={linkClass}>
-											{home && link.href === "/search" ? "探索服務" : link.label}
+										<a href={link.href === "/member" && isAdmin ? getAdminHomePath(auth.user) : link.href} class={linkClass}>
+											{link.href === "/member" && isAdmin ? "管理後台" : link.href === "/search" ? "找院所與服務" : link.label}
 										</a>
 									{/if}
 								</li>

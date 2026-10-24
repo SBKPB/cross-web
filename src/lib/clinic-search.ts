@@ -28,6 +28,7 @@ export function filterAndSortClinics(
 	categoryLabels: Record<string, string>,
 ): Clinic[] {
 	const result = clinics.filter((clinic) => {
+		if (filters.onlineOnly && clinic.online_booking_enabled !== true) return false;
 		if (!matchesClinicSearch(clinic, filters.search, categoryLabels)) return false;
 		// 醫療分級僅在「看診/全部」大類適用（與 toolbar 的 showLevelFilter 一致，
 		// 避免非看診大類帶 level 參數時產生看不見、移不掉的隱形篩選）
@@ -84,7 +85,7 @@ export function filterAndSortClinics(
  * 值不驗證、原樣帶入（無效值的結果與舊版相同：篩不到店家）。
  * 唯一差異：重複的參數取第一個值；舊版 Next 會把它變成陣列，讓頁面在伺服器端（cat）或載入店家後（q）出錯。
  */
-export function parseSearchFilters(searchParams: URLSearchParams): ClinicFilters {
+export function parseSearchFilters(searchParams: Pick<URLSearchParams, "get">): ClinicFilters {
 	const get = (key: string) => searchParams.get(key) ?? undefined;
 	const sp = {
 		q: get("q"),
@@ -132,5 +133,20 @@ export function parseSearchFilters(searchParams: URLSearchParams): ClinicFilters
 		hospitalLevel: levelScope ? ((sp.level as HospitalLevel) ?? "all") : "all",
 		facilityType,
 		paymentType: facilityType === "healthcare" ? rawPayment : "all",
+		...(searchParams.get("online") === "1" ? { onlineOnly: true } : {}),
 	};
+}
+
+/** 僅序列化公開的院所搜尋條件，不處理後台客戶搜尋。 */
+export function searchFiltersQuery(filters: ClinicFilters, sort: SortKey): string {
+	const sp = new URLSearchParams();
+	if (filters.search) sp.set("q", filters.search);
+	if (filters.city !== "all") sp.set("city", filters.city);
+	if (filters.facilityType !== "all") sp.set("type", filters.facilityType);
+	if (filters.hospitalLevel !== "all") sp.set("level", filters.hospitalLevel);
+	if (filters.paymentType !== "all") sp.set("payment", filters.paymentType);
+	if (filters.serviceCategories.length) sp.set("cat", filters.serviceCategories.join(","));
+	if (filters.onlineOnly) sp.set("online", "1");
+	if (sort !== "default") sp.set("sort", sort);
+	return sp.toString();
 }

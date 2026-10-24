@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ClinicReadiness from "./ClinicReadiness.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import { SvelteURL } from "svelte/reactivity";
   import { page } from "$app/state";
@@ -267,6 +268,7 @@
               查看方案
             </a>
           </p>{/if}
+        {#if tab === "today" || tab === "info"}{#key facility}<ClinicReadiness {facility} {subscriptionHref} />{/key}{/if}
         {#if tab === "today" || tab === "appointments"}<Appointments
             {facility}
             workbench={tab === "today"}

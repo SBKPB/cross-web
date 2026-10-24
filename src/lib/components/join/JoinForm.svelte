@@ -7,6 +7,10 @@
 	import Sparkles from "@lucide/svelte/icons/sparkles";
 	import Stethoscope from "@lucide/svelte/icons/stethoscope";
 	import Store from "@lucide/svelte/icons/store";
+	import { page } from "$app/state";
+	import { goto } from "$app/navigation";
+	import { PRICING_PLANS } from "#lib/constants/pricing-constants.ts";
+	import { PLAN_LABELS } from "#lib/feature-access.ts";
 	import { onMount, untrack } from "svelte";
 	import { categoriesFor } from "#lib/api/service-categories.ts";
 	import { Button } from "#lib/components/ui/button/index.js";
@@ -49,6 +53,12 @@
 
 	const cityItems = TAIWAN_CITIES.map((city) => ({ value: city, label: city }));
 	const paymentItems = PAYMENT_TYPE_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
+	const planItems = [{ value: "undecided", label: "尚未決定，想先了解" }, ...PRICING_PLANS.map((plan) => ({ value: plan.id, label: `${PLAN_LABELS[plan.id]}版${plan.monthlyPrice ? ` NT$${plan.monthlyPrice.toLocaleString("zh-TW")}／月` : ""}` }))];
+	const planInterest = $derived(PRICING_PLANS.find((plan) => plan.id === (page.shallow?.url ?? page.url).searchParams.get("plan")));
+	function joinPayload() {
+		const data = buildJoinPayload(form);
+		return planInterest ? { ...data, message: [`方案意向：${PLAN_LABELS[planInterest.id]}版（待確認，非訂購）`, data.message].filter(Boolean).join("\n") } : data;
+	}
 	const teamSizeItems = TEAM_SIZE_OPTIONS.map((o) => ({ value: o.value, label: o.label }));
 
 	let form = $state<JoinFormState>({ ...INITIAL_JOIN_FORM, service_categories: [] });
@@ -151,7 +161,7 @@
 			const res = await fetch("/api/join", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(buildJoinPayload(form)),
+				body: JSON.stringify(joinPayload()),
 			});
 			const json = (await res.json().catch(() => null)) as { ok: boolean; error?: string } | null;
 			if (!res.ok || !json?.ok) {
@@ -219,7 +229,7 @@
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				// resend：後端會換發新碼；web route 據此略過營運通知信，不重複轟炸信箱
-				body: JSON.stringify({ ...buildJoinPayload(form), resend: true }),
+				body: JSON.stringify({ ...joinPayload(), resend: true }),
 			});
 			const json = (await res.json().catch(() => null)) as { ok: boolean; error?: string } | null;
 			if (!res.ok || !json?.ok) {
@@ -466,6 +476,7 @@
 		</div>
 
 		<div class="space-y-7 p-6 sm:p-8">
+			{#if planInterest}<p role="status" class="rounded-xl bg-primary/5 p-3 text-sm">目前想了解：{PLAN_LABELS[planInterest.id]}版，可在服務資訊步驟調整。</p>{/if}
 			<!-- 進度：讓人知道還剩幾步，而不是面對一片問不完的欄位 -->
 			<div>
 				<div aria-hidden="true" class="flex items-center gap-2">
@@ -549,6 +560,7 @@
 
 			<!-- ③ 服務資訊 -->
 			<fieldset hidden={step !== 2} disabled={step !== 2} class="space-y-4">
+                <div class="grid gap-2"><Label for="plan-interest">想了解的方案</Label><Select type="single" items={planItems} value={planInterest?.id ?? "undecided"} onValueChange={(value) => { void goto(`/join/apply${value !== "undecided" ? `?plan=${value}` : ""}`, { shallow: true, replace: true, reset: false, state: page.state }); }}><SelectTrigger id="plan-interest" class="w-full"><SelectValue /></SelectTrigger><SelectContent>{#each planItems as item (item.value)}<SelectItem value={item.value} label={item.label} />{/each}</SelectContent></Select><p class="text-xs leading-6 text-muted-foreground">這是需求意向，可調整；送出申請不會扣款或訂購方案。</p></div>
 				<!-- 主要服務子類別：多選 chip（依所選大類動態切換清單） -->
 				<div class="grid gap-2">
 					<Label

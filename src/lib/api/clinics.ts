@@ -43,6 +43,7 @@ export interface BackendClinic {
   online_booking_enabled?: boolean;
   phone_booking_enabled?: boolean;
   show_schedule?: boolean;
+  service_names?: string[];
 }
 
 // 星期對照表
@@ -118,6 +119,7 @@ export function transformClinic(backendClinic: BackendClinic): Clinic {
     online_booking_enabled: backendClinic.online_booking_enabled,
     phone_booking_enabled: backendClinic.phone_booking_enabled,
     show_schedule: backendClinic.show_schedule,
+    service_names: backendClinic.service_names ?? [],
   };
 }
 

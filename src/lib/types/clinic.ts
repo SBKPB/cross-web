@@ -128,6 +128,7 @@ export interface Clinic {
   is_featured?: boolean; // 精選置頂（站內曝光）；true 時前端置頂並顯示「精選」badge
   members?: Member[]; // 統一的人員列表
   services?: Service[];
+  service_names?: string[]; // 公開清單的啟用服務名稱；不含價格
   business_hours?: BusinessHours[];
   images?: string[];
   online_booking_enabled?: boolean; // 是否開通線上預約（付費功能）；false 改顯示現場/電話預約
@@ -145,6 +146,7 @@ export interface ClinicFilters {
   facilityType: FacilityType | "all";
   // 付款方式篩選（看診大類下使用）：'all' | 健保 | 自費 | 兩者
   paymentType: PaymentType | "all";
+  onlineOnly?: boolean;
 }
 
 // ========== 後端 API 型別 (MedicalFacility) ==========

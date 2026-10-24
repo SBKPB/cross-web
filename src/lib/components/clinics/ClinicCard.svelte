@@ -201,15 +201,11 @@
 				</div>
 			{/if}
 		</div>
+		<p class="text-sm font-medium text-primary">{clinic.online_booking_enabled === true ? "可線上預約" : clinic.online_booking_enabled === false ? (clinic.phone_booking_enabled ? "電話／現場預約" : "現場預約") : "查看預約方式"}</p>
 		<div class="mt-auto border-t border-border/70 pt-4">
 			{#if onClick}
-				<Button
-					onclick={onClick}
-					variant="ghost"
-					class="h-10 w-full justify-between rounded-full px-0 text-primary"
-				>
-					查看店家資訊 <ArrowUpRight class="size-4" />
-				</Button>
+				<Button href={`/clinic/${clinic.id}`} variant="ghost" class="min-h-11 w-full justify-between px-0 text-primary">查看院所資訊 <ArrowUpRight class="size-4" /></Button>
+				<Button onclick={onClick} variant="ghost" size="sm" class="min-h-11 px-0 text-muted-foreground">快速檢視</Button>
 			{:else}
 				<span class="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-primary">
 					查看店家資訊 <ArrowUpRight class="size-4" />

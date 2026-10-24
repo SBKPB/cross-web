@@ -194,3 +194,11 @@ test("parseSearchFilters：重複的參數取第一個值（舊版 Next 會變�
   assert.deepEqual(parseSearchFilters(params("q=a&q=b")), { ...DEFAULTS, search: "a" });
   assert.deepEqual(parseSearchFilters(params("cat=a&cat=b")), { ...DEFAULTS, serviceCategories: ["a"] });
 });
+
+test("搜尋包含公開療程名稱，線上預約篩選不把未知或停用能力視為可預約", () => {
+  const a = clinic({ service_names: ["elysion冰氛除毛"], online_booking_enabled: false });
+  const b = clinic({ service_names: ["肌膚諮詢"], online_booking_enabled: true });
+  const c = clinic({});
+  assert.deepEqual(ids(filterAndSortClinics([a,b,c], {...ALL, search: "ELYsion 除毛"}, "default", {})), [a.id]);
+  assert.deepEqual(ids(filterAndSortClinics([a,b,c], {...ALL, onlineOnly: true}, "default", {})), [b.id]);
+});

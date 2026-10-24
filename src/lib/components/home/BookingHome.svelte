@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PartnerClinics from "./PartnerClinics.svelte";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import CalendarDays from "@lucide/svelte/icons/calendar-days";
   import ClipboardList from "@lucide/svelte/icons/clipboard-list";
@@ -7,6 +8,10 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Stethoscope from "@lucide/svelte/icons/stethoscope";
   import Users from "@lucide/svelte/icons/users";
+  import { getAuth } from "#lib/auth/auth.svelte.ts";
+  import { canAccessAdmin, getAdminHomePath } from "#lib/auth/roles.ts";
+  const auth = getAuth();
+  const isAdmin = $derived(canAccessAdmin(auth.user));
   import { Button } from "#lib/components/ui/button/index.ts";
   import { Card, CardContent } from "#lib/components/ui/card/index.ts";
 
@@ -125,9 +130,9 @@
         {/each}
       </nav>
       <div class="mt-4 flex flex-wrap items-center gap-x-3 text-sm">
-        <span class="text-muted-foreground">已經有預約？</span>
-        <Button href="/member" variant="link" class="min-h-11 px-0">
-          查看我的預約 <ArrowRight aria-hidden="true" />
+        <span class="text-muted-foreground">{isAdmin ? "回到院所日常管理" : "已經有預約？"}</span>
+        <Button href={isAdmin ? getAdminHomePath(auth.user) : "/member"} variant="link" class="min-h-11 px-0">
+          {isAdmin ? "管理後台" : "查看我的預約"} <ArrowRight aria-hidden="true" />
         </Button>
       </div>
     </div>
@@ -156,6 +161,8 @@
     </div>
   </div>
 </section>
+
+<PartnerClinics />
 
 <section
   id="how-it-works"
@@ -222,7 +229,7 @@
             讓團隊更從容。
           </h2>
           <p class="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
-            從專屬院所頁面到日常排班，把接收預約和團隊安排放在一起。
+            建立專屬院所門面，讓民眾了解服務；從接收預約到人員排班，集中處理日常安排。
           </p>
           <div class="mt-6 flex flex-wrap gap-3">
             <Button href="/join" size="lg">
@@ -231,7 +238,9 @@
             <Button href="/pricing" variant="outline" size="lg">
               查看方案與費用
             </Button>
+            <Button href="/admin/login" variant="ghost" size="lg">已有帳號？院所登入</Button>
           </div>
+          <a href="/join#product-preview" class="mt-4 inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4">先看看院所門面與管理方式 →</a>
           <p class="mt-4 text-xs leading-6 text-muted-foreground">
             實際開通功能依院所方案與設定提供。
           </p>

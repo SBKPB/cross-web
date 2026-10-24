@@ -67,7 +67,7 @@
                 {/each}
               </ul>
               <Button
-                href="/join/apply"
+                href={`/join/apply?plan=${plan.id}`}
                 variant={plan.id === "standard" ? "default" : "outline"}
                 class="mt-8 min-h-11 w-full"
               >
@@ -79,7 +79,7 @@
         {/each}
       </div>
       <p class="mt-5 text-sm leading-7 text-muted-foreground">
-        付費方案採月費計價，開通前確認方案、功能與上線安排。
+        免費版可建立公開門面，管理現場與電話代訂；民眾自行選時段的線上預約，由標準版起提供。付費方案採月費計價，開通前確認方案、功能與上線安排。
       </p>
       <div class="mt-10 max-w-5xl">
         <Card class="gap-0 bg-accent/20 py-0 shadow-sm">

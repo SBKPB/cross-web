@@ -35,6 +35,7 @@
 	// 與正式資料同形：有預約／詳情／導航三個連結，關閉鈕在它們之後
 	const clinic: Clinic = {
 		id: "00000000-0000-4000-8000-000000000001",
+        online_booking_enabled: true,
 		clinic_name: "測試診所",
 		hospital_level: "clinic",
 		departments: ["family_medicine"],

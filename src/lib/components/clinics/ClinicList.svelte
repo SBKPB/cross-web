@@ -41,7 +41,7 @@
 		<div class="mb-4 flex size-16 items-center justify-center rounded-2xl bg-accent text-primary">
 			<SearchX class="size-7" />
 		</div>
-		<h3 class="mb-1 text-lg font-semibold text-foreground">找不到符合條件的店家</h3>
+		<h3 class="mb-1 text-lg font-semibold text-foreground">找不到符合條件的院所</h3>
 		<p class="max-w-xs text-sm text-muted-foreground">
 			試著放寬關鍵字或調整篩選條件，或許就能找到適合的選擇。
 		</p>

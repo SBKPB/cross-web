@@ -2,6 +2,7 @@
 	import { Button } from "#lib/components/ui/button/index.js";
 	import ThemeToggle from "#lib/components/ThemeToggle.svelte";
 	import AuthButton from "./AuthButton.svelte";
+	import ClinicEntry from "./ClinicEntry.svelte";
 	import { getAuth } from "#lib/auth/auth.svelte.ts";
 	import { canAccessAdmin } from "#lib/auth/roles.ts";
 
@@ -31,7 +32,7 @@
 			{#if !auth.isLoading && !isAdmin}
 				<Button href="/member" variant="ghost" size="sm" class={home ? "min-h-11" : undefined}>我的預約</Button>
 			{/if}
-			<Button href="/join" variant="ghost" size="sm" class="hidden sm:inline-flex">院所導入</Button>
+			{#if !isAdmin}<ClinicEntry />{/if}
 			<span class="hidden min-[400px]:inline-flex">
 				<ThemeToggle class={home ? "size-11" : undefined} />
 			</span>

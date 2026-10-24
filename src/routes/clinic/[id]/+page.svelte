@@ -19,6 +19,10 @@
 	const clinic = $derived(data.clinic);
 </script>
 
+{#snippet servicesSection()}
+  {#if clinic.services?.length}<div id="services"><ServicePreviewList services={clinic.services} paymentType={clinic.payment_type} /></div>{/if}
+{/snippet}
+
 <!-- metadata 與院所 JSON-LD（示範院所不輸出）由 Seo 放進 <head>；舊版 JSON-LD 在 body，爬蟲讀到的內容相同 -->
 <Seo {...data.seo} />
 
@@ -47,6 +51,7 @@
 				<!-- 診療科別：僅看診大類顯示（元件內自動 gate，非看診不渲染） -->
 				<DepartmentBadges departments={clinic.departments} facilityType={clinic.facility_type} />
 
+				{#if clinic.facility_type !== "healthcare"}{@render servicesSection()}{/if}
 				<!-- 門診時刻表（醫師排班：早/午/晚 × 週一~週日） -->
 				{#if data.showSchedule && data.schedule}
 					<ScheduleTimetable schedule={data.schedule} />
@@ -57,12 +62,7 @@
 					<div id="team"><DoctorTeamSection members={clinic.members} details={data.doctorDetails} /></div>
 				{/if}
 
-				<!-- 服務項目 -->
-				{#if clinic.services && clinic.services.length > 0}
-					<div id="services">
-						<ServicePreviewList services={clinic.services} paymentType={clinic.payment_type} />
-					</div>
-				{/if}
+				{#if clinic.facility_type === "healthcare"}{@render servicesSection()}{/if}
 			</div>
 
 			<!-- ===== 側欄（桌機黏性） ===== -->

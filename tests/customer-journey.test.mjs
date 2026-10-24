@@ -403,3 +403,26 @@ test("院所上線清單區分方案與時段，僅查詢 API 且失敗可重試
     await page.close();
   }
 });
+
+test("慢速載入互動程式時先停用操作，就緒後首次操作可完成", async () => {
+  for (const path of ["/", "/search", "/join", "/join/apply"]) {
+    const { page, errors } = await guest(390);
+    let release;
+    const gate = new Promise((resolve) => { release = resolve; });
+    await page.route("**/_app/immutable/**/*.js", async (route) => { await gate; await route.continue(); });
+    try {
+      await page.goto(preview.origin + path, { waitUntil: "commit" });
+      const control = path === "/" ? page.getByRole("button", { name: "院所專區", exact: true }) : path === "/search" ? page.getByRole("textbox", { name: "搜尋院所、療程、專業人員或地址" }) : path === "/join" ? page.getByRole("tab", { name: "團隊使用的工作台", exact: true }) : page.getByRole("button", { name: "下一步", exact: true });
+      await control.waitFor({ state: "visible" });
+      assert.equal(await control.isDisabled(), true, path);
+      release();
+      if (path === "/search") { await control.fill("elysion"); await page.waitForURL((url) => url.searchParams.get("q") === "elysion"); }
+      else { await control.click();
+        if (path === "/") await page.getByRole("navigation", { name: "院所專區導覽" }).waitFor();
+        if (path === "/join") await page.getByText("今日工作台 · 示意資料", { exact: true }).waitFor();
+        if (path === "/join/apply") await page.getByRole("heading", { name: "基本資料", exact: true }).waitFor();
+      }
+      assert.deepEqual(errors, []);
+    } finally { release(); await page.close(); }
+  }
+});

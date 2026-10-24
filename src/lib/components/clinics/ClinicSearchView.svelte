@@ -79,6 +79,7 @@
 
 		<Select type="single" items={sortItems} value={sort} onValueChange={(v) => updateFilters(filters, v as SortKey)}>
 			<SelectTrigger
+				disabled={!interactive}
 				size="sm"
 				class="w-[132px] rounded-full border-transparent bg-card ring-1 ring-border/60"
 				aria-label="排序方式"

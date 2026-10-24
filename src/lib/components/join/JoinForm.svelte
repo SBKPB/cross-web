@@ -75,6 +75,7 @@
 
 	// 三段流程：0 商家類型 / 1 基本資料 / 2 服務資訊。一次只問一段，18 個欄位鋪在同一頁會讓人直接關掉。
 	let step = $state(0);
+	let interactive = $state(false);
 
 	// ===== 驗證碼階段（送出後同頁完成，不再要求去信箱點連結）=====
 	let code = $state("");
@@ -115,6 +116,7 @@
 
 	// 驗證碼階段只活在記憶體：重整後從 sessionStorage 回到輸碼畫面（驗證碼與密碼仍需重新輸入，不落地）。成功／重填時清掉。
 	onMount(() => {
+		interactive = true;
 		try {
 			const restored = restorePendingJoin(sessionStorage.getItem(JOIN_PENDING_STORAGE_KEY));
 			if (restored) {
@@ -500,7 +502,7 @@
 			</div>
 
 			<!-- ① 商家類型 -->
-			<fieldset hidden={step !== 0} disabled={step !== 0} class="space-y-3">
+			<fieldset hidden={step !== 0} disabled={!interactive || step !== 0} class="space-y-3">
 				<div class="grid grid-cols-2 gap-2.5">
 					{#each JOIN_CATEGORIES as option (option.value)}
 						{@render categoryCard(option, form.category === option.value, () => {
@@ -511,7 +513,7 @@
 			</fieldset>
 
 			<!-- ② 基本資料 -->
-			<fieldset hidden={step !== 1} disabled={step !== 1} class="space-y-4">
+			<fieldset hidden={step !== 1} disabled={!interactive || step !== 1} class="space-y-4">
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div class="grid gap-2 sm:col-span-2">
 						<Label for="business_name">商家名稱 <span class="text-destructive">*</span></Label>
@@ -559,7 +561,7 @@
 			</fieldset>
 
 			<!-- ③ 服務資訊 -->
-			<fieldset hidden={step !== 2} disabled={step !== 2} class="space-y-4">
+			<fieldset hidden={step !== 2} disabled={!interactive || step !== 2} class="space-y-4">
                 <div class="grid gap-2"><Label for="plan-interest">想了解的方案</Label><Select type="single" items={planItems} value={planInterest?.id ?? "undecided"} onValueChange={(value) => { void goto(`/join/apply${value !== "undecided" ? `?plan=${value}` : ""}`, { shallow: true, replace: true, reset: false, state: page.state }); }}><SelectTrigger id="plan-interest" class="w-full"><SelectValue /></SelectTrigger><SelectContent>{#each planItems as item (item.value)}<SelectItem value={item.value} label={item.label} />{/each}</SelectContent></Select><p class="text-xs leading-6 text-muted-foreground">這是需求意向，可調整；送出申請不會扣款或訂購方案。</p></div>
 				<!-- 主要服務子類別：多選 chip（依所選大類動態切換清單） -->
 				<div class="grid gap-2">
@@ -670,7 +672,7 @@
 						</Button>
 					{/if}
 					{#if step < JOIN_STEPS.length - 1}
-						<Button type="button" size="lg" class="group/next flex-1" onclick={goNext}>
+						<Button type="button" size="lg" class="group/next flex-1" disabled={!interactive} onclick={goNext}>
 							下一步
 							<ArrowRight class="size-4 transition-transform group-hover/next:translate-x-0.5" />
 						</Button>

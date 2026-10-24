@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  let interactive = $state(false);
+  onMount(() => { interactive = true; });
   import { Card, CardContent } from "#lib/components/ui/card/index.ts";
   import { Button } from "#lib/components/ui/button/index.ts";
   import * as Tabs from "#lib/components/ui/tabs/index.ts";
@@ -20,9 +23,9 @@
   </p>
   <Tabs.Root value="storefront" class="mt-7">
     <Tabs.List class="grid h-auto w-full grid-cols-2 sm:w-fit">
-      <Tabs.Trigger value="storefront" class="min-h-11">
+      <Tabs.Trigger disabled={!interactive} value="storefront" class="min-h-11">
         客人看到的門面
-      </Tabs.Trigger><Tabs.Trigger value="workspace" class="min-h-11">
+      </Tabs.Trigger><Tabs.Trigger disabled={!interactive} value="workspace" class="min-h-11">
         團隊使用的工作台
       </Tabs.Trigger>
     </Tabs.List>

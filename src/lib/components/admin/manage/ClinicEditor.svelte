@@ -9,6 +9,7 @@
 
   import { untrack } from "svelte";
   import Modal from "./Modal.svelte";
+  import GoogleMapsLocation from "./GoogleMapsLocation.svelte";
   import Feedback from "./Feedback.svelte";
   import { Button } from "#lib/components/ui/button/index.ts";
   import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
@@ -48,6 +49,8 @@
     description = $state(""),
     latitude = $state<number | undefined>(),
     longitude = $state<number | undefined>(),
+    mapPending = $state(false),
+    mapValid = $state(true),
     type = $state<FacilityType>("healthcare"),
     payment = $state<PaymentType>("nhi"),
     categories = $state<string[]>([]),
@@ -84,6 +87,8 @@
       description = c?.description ?? "";
       latitude = c?.latitude ?? undefined;
       longitude = c?.longitude ?? undefined;
+      mapPending = false;
+      mapValid = true;
       type = c?.facility_type ?? "healthcare";
       payment = c?.payment_type ?? "nhi";
       categories = [...(c?.service_categories ?? [])];
@@ -152,6 +157,10 @@
   async function save(e: SubmitEvent) {
     e.preventDefault();
     error = "";
+    if (!mapValid || mapPending) {
+      error = "請先完成地圖連結解析，或清空連結後再儲存。";
+      return;
+    }
     if (hoursEnabled && !hours.some((h) => h.enabled)) {
       error = "請至少選擇一個營業日；如暫停接待，請停用院所。";
       return;
@@ -314,7 +323,14 @@
           bind:value={address}
           id={[formId, "field-5"].join("-")}
         />
-      </Field.Field><Field.Field class="gap-2">
+      </Field.Field>
+      <GoogleMapsLocation
+        bind:latitude
+        bind:longitude
+        bind:pending={mapPending}
+        bind:valid={mapValid}
+      />
+      <Field.Field class="gap-2">
         <Field.Label
           for={[formId, "field-6"].join("-")}
           class="text-sm font-medium"
@@ -326,37 +342,6 @@
           id={[formId, "field-6"].join("-")}
         ></Textarea>
       </Field.Field>
-      <div class="grid grid-cols-2 gap-4">
-        <Field.Field class="gap-2">
-          <Field.Label
-            for={[formId, "field-7"].join("-")}
-            class="text-sm font-medium"
-          >
-            緯度
-          </Field.Label><Input
-            type="number"
-            step="any"
-            min="-90"
-            max="90"
-            bind:value={latitude}
-            id={[formId, "field-7"].join("-")}
-          />
-        </Field.Field><Field.Field class="gap-2">
-          <Field.Label
-            for={[formId, "field-8"].join("-")}
-            class="text-sm font-medium"
-          >
-            經度
-          </Field.Label><Input
-            type="number"
-            step="any"
-            min="-180"
-            max="180"
-            bind:value={longitude}
-            id={[formId, "field-8"].join("-")}
-          />
-        </Field.Field>
-      </div>
       <Field.Field class="gap-2">
         <Field.Label
           for={[formId, "field-9"].join("-")}
@@ -569,8 +554,8 @@
     <Dialog.Footer class="admin-dialog-footer">
       <Button variant="outline" disabled={busy} onclick={() => (open = false)}>
         取消
-      </Button><Button type="submit" disabled={busy}>
-        {busy ? "儲存中…" : "儲存院所"}
+      </Button><Button type="submit" disabled={busy || mapPending}>
+        {busy ? "儲存中…" : mapPending ? "位置解析中…" : "儲存院所"}
       </Button>
     </Dialog.Footer>
   </form>

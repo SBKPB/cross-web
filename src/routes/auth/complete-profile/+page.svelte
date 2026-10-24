@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
 	import UserPlus from "@lucide/svelte/icons/user-plus";
 	import { untrack } from "svelte";
 	import { goto } from "$app/navigation";
@@ -178,10 +179,10 @@
 							{/if}
 						</div>
 
-						<div class="grid grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<div class="grid gap-2">
 								<Label for="birth-date">生日 <span class="text-destructive">*</span></Label>
-								<Input id="birth-date" type="date" bind:value={birthDate} required />
+								<DateInput purpose="birthday" id="birth-date" bind:value={birthDate} required />
 							</div>
 							<div class="grid gap-2">
 								<Label>性別 <span class="text-destructive">*</span></Label>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import * as Field from "#lib/components/ui/field/index.ts";
   import * as NativeSelect from "#lib/components/ui/native-select/index.ts";
   import { Checkbox } from "#lib/components/ui/checkbox/index.ts";
@@ -189,18 +190,16 @@
             <div class="space-y-1">
               <Field.Label for="batch-start" class="text-sm font-medium">
                 目標開始日期
-              </Field.Label><Input
+              </Field.Label><DateInput
                 id="batch-start"
-                type="date"
                 bind:value={start}
               />
             </div>
             <div class="space-y-1">
               <Field.Label for="batch-end" class="text-sm font-medium">
                 目標結束日期
-              </Field.Label><Input
+              </Field.Label><DateInput
                 id="batch-end"
-                type="date"
                 bind:value={end}
                 min={start}
               />
@@ -234,9 +233,8 @@
           {#if mode === "copy"}<div class="space-y-1">
               <Field.Label for="batch-source" class="text-sm font-medium">
                 來源七日班表的開始日期
-              </Field.Label><Input
+              </Field.Label><DateInput
                 id="batch-source"
-                type="date"
                 bind:value={source}
               />
               <p class="text-xs text-muted-foreground">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Field from "#lib/components/ui/field/index.ts";
   import { Checkbox } from "#lib/components/ui/checkbox/index.ts";
@@ -193,8 +194,7 @@
                 class="text-sm font-medium"
               >
                 休假日期
-              </Field.Label><Input
-                type="date"
+              </Field.Label><DateInput
                 bind:value={date}
                 required
                 id={[formId, "field-2"].join("-")}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Field from "#lib/components/ui/field/index.ts";
   import * as NativeSelect from "#lib/components/ui/native-select/index.ts";
@@ -327,9 +328,8 @@
       <div class="space-y-1">
         <Field.Label for="manage-schedule-date" class="text-sm">
           直接管理日期
-        </Field.Label><Input
+        </Field.Label><DateInput
           id="manage-schedule-date"
-          type="date"
           value={taipeiToday()}
           onchange={(e) => {
             if (e.currentTarget.value) {

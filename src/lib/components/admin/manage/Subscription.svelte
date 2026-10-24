@@ -1,9 +1,9 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.ts";
   import * as Card from "#lib/components/ui/card/index.ts";
   import * as Field from "#lib/components/ui/field/index.ts";
   import * as NativeSelect from "#lib/components/ui/native-select/index.ts";
-  import { Input } from "#lib/components/ui/input/index.ts";
   import { Checkbox } from "#lib/components/ui/checkbox/index.ts";
   import { Textarea } from "#lib/components/ui/textarea/index.ts";
   const formId = $props.id();
@@ -290,8 +290,7 @@
           class="text-sm font-medium"
         >
           起始日
-        </Field.Label><Input
-          type="date"
+        </Field.Label><DateInput
           bind:value={started}
           id={[formId, "field-4"].join("-")}
         />
@@ -301,8 +300,7 @@
           class="text-sm font-medium"
         >
           到期日
-        </Field.Label><Input
-          type="date"
+        </Field.Label><DateInput
           bind:value={expiry}
           id={[formId, "field-5"].join("-")}
         />
@@ -312,8 +310,7 @@
           class="text-sm font-medium"
         >
           精選到期日
-        </Field.Label><Input
-          type="date"
+        </Field.Label><DateInput
           bind:value={featuredUntil}
           id={[formId, "field-6"].join("-")}
         />
@@ -395,8 +392,7 @@
           class="text-sm font-medium"
         >
           續約後到期日
-        </Field.Label><Input
-          type="date"
+        </Field.Label><DateInput
           bind:value={renewExpiry}
           required
           id={[formId, "field-10"].join("-")}

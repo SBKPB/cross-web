@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Card from "#lib/components/ui/card/index.ts";
   import * as Field from "#lib/components/ui/field/index.ts";
@@ -8,7 +9,6 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { Button } from "#lib/components/ui/button/index.ts";
-  import { Input } from "#lib/components/ui/input/index.ts";
   import * as Dialog from "#lib/components/ui/dialog/index.ts";
   import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
   import { canAccessFeature } from "#lib/feature-access.ts";
@@ -140,9 +140,8 @@
       <div class="space-y-1">
         <Field.Label for="queue-date" class="text-sm">
           叫號日期
-        </Field.Label><Input
+        </Field.Label><DateInput
           id="queue-date"
-          type="date"
           value={date}
           onchange={(e) => setDate(e.currentTarget.value)}
           class="w-44"

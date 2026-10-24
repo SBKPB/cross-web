@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import {
     CalendarDays,
@@ -391,9 +392,8 @@
       <div class="space-y-1">
         <Field.Label for="appointments-start" class="text-sm">
           {view === "week" ? "起始日期" : "日期"}
-        </Field.Label><Input
+        </Field.Label><DateInput
           id="appointments-start"
-          type="date"
           value={startDate}
           onchange={(e) => {
             if (e.currentTarget.value)
@@ -413,9 +413,8 @@
         >
           <Field.Label for="appointments-end" class="text-sm">
             結束日期
-          </Field.Label><Input
+          </Field.Label><DateInput
             id="appointments-end"
-            type="date"
             min={startDate}
             value={endDate}
             onchange={(e) => {

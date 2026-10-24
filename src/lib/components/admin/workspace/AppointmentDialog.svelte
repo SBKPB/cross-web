@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import { revealError } from "#lib/admin/reveal-error.ts";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Field from "#lib/components/ui/field/index.ts";
@@ -7,7 +8,6 @@
   import { untrack } from "svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.ts";
   import { Button } from "#lib/components/ui/button/index.ts";
-  import { Input } from "#lib/components/ui/input/index.ts";
   import { adminClinicsApi } from "#lib/api/admin/clinics.ts";
   import { appointmentEnd, apiMessage } from "#lib/admin/scheduling.ts";
   import {
@@ -251,9 +251,8 @@
             <div class="space-y-1.5">
               <Field.Label for="reschedule-date" class="text-sm font-medium">
                 預約日期
-              </Field.Label><Input
+              </Field.Label><DateInput
                 id="reschedule-date"
-                type="date"
                 bind:value={date}
                 min={taipeiToday()}
                 disabled={busy}

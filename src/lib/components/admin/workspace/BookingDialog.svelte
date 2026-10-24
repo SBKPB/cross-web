@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DateInput from "#lib/components/ui/date-input/DateInput.svelte";
   import { revealError } from "#lib/admin/reveal-error.ts";
   import AdminSkeleton from "../layout/AdminSkeleton.svelte";
   import * as Field from "#lib/components/ui/field/index.ts";
@@ -387,9 +388,8 @@
             <div class="space-y-1.5">
               <Field.Label for="booking-date" class="text-sm font-medium">
                 預約日期 *
-              </Field.Label><Input
+              </Field.Label><DateInput
                 id="booking-date"
-                type="date"
                 bind:value={date}
                 min={taipeiToday()}
                 required

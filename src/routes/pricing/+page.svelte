@@ -1,5 +1,7 @@
 <script lang="ts">
 	import ArrowRight from "@lucide/svelte/icons/arrow-right";
+	import ArrowUpRight from "@lucide/svelte/icons/arrow-up-right";
+	import MessageCircle from "@lucide/svelte/icons/message-circle";
 	import CalendarDays from "@lucide/svelte/icons/calendar-days";
 	import Check from "@lucide/svelte/icons/check";
 	import Seo from "#lib/components/Seo.svelte";
@@ -7,8 +9,7 @@
 	import SiteHeader from "#lib/components/layout/SiteHeader.svelte";
 	import { Button } from "#lib/components/ui/button/index.js";
 	import { Card, CardContent } from "#lib/components/ui/card/index.js";
-	import { partnerEmail } from "#lib/developers.ts";
-	const contact = `mailto:${partnerEmail}?subject=${encodeURIComponent("Cross 院所預約方案諮詢")}`;
+	import { clinicLineContact } from "#lib/contact.ts";
 
 	let { data } = $props();
 
@@ -56,7 +57,7 @@
 						<h2 class="mt-5 text-xl font-semibold">先確認院所的預約需求</h2>
 						<p class="mt-4 text-sm leading-7 text-muted-foreground">看診、醫美諮詢與療程可能有不同的時長及人員安排。導入前先確認服務、排班與院所流程，再設定線上預約入口。</p>
 						<ul class="mt-6 space-y-3 text-sm text-muted-foreground"><li>確認服務內容與預約時長</li><li>整理人員、班表與休假設定</li><li>確認開通功能、費用與上線安排</li></ul>
-						<Button href={contact} variant="outline" class="mt-7">聯絡導入諮詢 <ArrowRight aria-hidden="true" /></Button>
+						<Button href={clinicLineContact} target="_blank" rel="noopener noreferrer" class="mt-7 min-h-11 bg-[#007a35] text-white hover:bg-[#00652c]"><MessageCircle aria-hidden="true" />LINE 導入諮詢 <ArrowUpRight aria-hidden="true" /><span class="sr-only">（另開視窗）</span></Button>
 						<a href="/join" class="mt-6 flex items-center gap-2 text-sm font-medium text-primary">了解院所導入流程 <ArrowRight class="size-4" aria-hidden="true" /></a>
 
 					</CardContent>

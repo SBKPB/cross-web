@@ -1,5 +1,7 @@
 <script lang="ts">
   import ArrowRight from '@lucide/svelte/icons/arrow-right';
+  import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
+  import MessageCircle from '@lucide/svelte/icons/message-circle';
   import CalendarDays from '@lucide/svelte/icons/calendar-days';
   import Check from '@lucide/svelte/icons/check';
   import Hospital from '@lucide/svelte/icons/hospital';
@@ -8,9 +10,8 @@
   import PublicFrame from '#lib/components/public/PublicFrame.svelte';
   import { Button } from '#lib/components/ui/button/index.ts';
   import { Card, CardContent } from '#lib/components/ui/card/index.ts';
-  import { partnerEmail } from '#lib/developers.ts';
+  import { clinicLineContact } from '#lib/contact.ts';
   let { data } = $props();
-  const contact = `mailto:${partnerEmail}?subject=${encodeURIComponent('Cross 院所預約導入諮詢')}`;
   const capabilities = [
     { icon: CalendarDays, title: '諮詢與療程都能安排', text: '依服務設定預約時長，確認專業人員與可預約時段，配合院所實際作業。' },
     { icon: Users, title: '人員排班集中管理', text: '管理服務人員、班表與休假，減少分散確認排程的時間。' },
@@ -33,5 +34,5 @@
   </section>
   <section class="home-container py-14 sm:py-20"><p class="home-eyebrow">院所日常管理</p><h2 class="home-heading mt-3">從接收預約，到服務每一次到訪。</h2><div class="mt-8 grid gap-5 md:grid-cols-3">{#each capabilities as item (item.title)}<Card class="gap-0 py-0 shadow-sm"><CardContent class="p-7"><item.icon class="size-6 text-primary" aria-hidden="true" /><h3 class="mt-5 font-semibold">{item.title}</h3><p class="mt-3 text-sm leading-7 text-muted-foreground">{item.text}</p></CardContent></Card>{/each}</div></section>
   <section class="border-y border-border bg-card"><div class="home-container py-14"><p class="home-eyebrow">導入流程</p><h2 class="home-heading mt-3">先確認需求，再開放預約。</h2><ol class="mt-8 grid gap-6 md:grid-cols-3">{#each steps as step, index (step.title)}<li><span class="font-mono text-sm text-primary">0{index + 1}</span><h3 class="mt-3 font-semibold">{step.title}</h3><p class="mt-3 text-sm leading-7 text-muted-foreground">{step.text}</p></li>{/each}</ol></div></section>
-  <section class="home-container py-14"><div class="flex flex-col justify-between gap-6 rounded-3xl bg-accent/30 p-7 sm:p-10 md:flex-row md:items-center"><div><h2 class="text-xl font-semibold">一起確認適合你的預約流程。</h2><p class="mt-3 text-sm leading-7 text-muted-foreground">告訴我們院所類型、服務內容與排程方式，從最需要的預約場景開始。</p><a href={contact} class="mt-3 inline-block text-sm text-primary underline underline-offset-4">{partnerEmail}</a></div><Button href="/join/apply" size="lg">申請院所導入 <ArrowRight aria-hidden="true" /></Button></div></section>
+  <section class="home-container py-14"><div class="flex flex-col justify-between gap-6 rounded-3xl bg-accent/30 p-7 sm:p-10 md:flex-row md:items-center"><div><h2 class="text-xl font-semibold">一起確認適合你的預約流程。</h2><p class="mt-3 text-sm leading-7 text-muted-foreground">告訴我們院所類型、服務內容與排程方式，從最需要的預約場景開始。</p><Button href={clinicLineContact} target="_blank" rel="noopener noreferrer" class="mt-4 min-h-11 bg-[#007a35] text-white hover:bg-[#00652c]"><MessageCircle aria-hidden="true" />LINE 導入諮詢 <ArrowUpRight aria-hidden="true" /><span class="sr-only">（另開視窗）</span></Button></div><Button href="/join/apply" size="lg">申請院所導入 <ArrowRight aria-hidden="true" /></Button></div></section>
 </PublicFrame>

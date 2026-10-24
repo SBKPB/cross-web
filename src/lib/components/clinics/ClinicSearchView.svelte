@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack, onMount } from "svelte";
 	import { page } from "$app/state";
 	import { goto } from "$app/navigation";
 	import { Button } from "#lib/components/ui/button/index.js";
@@ -17,6 +17,8 @@
 
 	let clinics = $state.raw<Clinic[]>([]);
 	let isLoading = $state(true);
+	let interactive = $state(false);
+	onMount(() => { interactive = true; });
 	const filters = $derived(parseSearchFilters((page.shallow?.url ?? page.url).searchParams));
 	const sort = $derived((SORT_OPTIONS.find((item) => item.value === (page.shallow?.url ?? page.url).searchParams.get("sort"))?.value ?? "default") as SortKey);
 	function updateFilters(next: ClinicFilters, nextSort = sort) {
@@ -59,9 +61,9 @@
 
 <div class="space-y-5">
 	<!-- 黏性工具列：捲動時固定於頁首下方，方便隨時調整篩選 -->
-	<div class="py-1">
+	<fieldset class="py-1 min-w-0" disabled={!interactive} aria-busy={!interactive}>
 		<ClinicToolbar {filters} onFiltersChange={updateFilters} resultCount={filteredClinics.length} />
-	</div>
+	</fieldset>
 
 	<!-- 結果計數 + 排序 -->
 	<div class="flex items-center justify-between gap-3">

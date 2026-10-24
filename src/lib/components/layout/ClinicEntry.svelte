@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getAuth } from "#lib/auth/auth.svelte.ts";
+  const auth = getAuth();
   import { afterNavigate } from "$app/navigation";
   import { Building2, ChevronDown } from "@lucide/svelte";
   import * as Popover from "#lib/components/ui/popover/index.ts";
@@ -12,7 +14,7 @@
 <Popover.Root bind:open>
   <Popover.Trigger>
     {#snippet child({ props })}
-      <Button {...props} variant="ghost" size="sm" class="min-h-11 gap-1">
+      <Button {...props} disabled={auth.isLoading} variant="ghost" size="sm" class="min-h-11 gap-1">
         院所專區<ChevronDown class="size-3.5" aria-hidden="true" />
       </Button>
     {/snippet}

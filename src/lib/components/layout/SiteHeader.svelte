@@ -2,8 +2,12 @@
 	import { Button } from "#lib/components/ui/button/index.js";
 	import ThemeToggle from "#lib/components/ThemeToggle.svelte";
 	import AuthButton from "./AuthButton.svelte";
+	import { getAuth } from "#lib/auth/auth.svelte.ts";
+	import { canAccessAdmin } from "#lib/auth/roles.ts";
 
 	let { home = false }: { home?: boolean } = $props();
+	const auth = getAuth();
+	const isAdmin = $derived(canAccessAdmin(auth.user));
 </script>
 
 <header class="glass-bar sticky top-0 z-50 border-b border-border/70">
@@ -24,12 +28,14 @@
 				如何預約
 			</Button>
 			<Button href="/search" size="sm" class={home ? "min-h-11" : undefined}>線上預約</Button>
-			<Button href="/member" variant="ghost" size="sm" class={home ? "min-h-11" : undefined}>我的預約</Button>
+			{#if !auth.isLoading && !isAdmin}
+				<Button href="/member" variant="ghost" size="sm" class={home ? "min-h-11" : undefined}>我的預約</Button>
+			{/if}
 			<Button href="/join" variant="ghost" size="sm" class="hidden sm:inline-flex">院所導入</Button>
 			<span class="hidden min-[400px]:inline-flex">
 				<ThemeToggle class={home ? "size-11" : undefined} />
 			</span>
-			<span class="hidden md:inline-flex">
+			<span class={isAdmin ? "inline-flex" : "hidden md:inline-flex"}>
 				<AuthButton />
 			</span>
 		</nav>

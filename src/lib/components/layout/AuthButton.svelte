@@ -28,14 +28,14 @@
 		href={isAdmin ? getAdminHomePath(auth.user) : "/member"}
 		variant="ghost"
 		size="sm"
-		class="gap-1.5 text-foreground hover:text-primary"
+		class="gap-1.5 text-foreground hover:text-primary {isAdmin ? 'min-h-11' : ''}"
 	>
 		{#if isAdmin}
 			<LayoutDashboard class="size-4" />
 		{:else}
 			<UserIcon class="size-4" />
 		{/if}
-		<span class="hidden sm:inline">
+		<span class={isAdmin ? "" : "hidden sm:inline"}>
 			{isAdmin ? "管理後台" : auth.user.display_name || auth.user.email.split("@")[0]}
 		</span>
 	</Button>
